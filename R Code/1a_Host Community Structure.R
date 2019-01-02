@@ -50,7 +50,7 @@ hCommTests <- c("hFamily",
                #"Population_trend",
                "hDom")
 
-sapply(hCommTests, function(a){
+sapply(hCommTests, function(a){ # Clusters ~substantially by Family and Order
   modularity(Hostgraph, as.factor(Hosts[,a]))
 })
 
@@ -65,20 +65,3 @@ for(x in 1:nunique(Hosts$hFamily)){
   hFamilylist[[x]] <- induced_subgraph(Hostgraph, 
                                      as.numeric(as.factor(Hosts$hFamily)) == x)
 }
-
-# Distances from other types of Hosts ####
-# dist.from.NYT # in case trying to google/evernote search the original code
-
-hDomDist <- distances(Hostgraph, v = V(Hostgraph),
-                           to = V(Hostgraph)[Hosts$hDom == "domestic"], weights=NA)
-
-hHumanDist <- distances(Hostgraph, v = V(Hostgraph),
-                           to = V(Hostgraph)[Hosts$hDom == "human"], weights=NA)
-
-hHumanDist2 <- as.data.frame(hHumanDist)
-hHumanDist2$hDom <- Hosts$hDom
-
-hHumanDist2 <- hHumanDist2[!hHumanDist2$Homo_sapiens %in% c("Inf",0),]
-BarGraph(hHumanDist2, "hDom", "Homo_sapiens")
-
-
