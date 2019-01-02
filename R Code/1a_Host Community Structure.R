@@ -67,7 +67,6 @@ for(x in 1:nunique(Hosts$hFamily)){
 }
 
 # Distances from other types of Hosts ####
-
 # dist.from.NYT # in case trying to google/evernote search the original code
 
 hDomDist <- distances(Hostgraph, v = V(Hostgraph),
