@@ -1,14 +1,17 @@
 # Data import for EHA ###
 
-#remove(list = ls())
+remove(list = ls())
 
 library(igraph); library(magrittr); library(dplyr); library(ggplot2); require(RCurl); library(readr)
 
-AssocsBase <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/associations.csv")
-HostTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/hosts.csv")
-VirusTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/viruses.csv")
+AssocsBase <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/associations.csv") %>% data.frame()
+HostTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/hosts.csv") %>% data.frame()
+VirusTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/viruses.csv") %>% data.frame()
 
 names(AssocsBase)[1:2] <- c("Virus", "Host")
+AssocsBase <-mutate(AssocsBase,
+                    Virus = as.factor(Virus),
+                    Host = as.factor(Host))
 
 AssocsBase2 <- AssocsBase
 
@@ -58,8 +61,8 @@ names(Hosts)[which(names(Hosts)=="hWildDomFAO")] <- "hDom"
 Domestics <- Hosts[Hosts$hDom == "domestic", "Sp"]
 Wildlife <- Hosts[Hosts$hDom == "wild", "Sp"]
 
-DomesticViruses <- AssocsBase[AssocsBase$Host %in% Domestics, "Virus"]
-WildlifeViruses <- AssocsBase[AssocsBase$Host %in% Wildlife, "Virus"]
+DomesticViruses <- as.factor(AssocsBase[AssocsBase$Host %in% Domestics, "Virus"])
+WildlifeViruses <- as.factor(AssocsBase[AssocsBase$Host %in% Wildlife, "Virus"])
 
 AssocsTraits <- merge(AssocsTraits, HostTraits, by.x = "Host", by.y = "hHostNameFinal", all.x = T)
 AssocsTraits <- merge(AssocsTraits, VirusTraits, by.x = "Virus", by.y = "vVirusNameCorrected", all.x = T)
@@ -79,8 +82,8 @@ Viruses <- Viruses %>%
       Sp %in% WildlifeViruses ~ 1,
       TRUE ~ 0),
     
-    DomesticCount = c(table(AssocsTraits[Domestic == 1,"Virus"])),
-    WildlifeCount = c(table(AssocsTraits[Wildlife == 1,"Virus"])),
+    DomesticCount = c(table(AssocsTraits[AssocsTraits$Domestic == 1,"Virus"])),
+    WildlifeCount = c(table(AssocsTraits[AssocsTraits$Wildlife == 1,"Virus"])),
     
     PropDomestic = c(table(AssocsTraits[AssocsTraits$Domestic == 1, "Virus"])/
                        table(AssocsTraits$Virus)),
@@ -104,7 +107,7 @@ Viruses$vPubMedCitesLn <- log(Viruses$vPubMedCites + 1)
 
 # Loading functions, determining themes ####
 
-devtools::install_github("gfalbery/ggregplot")
+#devtools::install_github("gfalbery/ggregplot")
 library(ggregplot)
 
 AlberPalettes <- c("YlGnBu","Reds","BuPu", "PiYG")

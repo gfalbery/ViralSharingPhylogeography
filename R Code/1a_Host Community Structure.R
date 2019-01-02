@@ -41,31 +41,29 @@ for(x in 1:max(HostCommunities$membership)){
 
 # Community testing ####
 
-
 mean_distance(Hostgraph, directed = FALSE)
-modularity(HostCommunities)
-modularity(Hostgraph)
+modularity(Hostgraph, HostCommunities)
 
-hCommTests <- c("vFamily", 
-               "vOrder",
+hCommTests <- c("hFamily", 
+               "hOrder",
                "hMarOTerr",
                #"Population_trend",
                "hDom")
 
 sapply(hCommTests, function(a){
-  modularity(Hostgraph, Hosts[,a])
+  modularity(Hostgraph, as.factor(Hosts[,a]))
 })
 
 hOrderlist <- hFamilylist <- list()
 
-for(x in 1:max(as.numeric(Hosts$hOrder))){
+for(x in 1:nunique(Hosts$hOrder)){
   hOrderlist[[x]] <- induced_subgraph(Hostgraph, 
-                                     as.numeric(Hosts$hOrder) == x)
+                                     as.numeric(as.factor(Hosts$hOrder)) == x)
 }
 
-for(x in 1:max(as.numeric(Hosts$hFamily))){
+for(x in 1:nunique(Hosts$hFamily)){
   hFamilylist[[x]] <- induced_subgraph(Hostgraph, 
-                                     as.numeric(Hosts$hFamily) == x)
+                                     as.numeric(as.factor(Hosts$hFamily)) == x)
 }
 
 # Distances from other types of Hosts ####

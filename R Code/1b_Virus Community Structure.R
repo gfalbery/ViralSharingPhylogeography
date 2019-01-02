@@ -61,7 +61,6 @@ sapply(VirCommTests, function(a){
 Virusgraph2 <- Virusgraph
 
 V(Virusgraph2)$color <- adjustcolor(c("black", "red")[Viruses$Domestic+1], alpha = 0.6)
-V(Virusgraph2)$labels <- NULL
 V(Virusgraph2)$size <- 3
 
 E(Virusgraph2)$color <- adjustcolor("grey", alpha = 0.1)
