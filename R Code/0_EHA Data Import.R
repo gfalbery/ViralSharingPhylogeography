@@ -2,15 +2,11 @@
 
 #remove(list = ls())
 
-library(igraph); library(magrittr); library(dplyr); library(ggplot2)
+library(igraph); library(magrittr); library(dplyr); library(ggplot2); require(RCurl); library(readr)
 
-setwd("D:/Scripy/EHA Code")
-
-dataroot <- "Olival 2017/data"
-
-AssocsBase <- read.csv(paste0(dataroot,"/associations.csv"), header = T)
-HostTraits <- read.csv(paste0(dataroot,"/Hosts.csv"), header = T)
-VirusTraits <- read.csv(paste0(dataroot,"/Viruses.csv"), header = T)
+AssocsBase <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/associations.csv")
+HostTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/hosts.csv")
+VirusTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/viruses.csv")
 
 names(AssocsBase)[1:2] <- c("Virus", "Host")
 
