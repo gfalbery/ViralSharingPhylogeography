@@ -104,7 +104,7 @@ Viruses$vPubMedCitesLn <- log(Viruses$vPubMedCites + 1)
 
 # Loading functions, determining themes ####
 
-#install_github("gfalbery/ggregplot")
+devtools::install_github("gfalbery/ggregplot")
 library(ggregplot)
 
 AlberPalettes <- c("YlGnBu","Reds","BuPu", "PiYG")
