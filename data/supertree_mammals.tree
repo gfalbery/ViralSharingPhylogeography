@@ -1,0 +1,1158 @@
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+  <link rel="dns-prefetch" href="https://github.githubassets.com">
+  <link rel="dns-prefetch" href="https://avatars0.githubusercontent.com">
+  <link rel="dns-prefetch" href="https://avatars1.githubusercontent.com">
+  <link rel="dns-prefetch" href="https://avatars2.githubusercontent.com">
+  <link rel="dns-prefetch" href="https://avatars3.githubusercontent.com">
+  <link rel="dns-prefetch" href="https://github-cloud.s3.amazonaws.com">
+  <link rel="dns-prefetch" href="https://user-images.githubusercontent.com/">
+
+
+
+  <link crossorigin="anonymous" media="all" integrity="sha512-lLo2nlsdl+bHLu6PGvC2j3wfP45RnK4wKQLiPnCDcuXfU38AiD+JCdMywnF3WbJC1jaxe3lAI6AM4uJuMFBLEw==" rel="stylesheet" href="https://github.githubassets.com/assets/frameworks-08fc49d3bd2694c870ea23d0906f3610.css" />
+  <link crossorigin="anonymous" media="all" integrity="sha512-qOjiGGaKq5dOfyb14FTCeYzmAKHerVLN7R8liZ2b7OfLOLXHdOWo5ggPVca5D7yVsv8yi1fgxhVV+jPApgqNFw==" rel="stylesheet" href="https://github.githubassets.com/assets/github-50e3b9f7c44e65a6e11bf092e355f34a.css" />
+  
+  
+  
+  
+  
+
+  <meta name="viewport" content="width=device-width">
+  
+  <title>HP3/supertree_mammals.tree at master · ecohealthalliance/HP3</title>
+    <meta name="description" content="Repository for Host-Pathogen Phylogeny Project. Paper DOI: 10.1038/nature22975 - ecohealthalliance/HP3">
+    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub">
+  <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="GitHub">
+  <meta property="fb:app_id" content="1401488693436528">
+
+    
+    <meta property="og:image" content="https://avatars1.githubusercontent.com/u/1501231?s=400&amp;v=4" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="ecohealthalliance/HP3" /><meta property="og:url" content="https://github.com/ecohealthalliance/HP3" /><meta property="og:description" content="Repository for Host-Pathogen Phylogeny Project. Paper DOI: 10.1038/nature22975 - ecohealthalliance/HP3" />
+
+  <link rel="assets" href="https://github.githubassets.com/">
+  <link rel="web-socket" href="wss://live.github.com/_sockets/VjI6MzU1OTE2NDMxOmJiM2JkNTIzYjZhNTY3MTQ1MTRkNDliODMxMzJlYjQ3MjY5MWJlZmI4YTVhYjNhOTc1ZjQ4NTFhYzQ3NDY5ZWM=--833ebdf850344741f3914fc07b84ad91a2f922f8">
+  <meta name="pjax-timeout" content="1000">
+  <link rel="sudo-modal" href="/sessions/sudo_modal">
+  <meta name="request-id" content="FB75:04CA:2029767:2F49E83:5C2EACDB" data-pjax-transient>
+
+
+  
+
+  <meta name="selected-link" value="repo_source" data-pjax-transient>
+
+      <meta name="google-site-verification" content="KT5gs8h0wvaagLKAVWq8bbeNwnZZK1r1XQysX3xurLU">
+    <meta name="google-site-verification" content="ZzhVyEFwb7w3e0-uOTltm8Jsck2F5StVihD0exw2fsA">
+    <meta name="google-site-verification" content="GXs5KoUUkNCoaAZn7wPN-t01Pywp9M3sEjnt_3_ZWPc">
+
+  <meta name="octolytics-host" content="collector.githubapp.com" /><meta name="octolytics-app-id" content="github" /><meta name="octolytics-event-url" content="https://collector.githubapp.com/github-external/browser_event" /><meta name="octolytics-dimension-request_id" content="FB75:04CA:2029767:2F49E83:5C2EACDB" /><meta name="octolytics-dimension-region_edge" content="iad" /><meta name="octolytics-dimension-region_render" content="iad" /><meta name="octolytics-actor-id" content="14772763" /><meta name="octolytics-actor-login" content="gfalbery" /><meta name="octolytics-actor-hash" content="bc10fd5080b7737eb2a590280a3e3cdb280d01aa38218193af384bb83ee92e34" />
+<meta name="analytics-location" content="/&lt;user-name&gt;/&lt;repo-name&gt;/blob/show" data-pjax-transient="true" />
+
+
+
+    <meta name="google-analytics" content="UA-3769691-2">
+
+  <meta class="js-ga-set" name="userId" content="f1d4985745e01eb9d6a68026df7961cc" %>
+
+<meta class="js-ga-set" name="dimension1" content="Logged In">
+
+
+
+  
+
+      <meta name="hostname" content="github.com">
+    <meta name="user-login" content="gfalbery">
+
+      <meta name="expected-hostname" content="github.com">
+    <meta name="js-proxy-site-detection-payload" content="MDgxODJmNjg0NTliMWQ1MzIzYTcyZmM4ZTVhNTBlNTc5MTE2NTkyMmVjMzMwNWYxNDc2NTQ1YmFlOWQ3ZDJiZXx7InJlbW90ZV9hZGRyZXNzIjoiOTcuMTA2Ljc1LjE1MCIsInJlcXVlc3RfaWQiOiJGQjc1OjA0Q0E6MjAyOTc2NzoyRjQ5RTgzOjVDMkVBQ0RCIiwidGltZXN0YW1wIjoxNTQ2NTYyNzk2LCJob3N0IjoiZ2l0aHViLmNvbSJ9">
+
+    <meta name="enabled-features" content="DASHBOARD_V2_LAYOUT,DASHBOARD_V2_LAYOUT_OPT_IN,EXPLORE_DISCOVER_REPOSITORIES,UNIVERSE_BANNER,MARKETPLACE_PLAN_RESTRICTION_EDITOR,NOTIFY_ON_BLOCK,RELATED_ISSUES,MARKETPLACE_INSIGHTS_V2">
+
+  <meta name="html-safe-nonce" content="96540cf32ef326d0075313c9dda39acd2baee943">
+
+  <meta http-equiv="x-pjax-version" content="4146b531c5d1c7d6d1476852ac802d1e">
+  
+
+      <link href="https://github.com/ecohealthalliance/HP3/commits/master.atom" rel="alternate" title="Recent Commits to HP3:master" type="application/atom+xml">
+
+  <meta name="go-import" content="github.com/ecohealthalliance/HP3 git https://github.com/ecohealthalliance/HP3.git">
+
+  <meta name="octolytics-dimension-user_id" content="1501231" /><meta name="octolytics-dimension-user_login" content="ecohealthalliance" /><meta name="octolytics-dimension-repository_id" content="57073465" /><meta name="octolytics-dimension-repository_nwo" content="ecohealthalliance/HP3" /><meta name="octolytics-dimension-repository_public" content="true" /><meta name="octolytics-dimension-repository_is_fork" content="false" /><meta name="octolytics-dimension-repository_network_root_id" content="57073465" /><meta name="octolytics-dimension-repository_network_root_nwo" content="ecohealthalliance/HP3" /><meta name="octolytics-dimension-repository_explore_github_marketplace_ci_cta_shown" content="false" />
+
+
+    <link rel="canonical" href="https://github.com/ecohealthalliance/HP3/blob/master/data/supertree_mammals.tree" data-pjax-transient>
+
+
+  <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
+
+  <meta name="browser-errors-url" content="https://api.github.com/_private/browser/errors">
+
+  <link rel="mask-icon" href="https://github.githubassets.com/pinned-octocat.svg" color="#000000">
+  <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.githubassets.com/favicon.ico">
+
+<meta name="theme-color" content="#1e2327">
+
+
+  <meta name="u2f-support" content="true">
+
+  <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials">
+
+  </head>
+
+  <body class="logged-in env-production page-blob">
+    
+
+  <div class="position-relative js-header-wrapper ">
+    <a href="#start-of-content" tabindex="1" class="p-3 bg-blue text-white show-on-focus js-skip-to-content">Skip to content</a>
+    <div id="js-pjax-loader-bar" class="pjax-loader-bar"><div class="progress"></div></div>
+
+    
+    
+    
+
+
+        
+<header class="Header  f5" role="banner">
+  <div class="d-flex flex-justify-between px-3 ">
+    <div class="d-flex flex-justify-between ">
+      <div class="">
+        <a class="header-logo-invertocat" href="https://github.com/" data-hotkey="g d" aria-label="Homepage" data-ga-click="Header, go to dashboard, icon:logo">
+  <svg height="32" class="octicon octicon-mark-github" viewBox="0 0 16 16" version="1.1" width="32" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+</a>
+
+      </div>
+
+    </div>
+
+    <div class="HeaderMenu d-flex flex-justify-between flex-auto">
+      <nav class="d-flex" aria-label="Global">
+            <div class="">
+              <div class="header-search scoped-search site-scoped-search js-site-search position-relative js-jump-to"
+  role="combobox"
+  aria-owns="jump-to-results"
+  aria-label="Search or jump to"
+  aria-haspopup="listbox"
+  aria-expanded="false"
+>
+  <div class="position-relative">
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="js-site-search-form" data-scope-type="Repository" data-scope-id="57073465" data-scoped-search-url="/ecohealthalliance/HP3/search" data-unscoped-search-url="/search" action="/ecohealthalliance/HP3/search" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="&#x2713;" />
+      <label class="form-control header-search-wrapper header-search-wrapper-jump-to position-relative d-flex flex-justify-between flex-items-center js-chromeless-input-container">
+        <input type="text"
+          class="form-control header-search-input jump-to-field js-jump-to-field js-site-search-focus js-site-search-field is-clearable"
+          data-hotkey="s,/"
+          name="q"
+          value=""
+          placeholder="Search or jump to…"
+          data-unscoped-placeholder="Search or jump to…"
+          data-scoped-placeholder="Search or jump to…"
+          autocapitalize="off"
+          aria-autocomplete="list"
+          aria-controls="jump-to-results"
+          aria-label="Search or jump to…"
+          data-jump-to-suggestions-path="/_graphql/GetSuggestedNavigationDestinations#csrf-token=FKFTHL9aNucriAMPGph9Zy78Pn+AL5cF1DLhc56JkB4lbgj6Jf8Fnq4mPfUG+oLc6skfKbuNKpRQhctYMHq3Og=="
+          spellcheck="false"
+          autocomplete="off"
+          >
+          <input type="hidden" class="js-site-search-type-field" name="type" >
+            <img src="https://github.githubassets.com/images/search-key-slash.svg" alt="" class="mr-2 header-search-key-slash">
+
+            <div class="Box position-absolute overflow-hidden d-none jump-to-suggestions js-jump-to-suggestions-container">
+              
+<ul class="d-none js-jump-to-suggestions-template-container">
+  
+
+<li class="d-flex flex-justify-start flex-items-center p-0 f5 navigation-item js-navigation-item js-jump-to-suggestion" role="option">
+  <a tabindex="-1" class="no-underline d-flex flex-auto flex-items-center jump-to-suggestions-path js-jump-to-suggestion-path js-navigation-open p-2" href="">
+    <div class="jump-to-octicon js-jump-to-octicon flex-shrink-0 mr-2 text-center d-none">
+      <svg height="16" width="16" class="octicon octicon-repo flex-shrink-0 js-jump-to-octicon-repo d-none" title="Repository" aria-label="Repository" viewBox="0 0 12 16" version="1.1" role="img"><path fill-rule="evenodd" d="M4 9H3V8h1v1zm0-3H3v1h1V6zm0-2H3v1h1V4zm0-2H3v1h1V2zm8-1v12c0 .55-.45 1-1 1H6v2l-1.5-1.5L3 16v-2H1c-.55 0-1-.45-1-1V1c0-.55.45-1 1-1h10c.55 0 1 .45 1 1zm-1 10H1v2h2v-1h3v1h5v-2zm0-10H2v9h9V1z"/></svg>
+      <svg height="16" width="16" class="octicon octicon-project flex-shrink-0 js-jump-to-octicon-project d-none" title="Project" aria-label="Project" viewBox="0 0 15 16" version="1.1" role="img"><path fill-rule="evenodd" d="M10 12h3V2h-3v10zm-4-2h3V2H6v8zm-4 4h3V2H2v12zm-1 1h13V1H1v14zM14 0H1a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1z"/></svg>
+      <svg height="16" width="16" class="octicon octicon-search flex-shrink-0 js-jump-to-octicon-search d-none" title="Search" aria-label="Search" viewBox="0 0 16 16" version="1.1" role="img"><path fill-rule="evenodd" d="M15.7 13.3l-3.81-3.83A5.93 5.93 0 0 0 13 6c0-3.31-2.69-6-6-6S1 2.69 1 6s2.69 6 6 6c1.3 0 2.48-.41 3.47-1.11l3.83 3.81c.19.2.45.3.7.3.25 0 .52-.09.7-.3a.996.996 0 0 0 0-1.41v.01zM7 10.7c-2.59 0-4.7-2.11-4.7-4.7 0-2.59 2.11-4.7 4.7-4.7 2.59 0 4.7 2.11 4.7 4.7 0 2.59-2.11 4.7-4.7 4.7z"/></svg>
+    </div>
+
+    <img class="avatar mr-2 flex-shrink-0 js-jump-to-suggestion-avatar d-none" alt="" aria-label="Team" src="" width="28" height="28">
+
+    <div class="jump-to-suggestion-name js-jump-to-suggestion-name flex-auto overflow-hidden text-left no-wrap css-truncate css-truncate-target">
+    </div>
+
+    <div class="border rounded-1 flex-shrink-0 bg-gray px-1 text-gray-light ml-1 f6 d-none js-jump-to-badge-search">
+      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this repository">
+        In this repository
+      </span>
+      <span class="js-jump-to-badge-search-text-global d-none" aria-label="in all of GitHub">
+        All GitHub
+      </span>
+      <span aria-hidden="true" class="d-inline-block ml-1 v-align-middle">↵</span>
+    </div>
+
+    <div aria-hidden="true" class="border rounded-1 flex-shrink-0 bg-gray px-1 text-gray-light ml-1 f6 d-none d-on-nav-focus js-jump-to-badge-jump">
+      Jump to
+      <span class="d-inline-block ml-1 v-align-middle">↵</span>
+    </div>
+  </a>
+</li>
+
+</ul>
+
+<ul class="d-none js-jump-to-no-results-template-container">
+  <li class="d-flex flex-justify-center flex-items-center f5 d-none js-jump-to-suggestion p-2">
+    <span class="text-gray">No suggested jump to results</span>
+  </li>
+</ul>
+
+<ul id="jump-to-results" role="listbox" class="p-0 m-0 js-navigation-container jump-to-suggestions-results-container js-jump-to-suggestions-results-container">
+  
+
+<li class="d-flex flex-justify-start flex-items-center p-0 f5 navigation-item js-navigation-item js-jump-to-scoped-search d-none" role="option">
+  <a tabindex="-1" class="no-underline d-flex flex-auto flex-items-center jump-to-suggestions-path js-jump-to-suggestion-path js-navigation-open p-2" href="">
+    <div class="jump-to-octicon js-jump-to-octicon flex-shrink-0 mr-2 text-center d-none">
+      <svg height="16" width="16" class="octicon octicon-repo flex-shrink-0 js-jump-to-octicon-repo d-none" title="Repository" aria-label="Repository" viewBox="0 0 12 16" version="1.1" role="img"><path fill-rule="evenodd" d="M4 9H3V8h1v1zm0-3H3v1h1V6zm0-2H3v1h1V4zm0-2H3v1h1V2zm8-1v12c0 .55-.45 1-1 1H6v2l-1.5-1.5L3 16v-2H1c-.55 0-1-.45-1-1V1c0-.55.45-1 1-1h10c.55 0 1 .45 1 1zm-1 10H1v2h2v-1h3v1h5v-2zm0-10H2v9h9V1z"/></svg>
+      <svg height="16" width="16" class="octicon octicon-project flex-shrink-0 js-jump-to-octicon-project d-none" title="Project" aria-label="Project" viewBox="0 0 15 16" version="1.1" role="img"><path fill-rule="evenodd" d="M10 12h3V2h-3v10zm-4-2h3V2H6v8zm-4 4h3V2H2v12zm-1 1h13V1H1v14zM14 0H1a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1z"/></svg>
+      <svg height="16" width="16" class="octicon octicon-search flex-shrink-0 js-jump-to-octicon-search d-none" title="Search" aria-label="Search" viewBox="0 0 16 16" version="1.1" role="img"><path fill-rule="evenodd" d="M15.7 13.3l-3.81-3.83A5.93 5.93 0 0 0 13 6c0-3.31-2.69-6-6-6S1 2.69 1 6s2.69 6 6 6c1.3 0 2.48-.41 3.47-1.11l3.83 3.81c.19.2.45.3.7.3.25 0 .52-.09.7-.3a.996.996 0 0 0 0-1.41v.01zM7 10.7c-2.59 0-4.7-2.11-4.7-4.7 0-2.59 2.11-4.7 4.7-4.7 2.59 0 4.7 2.11 4.7 4.7 0 2.59-2.11 4.7-4.7 4.7z"/></svg>
+    </div>
+
+    <img class="avatar mr-2 flex-shrink-0 js-jump-to-suggestion-avatar d-none" alt="" aria-label="Team" src="" width="28" height="28">
+
+    <div class="jump-to-suggestion-name js-jump-to-suggestion-name flex-auto overflow-hidden text-left no-wrap css-truncate css-truncate-target">
+    </div>
+
+    <div class="border rounded-1 flex-shrink-0 bg-gray px-1 text-gray-light ml-1 f6 d-none js-jump-to-badge-search">
+      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this repository">
+        In this repository
+      </span>
+      <span class="js-jump-to-badge-search-text-global d-none" aria-label="in all of GitHub">
+        All GitHub
+      </span>
+      <span aria-hidden="true" class="d-inline-block ml-1 v-align-middle">↵</span>
+    </div>
+
+    <div aria-hidden="true" class="border rounded-1 flex-shrink-0 bg-gray px-1 text-gray-light ml-1 f6 d-none d-on-nav-focus js-jump-to-badge-jump">
+      Jump to
+      <span class="d-inline-block ml-1 v-align-middle">↵</span>
+    </div>
+  </a>
+</li>
+
+  
+
+<li class="d-flex flex-justify-start flex-items-center p-0 f5 navigation-item js-navigation-item js-jump-to-global-search d-none" role="option">
+  <a tabindex="-1" class="no-underline d-flex flex-auto flex-items-center jump-to-suggestions-path js-jump-to-suggestion-path js-navigation-open p-2" href="">
+    <div class="jump-to-octicon js-jump-to-octicon flex-shrink-0 mr-2 text-center d-none">
+      <svg height="16" width="16" class="octicon octicon-repo flex-shrink-0 js-jump-to-octicon-repo d-none" title="Repository" aria-label="Repository" viewBox="0 0 12 16" version="1.1" role="img"><path fill-rule="evenodd" d="M4 9H3V8h1v1zm0-3H3v1h1V6zm0-2H3v1h1V4zm0-2H3v1h1V2zm8-1v12c0 .55-.45 1-1 1H6v2l-1.5-1.5L3 16v-2H1c-.55 0-1-.45-1-1V1c0-.55.45-1 1-1h10c.55 0 1 .45 1 1zm-1 10H1v2h2v-1h3v1h5v-2zm0-10H2v9h9V1z"/></svg>
+      <svg height="16" width="16" class="octicon octicon-project flex-shrink-0 js-jump-to-octicon-project d-none" title="Project" aria-label="Project" viewBox="0 0 15 16" version="1.1" role="img"><path fill-rule="evenodd" d="M10 12h3V2h-3v10zm-4-2h3V2H6v8zm-4 4h3V2H2v12zm-1 1h13V1H1v14zM14 0H1a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1z"/></svg>
+      <svg height="16" width="16" class="octicon octicon-search flex-shrink-0 js-jump-to-octicon-search d-none" title="Search" aria-label="Search" viewBox="0 0 16 16" version="1.1" role="img"><path fill-rule="evenodd" d="M15.7 13.3l-3.81-3.83A5.93 5.93 0 0 0 13 6c0-3.31-2.69-6-6-6S1 2.69 1 6s2.69 6 6 6c1.3 0 2.48-.41 3.47-1.11l3.83 3.81c.19.2.45.3.7.3.25 0 .52-.09.7-.3a.996.996 0 0 0 0-1.41v.01zM7 10.7c-2.59 0-4.7-2.11-4.7-4.7 0-2.59 2.11-4.7 4.7-4.7 2.59 0 4.7 2.11 4.7 4.7 0 2.59-2.11 4.7-4.7 4.7z"/></svg>
+    </div>
+
+    <img class="avatar mr-2 flex-shrink-0 js-jump-to-suggestion-avatar d-none" alt="" aria-label="Team" src="" width="28" height="28">
+
+    <div class="jump-to-suggestion-name js-jump-to-suggestion-name flex-auto overflow-hidden text-left no-wrap css-truncate css-truncate-target">
+    </div>
+
+    <div class="border rounded-1 flex-shrink-0 bg-gray px-1 text-gray-light ml-1 f6 d-none js-jump-to-badge-search">
+      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this repository">
+        In this repository
+      </span>
+      <span class="js-jump-to-badge-search-text-global d-none" aria-label="in all of GitHub">
+        All GitHub
+      </span>
+      <span aria-hidden="true" class="d-inline-block ml-1 v-align-middle">↵</span>
+    </div>
+
+    <div aria-hidden="true" class="border rounded-1 flex-shrink-0 bg-gray px-1 text-gray-light ml-1 f6 d-none d-on-nav-focus js-jump-to-badge-jump">
+      Jump to
+      <span class="d-inline-block ml-1 v-align-middle">↵</span>
+    </div>
+  </a>
+</li>
+
+
+    <li class="d-flex flex-justify-center flex-items-center p-0 f5 js-jump-to-suggestion">
+      <img src="https://github.githubassets.com/images/spinners/octocat-spinner-128.gif" alt="Octocat Spinner Icon" class="m-2" width="28">
+    </li>
+</ul>
+
+            </div>
+      </label>
+</form>  </div>
+</div>
+
+            </div>
+
+          <ul class="d-flex pl-2 flex-items-center text-bold list-style-none">
+            <li>
+              <a class="js-selected-navigation-item HeaderNavlink px-2" data-hotkey="g p" data-ga-click="Header, click, Nav menu - item:pulls context:user" aria-label="Pull requests you created" data-selected-links="/pulls /pulls/assigned /pulls/mentioned /pulls" href="/pulls">
+                Pull requests
+</a>            </li>
+            <li>
+              <a class="js-selected-navigation-item HeaderNavlink px-2" data-hotkey="g i" data-ga-click="Header, click, Nav menu - item:issues context:user" aria-label="Issues you created" data-selected-links="/issues /issues/assigned /issues/mentioned /issues" href="/issues">
+                Issues
+</a>            </li>
+              <li class="position-relative">
+                <a class="js-selected-navigation-item HeaderNavlink px-2" data-ga-click="Header, click, Nav menu - item:marketplace context:user" data-octo-click="marketplace_click" data-octo-dimensions="location:nav_bar" data-selected-links=" /marketplace" href="/marketplace">
+                   Marketplace
+</a>                  
+              </li>
+            <li>
+              <a class="js-selected-navigation-item HeaderNavlink px-2" data-ga-click="Header, click, Nav menu - item:explore" data-selected-links="/explore /trending /trending/developers /integrations /integrations/feature/code /integrations/feature/collaborate /integrations/feature/ship showcases showcases_search showcases_landing /explore" href="/explore">
+                Explore
+</a>            </li>
+          </ul>
+      </nav>
+
+      <div class="d-flex">
+        
+<ul class="user-nav d-flex flex-items-center list-style-none" id="user-links">
+  <li class="dropdown">
+    <span class="d-inline-block  px-2">
+      
+    <a aria-label="You have unread notifications" class="notification-indicator tooltipped tooltipped-s  js-socket-channel js-notification-indicator" data-hotkey="g n" data-ga-click="Header, go to notifications, icon:unread" data-channel="notification-changed:14772763" href="/notifications">
+        <span class="mail-status unread"></span>
+        <svg class="octicon octicon-bell" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M14 12v1H0v-1l.73-.58c.77-.77.81-2.55 1.19-4.42C2.69 3.23 6 2 6 2c0-.55.45-1 1-1s1 .45 1 1c0 0 3.39 1.23 4.16 5 .38 1.88.42 3.66 1.19 4.42l.66.58H14zm-7 4c1.11 0 2-.89 2-2H5c0 1.11.89 2 2 2z"/></svg>
+</a>
+    </span>
+  </li>
+
+  <li class="dropdown">
+    <details class="details-overlay details-reset d-flex px-2 flex-items-center">
+      <summary class="HeaderNavlink"
+         aria-label="Create new…"
+         data-ga-click="Header, create new, icon:add">
+        <svg class="octicon octicon-plus float-left mr-1 mt-1" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 9H7v5H5V9H0V7h5V2h2v5h5v2z"/></svg>
+        <span class="dropdown-caret mt-1"></span>
+      </summary>
+      <details-menu class="dropdown-menu dropdown-menu-sw">
+        
+<a role="menuitem" class="dropdown-item" href="/new" data-ga-click="Header, create new repository">
+  New repository
+</a>
+
+  <a role="menuitem" class="dropdown-item" href="/new/import" data-ga-click="Header, import a repository">
+    Import repository
+  </a>
+
+<a role="menuitem" class="dropdown-item" href="https://gist.github.com/" data-ga-click="Header, create new gist">
+  New gist
+</a>
+
+  <a role="menuitem" class="dropdown-item" href="/organizations/new" data-ga-click="Header, create new organization">
+    New organization
+  </a>
+
+
+  <div class="dropdown-divider"></div>
+  <div class="dropdown-header">
+    <span title="ecohealthalliance/HP3">This repository</span>
+  </div>
+    <a role="menuitem" class="dropdown-item" href="/ecohealthalliance/HP3/issues/new" data-ga-click="Header, create new issue">
+      New issue
+    </a>
+
+
+      </details-menu>
+    </details>
+  </li>
+
+  <li class="dropdown">
+
+    <details class="details-overlay details-reset d-flex pl-2 flex-items-center">
+      <summary class="HeaderNavlink name mt-1"
+        aria-label="View profile and more"
+        data-ga-click="Header, show menu, icon:avatar">
+        <img alt="@gfalbery" class="avatar float-left mr-1" src="https://avatars3.githubusercontent.com/u/14772763?s=40&amp;v=4" height="20" width="20">
+        <span class="dropdown-caret"></span>
+      </summary>
+      <details-menu class="dropdown-menu dropdown-menu-sw">
+        <ul>
+          <li class="header-nav-current-user css-truncate"><a role="menuitem" class="no-underline user-profile-link px-3 pt-2 pb-2 mb-n2 mt-n1 d-block" href="/gfalbery" data-ga-click="Header, go to profile, text:Signed in as">Signed in as <strong class="css-truncate-target">gfalbery</strong></a></li>
+          <li class="dropdown-divider"></li>
+
+
+          <li><a role="menuitem" class="dropdown-item" href="/gfalbery" data-ga-click="Header, go to profile, text:your profile">Your profile</a></li>
+          <li><a role="menuitem" class="dropdown-item" href="/gfalbery?tab=repositories" data-ga-click="Header, go to repositories, text:your repositories">Your repositories</a></li>
+
+
+          <li><a role="menuitem" class="dropdown-item" href="/gfalbery?tab=stars" data-ga-click="Header, go to starred repos, text:your stars">Your stars</a></li>
+            <li><a role="menuitem" class="dropdown-item" href="https://gist.github.com/" data-ga-click="Header, your gists, text:your gists">Your gists</a></li>
+          <li class="dropdown-divider"></li>
+          <li><a role="menuitem" class="dropdown-item" href="https://help.github.com" data-ga-click="Header, go to help, text:help">Help</a></li>
+          <li><a role="menuitem" class="dropdown-item" href="/settings/profile" data-ga-click="Header, go to settings, icon:settings">Settings</a></li>
+          <li>
+            <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="logout-form" action="/logout" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="caINPuWqM4kUJdv8GUNVNNE7JHoZ+CW8DFWo80XgKCi/d3+cn9pET78Gaw5uqIQJL/gTCcP/qMqUtVlp9rLqLw==" />
+              
+              <button type="submit" class="dropdown-item dropdown-signout" data-ga-click="Header, sign out, icon:logout" role="menuitem">
+                Sign out
+              </button>
+</form>          </li>
+        </ul>
+      </details-menu>
+    </details>
+  </li>
+</ul>
+
+
+
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="sr-only right-0" action="/logout" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="3rriMEkPsHsXltU8uclBPtc25WnhoF5K7Z2iaODUNLoQb5CSM3/Hvby1Zc7OIpADKfXSGjun0zx1fVPyU4b2vQ==" />
+          <button type="submit" class="dropdown-item dropdown-signout" data-ga-click="Header, sign out, icon:logout">
+            Sign out
+          </button>
+</form>      </div>
+    </div>
+  </div>
+</header>
+
+      
+
+  </div>
+
+  <div id="start-of-content" class="show-on-focus"></div>
+
+    <div id="js-flash-container">
+
+</div>
+
+
+
+  <div role="main" class="application-main " data-commit-hovercards-enabled>
+        <div itemscope itemtype="http://schema.org/SoftwareSourceCode" class="">
+    <div id="js-repo-pjax-container" data-pjax-container >
+      
+
+
+  
+
+
+  
+
+
+
+  <div class="pagehead repohead instapaper_ignore readability-menu experiment-repo-nav  ">
+    <div class="repohead-details-container clearfix container">
+
+      <ul class="pagehead-actions">
+  <li>
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-remote="true" class="js-social-form js-social-container" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="1Z53wyxcvQtowBMkySyft0xRCGvqW7Dcqrz1es3xfAwihSpG7zXie8lABe5lzpb0yc4q/n9p1yFfqrLH6wXwvA==" />      <input type="hidden" name="repository_id" id="repository_id" value="57073465" class="form-control" />
+
+      <details class="details-reset details-overlay select-menu float-left">
+        <summary class="btn btn-sm btn-with-count select-menu-button" data-ga-click="Repository, click Watch settings, action:blob#show">
+          <span data-menu-button>
+              <svg class="octicon octicon-eye v-align-text-bottom" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.06 2C3 2 0 8 0 8s3 6 8.06 6C13 14 16 8 16 8s-3-6-7.94-6zM8 12c-2.2 0-4-1.78-4-4 0-2.2 1.8-4 4-4 2.22 0 4 1.8 4 4 0 2.22-1.78 4-4 4zm2-4c0 1.11-.89 2-2 2-1.11 0-2-.89-2-2 0-1.11.89-2 2-2 1.11 0 2 .89 2 2z"/></svg>
+              Watch
+          </span>
+        </summary>
+        <details-menu class="select-menu-modal position-absolute mt-5" style="z-index: 99;">
+          <div class="select-menu-header">
+            <span class="select-menu-title">Notifications</span>
+          </div>
+          <div class="select-menu-list">
+            <button type="submit" name="do" value="included" class="select-menu-item width-full" aria-checked="true" role="menuitemradio">
+              <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+              <div class="select-menu-item-text">
+                <span class="select-menu-item-heading">Not watching</span>
+                <span class="description">Be notified only when participating or @mentioned.</span>
+                <span class="hidden-select-button-text" data-menu-button-contents>
+                  <svg class="octicon octicon-eye v-align-text-bottom" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.06 2C3 2 0 8 0 8s3 6 8.06 6C13 14 16 8 16 8s-3-6-7.94-6zM8 12c-2.2 0-4-1.78-4-4 0-2.2 1.8-4 4-4 2.22 0 4 1.8 4 4 0 2.22-1.78 4-4 4zm2-4c0 1.11-.89 2-2 2-1.11 0-2-.89-2-2 0-1.11.89-2 2-2 1.11 0 2 .89 2 2z"/></svg>
+                  Watch
+                </span>
+              </div>
+            </button>
+
+            <button type="submit" name="do" value="release_only" class="select-menu-item width-full" aria-checked="false" role="menuitemradio">
+              <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+              <div class="select-menu-item-text">
+                <span class="select-menu-item-heading">Releases only</span>
+                <span class="description">Be notified of new releases, and when participating or @mentioned.</span>
+                <span class="hidden-select-button-text" data-menu-button-contents>
+                  <svg class="octicon octicon-eye v-align-text-bottom" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.06 2C3 2 0 8 0 8s3 6 8.06 6C13 14 16 8 16 8s-3-6-7.94-6zM8 12c-2.2 0-4-1.78-4-4 0-2.2 1.8-4 4-4 2.22 0 4 1.8 4 4 0 2.22-1.78 4-4 4zm2-4c0 1.11-.89 2-2 2-1.11 0-2-.89-2-2 0-1.11.89-2 2-2 1.11 0 2 .89 2 2z"/></svg>
+                  Unwatch releases
+                </span>
+              </div>
+            </button>
+
+            <button type="submit" name="do" value="subscribed" class="select-menu-item width-full" aria-checked="false" role="menuitemradio">
+              <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+              <div class="select-menu-item-text">
+                <span class="select-menu-item-heading">Watching</span>
+                <span class="description">Be notified of all conversations.</span>
+                <span class="hidden-select-button-text" data-menu-button-contents>
+                  <svg class="octicon octicon-eye v-align-text-bottom" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.06 2C3 2 0 8 0 8s3 6 8.06 6C13 14 16 8 16 8s-3-6-7.94-6zM8 12c-2.2 0-4-1.78-4-4 0-2.2 1.8-4 4-4 2.22 0 4 1.8 4 4 0 2.22-1.78 4-4 4zm2-4c0 1.11-.89 2-2 2-1.11 0-2-.89-2-2 0-1.11.89-2 2-2 1.11 0 2 .89 2 2z"/></svg>
+                  Unwatch
+                </span>
+              </div>
+            </button>
+
+            <button type="submit" name="do" value="ignore" class="select-menu-item width-full" aria-checked="false" role="menuitemradio">
+              <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+              <div class="select-menu-item-text">
+                <span class="select-menu-item-heading">Ignoring</span>
+                <span class="description">Never be notified.</span>
+                <span class="hidden-select-button-text" data-menu-button-contents>
+                  <svg class="octicon octicon-mute v-align-text-bottom" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8 2.81v10.38c0 .67-.81 1-1.28.53L3 10H1c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h2l3.72-3.72C7.19 1.81 8 2.14 8 2.81zm7.53 3.22l-1.06-1.06-1.97 1.97-1.97-1.97-1.06 1.06L11.44 8 9.47 9.97l1.06 1.06 1.97-1.97 1.97 1.97 1.06-1.06L13.56 8l1.97-1.97z"/></svg>
+                  Stop ignoring
+                </span>
+              </div>
+            </button>
+          </div>
+        </details-menu>
+      </details>
+      <a class="social-count js-social-count"
+        href="/ecohealthalliance/HP3/watchers"
+        aria-label="8 users are watching this repository">
+        8
+      </a>
+</form>
+  </li>
+
+  <li>
+      <div class="js-toggler-container js-social-container starring-container ">
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="starred js-social-form" action="/ecohealthalliance/HP3/unstar" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="QQj0jvtjUTbiZUCwZ9Ki51EOuBnZ9QHcN9e1A/sdEzzwIeIusNl7TGLmvWZERlgXBEuf5hcWlWemO7AZhoKQew==" />
+      <input type="hidden" name="context" value="repository"></input>
+      <button
+        type="submit"
+        class="btn btn-sm btn-with-count js-toggler-target"
+        aria-label="Unstar this repository" title="Unstar ecohealthalliance/HP3"
+        data-ga-click="Repository, click unstar button, action:blob#show; text:Unstar">
+        <svg class="octicon octicon-star v-align-text-bottom" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M14 6l-4.9-.64L7 1 4.9 5.36 0 6l3.6 3.26L2.67 14 7 11.67 11.33 14l-.93-4.74L14 6z"/></svg>
+        Unstar
+      </button>
+        <a class="social-count js-social-count" href="/ecohealthalliance/HP3/stargazers"
+           aria-label="6 users starred this repository">
+          6
+        </a>
+</form>
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="unstarred js-social-form" action="/ecohealthalliance/HP3/star" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="9b5lBiwYVsMruRICGgUUfXryQXdk4pb85hIPWsOx+ZSQnRwH7HhEDekI+laWzXy1T8CjO1VmbHyJvnMxUbpomw==" />
+      <input type="hidden" name="context" value="repository"></input>
+      <button
+        type="submit"
+        class="btn btn-sm btn-with-count js-toggler-target"
+        aria-label="Star this repository" title="Star ecohealthalliance/HP3"
+        data-ga-click="Repository, click star button, action:blob#show; text:Star">
+        <svg class="octicon octicon-star v-align-text-bottom" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M14 6l-4.9-.64L7 1 4.9 5.36 0 6l3.6 3.26L2.67 14 7 11.67 11.33 14l-.93-4.74L14 6z"/></svg>
+        Star
+      </button>
+        <a class="social-count js-social-count" href="/ecohealthalliance/HP3/stargazers"
+           aria-label="6 users starred this repository">
+          6
+        </a>
+</form>  </div>
+
+  </li>
+
+  <li>
+          <details class="details-reset details-overlay details-overlay-dark d-inline-block float-left"
+            data-deferred-details-content-url="/ecohealthalliance/HP3/fork?fragment=1">
+            <summary class="btn btn-sm btn-with-count"
+              title="Fork your own copy of ecohealthalliance/HP3 to your account"
+              data-ga-click="Repository, show fork modal, action:blob#show; text:Fork">
+              <svg class="octicon octicon-repo-forked v-align-text-bottom" viewBox="0 0 10 16" version="1.1" width="10" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8 1a1.993 1.993 0 0 0-1 3.72V6L5 8 3 6V4.72A1.993 1.993 0 0 0 2 1a1.993 1.993 0 0 0-1 3.72V6.5l3 3v1.78A1.993 1.993 0 0 0 5 15a1.993 1.993 0 0 0 1-3.72V9.5l3-3V4.72A1.993 1.993 0 0 0 8 1zM2 4.2C1.34 4.2.8 3.65.8 3c0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2zm3 10c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2zm3-10c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2z"/></svg>
+              Fork
+            </summary>
+            <details-dialog class="anim-fade-in fast Box Box--overlay d-flex flex-column">
+              <div class="Box-header">
+                <button class="Box-btn-octicon btn-octicon float-right" type="button" aria-label="Close dialog" data-close-dialog>
+                  <svg class="octicon octicon-x" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48L7.48 8z"/></svg>
+                </button>
+                <h3 class="Box-title">Fork HP3</h3>
+              </div>
+              <div class="overflow-auto text-center">
+                <include-fragment>
+                  <div class="octocat-spinner my-3" aria-label="Loading..."></div>
+                  <p class="f5 text-gray">If this dialog fails to load, you can visit <a href="/ecohealthalliance/HP3/fork">the fork page</a> directly.</p>
+                </include-fragment>
+              </div>
+            </details-dialog>
+          </details>
+
+    <a href="/ecohealthalliance/HP3/network/members" class="social-count"
+       aria-label="3 users forked this repository">
+      3
+    </a>
+  </li>
+</ul>
+
+      <h1 class="public ">
+  <svg class="octicon octicon-repo" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M4 9H3V8h1v1zm0-3H3v1h1V6zm0-2H3v1h1V4zm0-2H3v1h1V2zm8-1v12c0 .55-.45 1-1 1H6v2l-1.5-1.5L3 16v-2H1c-.55 0-1-.45-1-1V1c0-.55.45-1 1-1h10c.55 0 1 .45 1 1zm-1 10H1v2h2v-1h3v1h5v-2zm0-10H2v9h9V1z"/></svg>
+  <span class="author" itemprop="author"><a class="url fn" rel="author" data-hovercard-type="organization" data-hovercard-url="/orgs/ecohealthalliance/hovercard" href="/ecohealthalliance">ecohealthalliance</a></span><!--
+--><span class="path-divider">/</span><!--
+--><strong itemprop="name"><a data-pjax="#js-repo-pjax-container" href="/ecohealthalliance/HP3">HP3</a></strong>
+
+</h1>
+
+    </div>
+    
+<nav class="reponav js-repo-nav js-sidenav-container-pjax container"
+     itemscope
+     itemtype="http://schema.org/BreadcrumbList"
+    aria-label="Repository"
+     data-pjax="#js-repo-pjax-container">
+
+  <span itemscope itemtype="http://schema.org/ListItem" itemprop="itemListElement">
+    <a class="js-selected-navigation-item selected reponav-item" itemprop="url" data-hotkey="g c" aria-current="page" data-selected-links="repo_source repo_downloads repo_commits repo_releases repo_tags repo_branches repo_packages /ecohealthalliance/HP3" href="/ecohealthalliance/HP3">
+      <svg class="octicon octicon-code" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M9.5 3L8 4.5 11.5 8 8 11.5 9.5 13 14 8 9.5 3zm-5 0L0 8l4.5 5L6 11.5 2.5 8 6 4.5 4.5 3z"/></svg>
+      <span itemprop="name">Code</span>
+      <meta itemprop="position" content="1">
+</a>  </span>
+
+    <span itemscope itemtype="http://schema.org/ListItem" itemprop="itemListElement">
+      <a itemprop="url" data-hotkey="g i" class="js-selected-navigation-item reponav-item" data-selected-links="repo_issues repo_labels repo_milestones /ecohealthalliance/HP3/issues" href="/ecohealthalliance/HP3/issues">
+        <svg class="octicon octicon-issue-opened" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7 2.3c3.14 0 5.7 2.56 5.7 5.7s-2.56 5.7-5.7 5.7A5.71 5.71 0 0 1 1.3 8c0-3.14 2.56-5.7 5.7-5.7zM7 1C3.14 1 0 4.14 0 8s3.14 7 7 7 7-3.14 7-7-3.14-7-7-7zm1 3H6v5h2V4zm0 6H6v2h2v-2z"/></svg>
+        <span itemprop="name">Issues</span>
+        <span class="Counter">4</span>
+        <meta itemprop="position" content="2">
+</a>    </span>
+
+  <span itemscope itemtype="http://schema.org/ListItem" itemprop="itemListElement">
+    <a data-hotkey="g p" itemprop="url" class="js-selected-navigation-item reponav-item" data-selected-links="repo_pulls checks /ecohealthalliance/HP3/pulls" href="/ecohealthalliance/HP3/pulls">
+      <svg class="octicon octicon-git-pull-request" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M11 11.28V5c-.03-.78-.34-1.47-.94-2.06C9.46 2.35 8.78 2.03 8 2H7V0L4 3l3 3V4h1c.27.02.48.11.69.31.21.2.3.42.31.69v6.28A1.993 1.993 0 0 0 10 15a1.993 1.993 0 0 0 1-3.72zm-1 2.92c-.66 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2zM4 3c0-1.11-.89-2-2-2a1.993 1.993 0 0 0-1 3.72v6.56A1.993 1.993 0 0 0 2 15a1.993 1.993 0 0 0 1-3.72V4.72c.59-.34 1-.98 1-1.72zm-.8 10c0 .66-.55 1.2-1.2 1.2-.65 0-1.2-.55-1.2-1.2 0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2zM2 4.2C1.34 4.2.8 3.65.8 3c0-.65.55-1.2 1.2-1.2.65 0 1.2.55 1.2 1.2 0 .65-.55 1.2-1.2 1.2z"/></svg>
+      <span itemprop="name">Pull requests</span>
+      <span class="Counter">0</span>
+      <meta itemprop="position" content="3">
+</a>  </span>
+
+
+    <a data-hotkey="g b" class="js-selected-navigation-item reponav-item" data-selected-links="repo_projects new_repo_project repo_project /ecohealthalliance/HP3/projects" href="/ecohealthalliance/HP3/projects">
+      <svg class="octicon octicon-project" viewBox="0 0 15 16" version="1.1" width="15" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M10 12h3V2h-3v10zm-4-2h3V2H6v8zm-4 4h3V2H2v12zm-1 1h13V1H1v14zM14 0H1a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1z"/></svg>
+      Projects
+      <span class="Counter" >0</span>
+</a>
+
+    <a class="js-selected-navigation-item reponav-item" data-hotkey="g w" data-selected-links="repo_wiki /ecohealthalliance/HP3/wiki" href="/ecohealthalliance/HP3/wiki">
+      <svg class="octicon octicon-book" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M3 5h4v1H3V5zm0 3h4V7H3v1zm0 2h4V9H3v1zm11-5h-4v1h4V5zm0 2h-4v1h4V7zm0 2h-4v1h4V9zm2-6v9c0 .55-.45 1-1 1H9.5l-1 1-1-1H2c-.55 0-1-.45-1-1V3c0-.55.45-1 1-1h5.5l1 1 1-1H15c.55 0 1 .45 1 1zm-8 .5L7.5 3H2v9h6V3.5zm7-.5H9.5l-.5.5V12h6V3z"/></svg>
+      Wiki
+</a>
+    <a class="js-selected-navigation-item reponav-item" data-selected-links="repo_graphs repo_contributors dependency_graph pulse alerts security /ecohealthalliance/HP3/pulse" href="/ecohealthalliance/HP3/pulse">
+      <svg class="octicon octicon-graph" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M16 14v1H0V0h1v14h15zM5 13H3V8h2v5zm4 0H7V3h2v10zm4 0h-2V6h2v7z"/></svg>
+      Insights
+</a>
+
+</nav>
+
+
+  </div>
+
+<div class="container new-discussion-timeline experiment-repo-nav  ">
+  <div class="repository-content ">
+
+    
+    
+
+
+
+  
+    <a class="d-none js-permalink-shortcut" data-hotkey="y" href="/ecohealthalliance/HP3/blob/9cc09bbabaaa69225c28f5cb1b678f99f1ae339d/data/supertree_mammals.tree">Permalink</a>
+
+    <!-- blob contrib key: blob_contributors:v21:25a8dcb902c5d9c88befb29cd85a1461 -->
+
+    
+
+    <div class="file-navigation">
+      
+<div class="select-menu branch-select-menu js-menu-container js-select-menu float-left "
+  >
+  <button class="btn btn-sm select-menu-button js-menu-target css-truncate" data-hotkey="w"
+    
+    type="button" aria-label="Switch branches or tags" aria-expanded="false" aria-haspopup="true">
+    <i>Branch:</i>
+    <span class="js-select-button css-truncate-target">master</span>
+  </button>
+
+  <div class="select-menu-modal-holder js-menu-content js-navigation-container" data-pjax>
+    <div class="select-menu-modal">
+        
+<div class="select-menu-header">
+  <svg class="octicon octicon-x js-menu-close" role="img" aria-label="Close" viewBox="0 0 12 16" version="1.1" width="12" height="16"><path fill-rule="evenodd" d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48L7.48 8z"/></svg>
+  <span class="select-menu-title">Switch branches/tags</span>
+</div>
+
+<tab-container>
+<div class="select-menu-filters">
+  <div class="select-menu-text-filter">
+    <input type="text" aria-label="Filter branches/tags" id="context-commitish-filter-field" class="form-control js-filterable-field js-navigation-enable" placeholder="Filter branches/tags">
+  </div>
+  <div class="select-menu-tabs" role="tablist">
+    <ul>
+      <li class="select-menu-tab">
+        <button type="button" class="select-menu-tab-nav" data-filter-placeholder="Filter branches/tags" role="tab" aria-selected="true">Branches</button>
+      </li>
+      <li class="select-menu-tab">
+        <button type="button" class="select-menu-tab-nav" data-filter-placeholder="Find a tag…" role="tab">Tags</button>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="select-menu-list" role="tabpanel">
+  <div data-filterable-for="context-commitish-filter-field" data-filterable-type="substring">
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/DataClean_Spring2018/data/supertree_mammals.tree"
+         data-name="DataClean_Spring2018"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          DataClean_Spring2018
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/bias-cutoff/data/supertree_mammals.tree"
+         data-name="bias-cutoff"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          bias-cutoff
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/gam-vis/data/supertree_mammals.tree"
+         data-name="gam-vis"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          gam-vis
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/geo-cross-update/data/supertree_mammals.tree"
+         data-name="geo-cross-update"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          geo-cross-update
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/geo-cross/data/supertree_mammals.tree"
+         data-name="geo-cross"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          geo-cross
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open selected"
+         href="/ecohealthalliance/HP3/blob/master/data/supertree_mammals.tree"
+         data-name="master"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          master
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/new_branch/data/supertree_mammals.tree"
+         data-name="new_branch"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          new_branch
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/no-insig-figs/data/supertree_mammals.tree"
+         data-name="no-insig-figs"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          no-insig-figs
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/phylo-primates/data/supertree_mammals.tree"
+         data-name="phylo-primates"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          phylo-primates
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/proper-missing-zoonoses/data/supertree_mammals.tree"
+         data-name="proper-missing-zoonoses"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          proper-missing-zoonoses
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/strict-zoonoses/data/supertree_mammals.tree"
+         data-name="strict-zoonoses"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          strict-zoonoses
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+         href="/ecohealthalliance/HP3/blob/with_tiffs/data/supertree_mammals.tree"
+         data-name="with_tiffs"
+         data-skip-pjax="true"
+         rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target js-select-menu-filter-text">
+          with_tiffs
+        </span>
+      </a>
+  </div>
+
+    <div class="select-menu-no-results">Nothing to show</div>
+</div>
+
+<div class="select-menu-list" role="tabpanel" hidden>
+  <div data-filterable-for="context-commitish-filter-field" data-filterable-type="substring">
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.9/data/supertree_mammals.tree"
+        data-name="v1.0.9"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.9">
+          v1.0.9
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.8/data/supertree_mammals.tree"
+        data-name="v1.0.8"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.8">
+          v1.0.8
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.7/data/supertree_mammals.tree"
+        data-name="v1.0.7"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.7">
+          v1.0.7
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.6/data/supertree_mammals.tree"
+        data-name="v1.0.6"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.6">
+          v1.0.6
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.5/data/supertree_mammals.tree"
+        data-name="v1.0.5"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.5">
+          v1.0.5
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.4/data/supertree_mammals.tree"
+        data-name="v1.0.4"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.4">
+          v1.0.4
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.3/data/supertree_mammals.tree"
+        data-name="v1.0.3"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.3">
+          v1.0.3
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.2/data/supertree_mammals.tree"
+        data-name="v1.0.2"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.2">
+          v1.0.2
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v1.0.0/data/supertree_mammals.tree"
+        data-name="v1.0.0"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v1.0.0">
+          v1.0.0
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v0.2.0/data/supertree_mammals.tree"
+        data-name="v0.2.0"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v0.2.0">
+          v0.2.0
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/v0.1.0/data/supertree_mammals.tree"
+        data-name="v0.1.0"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="v0.1.0">
+          v0.1.0
+        </span>
+      </a>
+      <a class="select-menu-item js-navigation-item js-navigation-open "
+        href="/ecohealthalliance/HP3/blob/1.0.1/data/supertree_mammals.tree"
+        data-name="1.0.1"
+        data-skip-pjax="true"
+        rel="nofollow">
+        <svg class="octicon octicon-check select-menu-item-icon" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M12 5l-8 8-4-4 1.5-1.5L4 10l6.5-6.5L12 5z"/></svg>
+        <span class="select-menu-item-text css-truncate-target" title="1.0.1">
+          1.0.1
+        </span>
+      </a>
+  </div>
+
+  <div class="select-menu-no-results">Nothing to show</div>
+</div>
+</tab-container>
+
+
+    </div>
+  </div>
+</div>
+
+      <div class="BtnGroup float-right">
+        <a href="/ecohealthalliance/HP3/find/master"
+              class="js-pjax-capture-input btn btn-sm BtnGroup-item"
+              data-pjax
+              data-hotkey="t">
+          Find file
+        </a>
+        <clipboard-copy for="blob-path" class="btn btn-sm BtnGroup-item">
+          Copy path
+        </clipboard-copy>
+      </div>
+      <div id="blob-path" class="breadcrumb">
+        <span class="repo-root js-repo-root"><span class="js-path-segment"><a data-pjax="true" href="/ecohealthalliance/HP3"><span>HP3</span></a></span></span><span class="separator">/</span><span class="js-path-segment"><a data-pjax="true" href="/ecohealthalliance/HP3/tree/master/data"><span>data</span></a></span><span class="separator">/</span><strong class="final-path">supertree_mammals.tree</strong>
+      </div>
+    </div>
+
+
+    <include-fragment src="/ecohealthalliance/HP3/contributors/master/data/supertree_mammals.tree" class="commit-tease commit-loader">
+      <div>
+        Fetching contributors&hellip;
+      </div>
+
+      <div class="commit-tease-contributors">
+          <img alt="" class="loader-loading float-left" src="https://github.githubassets.com/images/spinners/octocat-spinner-32-EAF2F5.gif" width="16" height="16" />
+        <span class="loader-error">Cannot retrieve contributors at this time</span>
+      </div>
+</include-fragment>
+
+
+
+    <div class="file ">
+      
+<div class="file-header">
+
+  <div class="file-actions">
+
+
+    <div class="BtnGroup">
+      <a id="raw-url" class="btn btn-sm BtnGroup-item" href="/ecohealthalliance/HP3/raw/master/data/supertree_mammals.tree">Raw</a>
+        <a class="btn btn-sm js-update-url-with-hash BtnGroup-item" data-hotkey="b" href="/ecohealthalliance/HP3/blame/master/data/supertree_mammals.tree">Blame</a>
+      <a rel="nofollow" class="btn btn-sm BtnGroup-item" href="/ecohealthalliance/HP3/commits/master/data/supertree_mammals.tree">History</a>
+    </div>
+
+        <a class="btn-octicon tooltipped tooltipped-nw"
+           href="x-github-client://openRepo/https://github.com/ecohealthalliance/HP3?branch=master&amp;filepath=data%2Fsupertree_mammals.tree"
+           aria-label="Open this file in GitHub Desktop"
+           data-ga-click="Repository, open with desktop, type:windows">
+            <svg class="octicon octicon-device-desktop" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M15 2H1c-.55 0-1 .45-1 1v9c0 .55.45 1 1 1h5.34c-.25.61-.86 1.39-2.34 2h8c-1.48-.61-2.09-1.39-2.34-2H15c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 9H1V3h14v8z"/></svg>
+        </a>
+
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" action="/ecohealthalliance/HP3/edit/master/data/supertree_mammals.tree" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="7Iar7ixFhvP4jIn2TJbJTYjdCn5yZ875BRTLY5R5HgEMHpVghsTeDN5OR6wRHXVL6xNO98z+aielmOrVRGyw8Q==" />
+            <button class="btn-octicon tooltipped tooltipped-nw" type="submit"
+              aria-label="Fork this project and edit the file" data-hotkey="e" data-disable-with>
+              <svg class="octicon octicon-pencil" viewBox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M0 12v3h3l8-8-3-3-8 8zm3 2H1v-2h1v1h1v1zm10.3-9.3L12 6 9 3l1.3-1.3a.996.996 0 0 1 1.41 0l1.59 1.59c.39.39.39 1.02 0 1.41z"/></svg>
+            </button>
+</form>
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" action="/ecohealthalliance/HP3/delete/master/data/supertree_mammals.tree" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" /><input type="hidden" name="authenticity_token" value="oTvkgWtVoQFWtkUhUneVNM7+3l/XDDNos296kWFTaiSQTmDZbs2Vr23SUc3FV8z29eHojY6ntQWvOq2RafE/tA==" />
+          <button class="btn-octicon btn-octicon-danger tooltipped tooltipped-nw" type="submit"
+            aria-label="Fork this project and delete the file" data-disable-with>
+            <svg class="octicon octicon-trashcan" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M11 2H9c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1H2c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1v9c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V5c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 12H3V5h1v8h1V5h1v8h1V5h1v8h1V5h1v9zm1-10H2V3h9v1z"/></svg>
+          </button>
+</form>  </div>
+
+  <div class="file-info">
+      2 lines (1 sloc)
+      <span class="file-info-divider"></span>
+    20.5 KB
+  </div>
+</div>
+
+      
+
+  <div itemprop="text" class="blob-wrapper data type-text ">
+      
+<table class="highlight tab-size js-file-line-container" data-tab-size="8">
+      <tr>
+        <td id="L1" class="blob-num js-line-number" data-line-number="1"></td>
+        <td id="LC1" class="blob-code blob-code-inner js-file-line">((Tachyglossus_aculeatus:63.6,Ornithorhynchus_anatinus:63.6):102.6,((((((((((Pedetes_capensis:77.2,(((Lophuromys_flavopunctatus:6.2,Lophuromys_sikapusi:6.2):23.2,(Aethomys_kaiseri:19.8,Aethomys_namaquensis:19.8):9.6,((Apodemus_argenteus:11.2,Apodemus_peninsulae:11.2,Apodemus_speciosus:11.2):5.3,Apodemus_agrarius:16.5,Apodemus_mystacinus:16.5,(Apodemus_flavicollis:4.8,Apodemus_sylvaticus:4.8,Apodemus_uralensis:4.8):11.7):12.9,(Arvicanthis_niloticus:10.8,Arvicanthis_neumanni:10.8):18.6,(Bandicota_bengalensis:8,Bandicota_indica:8,Bandicota_savilei:8):21.4,(Madromys_blanfordi:14.1,Millardia_meltada:14.1):15.3,Dasymys_incomtus:29.4,Hydromys_chrysogaster:29.4,(Lemniscomys_rosalia:14.2,Lemniscomys_striatus:14.2):15.2,(Mastomys_coucha:15.1,Mastomys_erythroleucus:15.1,Mastomys_huberti:15.1,Mastomys_natalensis:15.1):14.3,Micromys_minutus:29.4,((Mus_booduga:4.1,Mus_cervicolor:4.1,Mus_musculus:4.1,Mus_spicilegus:4.1,Mus_spretus:4.1):9.6,Mus_setulosus:13.7):15.7,Pelomys_isseli:29.4,Niviventer_confucianus:29.4,(Otomys_irroratus:14.2,Otomys_tropicalis:14.2):15.2,Praomys_jacksoni:29.4,(Rattus_fuscipes:9.7,Rattus_exulans:9.7,(Rattus_losea:5.9,Rattus_rattus:5.9,Rattus_tanezumi:5.9,Rattus_tiomanicus:5.9):3.8,Rattus_norvegicus:9.7):19.7,Rhabdomys_pumilio:29.4,Vandeleuria_oleracea:29.4):18.6,((((Handleyomys_fuscatus:16.3,((Abrothrix_longipilis:3.4,Abrothrix_sanborni:3.4):5.4,(Akodon_azarae:5.6,Akodon_montensis:5.6,Abrothrix_olivaceus:5.6,Akodon_paranaensis:5.6,(Akodon_simulator:1.8,Akodon_varius:1.8):3.8):3.2,Thaptomys_nigrita:8.8):7.5,((Loxodontomys_micropus:9.3,Phyllotis_darwini:9.3):1.2,Graomys_griseoflavus:10.5):5.8,Bibimys_chacoensis:16.3,(Necromys_amoenus:3.8,Necromys_lasiurus:3.8,(Necromys_benefactus:2.3,Necromys_obscurus:2.3):1.5):12.5,(Calomys_callosus:8.5,Calomys_laucha:8.5,Calomys_musculinus:8.5,Calomys_tener:8.5):7.8,Holochilus_sciureus:16.3,Melanomys_caliginosus:16.3,(Neacomys_guianae:6.2,Neacomys_spinosus:6.2):10.1,Nectomys_squamipes:16.3,(Oecomys_bicolor:4.4,Oecomys_paricola:4.4):11.9,(Oligoryzomys_chacoensis:5,Oligoryzomys_flavescens:5,Oligoryzomys_fulvescens:5,Oligoryzomys_longicaudatus:5,(Oligoryzomys_microtis:2.3,Oligoryzomys_fornesi:2.3):2.7,Oligoryzomys_nigripes:5):11.3,(Nephelomys_albigularis:7.6,Handleyomys_alfaroi:7.6,Sooretamys_angouya:7.6,Hylaeamys_megacephalus:7.6,Oryzomys_couesi:7.6,Hylaeamys_laticeps:7.6,Oryzomys_palustris:7.6):8.7,Oxymycterus_rufus:16.3,Zygodontomys_brevicauda:16.3):6.5,(Sigmodon_alstoni:5.8,(Sigmodon_hispidus:5.7,Sigmodon_toltecus:5.7):0.1):17):12.1,Tylomys_nudicaudus:34.9):3.3,((Baiomys_taylori:24.2,(((Megadontomys_nelsoni:18.6,(Peromyscus_attwateri:11.7,Peromyscus_boylii:11.7,Peromyscus_californicus:11.7,Peromyscus_eremicus:11.7,Peromyscus_gossypinus:11.7,Peromyscus_leucopus:11.7,Peromyscus_maniculatus:11.7,Peromyscus_megalops:11.7,Peromyscus_melanophrys:11.7,Peromyscus_melanotis:11.7,Peromyscus_mexicanus:11.7,Peromyscus_truei:11.7):6.9):1.4,(Onychomys_leucogaster:9.8,Onychomys_torridus:9.8):10.2):2,(Reithrodontomys_mexicanus:21.2,(Reithrodontomys_fulvescens:16.2,Reithrodontomys_megalotis:16.2):5):0.8):2.2):1.9,((Neotoma_albigula:7.5,Neotoma_floridana:7.5,Neotoma_lepida:7.5,Neotoma_stephensi:7.5):8.3,(Neotoma_cinerea:14.3,(Neotoma_fuscipes:5.6,Neotoma_macrotis:5.6):8.7):1.5):10.3):12.1):9.8,(Cricetus_cricetus:29.6,Mesocricetus_auratus:29.6):18.4,(((Myodes_gapperi:4.7,Myodes_glareolus:4.7,Myodes_rufocanus:4.7,Myodes_rutilus:4.7):4.3,Myodes_regulus:9):10.6,(Arvicola_amphibius:4.3,Arvicola_scherman:4.3):15.3,Chionomys_roberti:19.6,(Lemmus_lemmus:9.1,Lemmus_sibiricus:9.1):10.5,(Microtus_agrestis:9,(Microtus_fortis:6.5,Microtus_maximowiczii:6.5):2.5,(Microtus_arvalis:4.3,Microtus_levis:4.3):4.7,(Microtus_californicus:6.9,Microtus_pennsylvanicus:6.9):2.1,Microtus_oeconomus:9,Microtus_ochrogaster:9,Microtus_gregalis:9,Microtus_subterraneus:9):10.6,Ondatra_zibethicus:19.6):28.4,(((Meriones_hurrianae:14.6,Meriones_libycus:14.6):7.9,Rhombomys_opimus:22.5):1.2,Desmodillus_auricularis:23.7,(Tatera_indica:17.7,(Gerbilliscus_brantsii:15,Gerbilliscus_kempi:15,Gerbilliscus_leucogaster:15,Gerbilliscus_validus:15):2.7):6):24.3,(Cricetomys_emini:15.9,Cricetomys_gambianus:15.9):32.1):29.2):0.8,(Castor_fiber:69,(((Perognathus_parvus:31.7,(Chaetodipus_spinatus:16.3,Chaetodipus_hispidus:16.3):15.4):2.8,(Dipodomys_heermanni:6.6,(Dipodomys_merriami:2.5,Dipodomys_nitratoides:2.5):4.1):27.9):1.4,(Thomomys_talpoides:24.6,(Liomys_adspersus:7.6,Heteromys_anomalus:7.6):17):11.3):33.1):9):4.4,(Hydrochoerus_hydrochaeris:45.3,Cavia_porcellus:45.3,(Dasyprocta_punctata:9.8,Dasyprocta_leporina:9.8):35.5,(Myocastor_coypus:18.9,(Trinomys_iheringi:18.2,Hoplomys_gymnurus:18.2,Proechimys_longicaudatus:18.2,Proechimys_guyannensis:18.2,Proechimys_semispinosus:18.2,Proechimys_guairae:18.2,Diplomys_labilis:18.2):0.7):26.4,Cuniculus_paca:45.3,Hystrix_africaeaustralis:45.3,Thryonomys_swinderianus:45.3,(Erethizon_dorsatum:12.5,Sphiggurus_melanurus:12.5,(Coendou_prehensilis:1.4,Coendou_rothschildi:1.4):11.1):32.8):37.1):0.2,((((((((Marmota_monax:3.5,Marmota_flaviventris:3.5):4.2,(((((Spermophilus_undulatus:1.7,Spermophilus_columbianus:1.7):1,Spermophilus_parryii:2.7,Spermophilus_richardsonii:2.7):0.9,Spermophilus_tridecemlineatus:3.6):0.4,(Spermophilus_beecheyi:3,(Spermophilus_citellus:2.8,Spermophilus_fulvus:2.8):0.2):1):3.1,(Spermophilus_lateralis:5,Spermophilus_variegatus:5):2.1):0.6,Cynomys_ludovicianus:7.7):3.7,Ammospermophilus_nelsoni:11.4):13.8,(Tamias_striatus:16.8,(Tamias_sibiricus:15.4,((Tamias_amoenus:8.6,Tamias_umbrinus:8.6):0.9,Tamias_minimus:9.5):5.9):1.4):8.4):4.9,(Heliosciurus_rufobrachium:20.2,(Funisciurus_anerythrus:12.3,Funisciurus_congicus:12.3):7.9):9.9):6.3,(Xerus_erythropus:12.1,Xerus_inauris:12.1):24.3):3.8,(((Tamiasciurus_hudsonicus:11.2,((((Sciurus_carolinensis:1.6,Sciurus_niger:1.6):0.7,Sciurus_granatensis:2.3):0.7,Sciurus_variegatoides:3):0.4,(Sciurus_griseus:3.3,Sciurus_vulgaris:3.3):0.1):7.8):7,Glaucomys_volans:18.2):8,Funambulus_tristriatus:26.2):14):33.6,Glis_glis:73.8):8.8):6.4,(((((Sylvilagus_aquaticus:5.4,Sylvilagus_brasiliensis:5.4):2.9,Sylvilagus_floridanus:8.3):5.7,(Sylvilagus_audubonii:9.4,Sylvilagus_nuttallii:9.4):4.6):4.5,Sylvilagus_bachmani:18.5):7.3,(((((Lepus_californicus:6.9,Lepus_americanus:6.9):2,(Lepus_timidus:8.8,Lepus_europaeus:8.8):0.1):1,Lepus_capensis:9.9):3.3,Lepus_saxatilis:13.2):10.9,Oryctolagus_cuniculus:24.1):1.7):63.2):2.9,(((((((Allenopithecus_nigroviridis:14.1,(((((Cercopithecus_ascanius:8.3,Cercopithecus_cephus:8.3,Cercopithecus_erythrotis:8.3,Cercopithecus_petaurista:8.3):1.9,(Cercopithecus_mitis:10,Cercopithecus_nictitans:10):0.2):0.4,((Cercopithecus_campbelli:3.8,Cercopithecus_mona:3.8):1.7,Cercopithecus_pogonias:5.5):5.1,Cercopithecus_diana:10.6,Cercopithecus_neglectus:10.6):3.2,(((Cercopithecus_lhoesti:0.7,Cercopithecus_solatus:0.7):4.8,(Chlorocebus_aethiops:5.4,Chlorocebus_pygerythrus:5.4,Chlorocebus_sabaeus:5.4):0.1):0.1,Erythrocebus_patas:5.6):8.2):0.2,Miopithecus_talapoin:14):0.1):2.1,(((((Cercocebus_agilis:3,Cercocebus_chrysogaster:3):1.7,Cercocebus_galeritus:4.7):2.4,(Cercocebus_torquatus:3,Cercocebus_atys:3):4.1,(Mandrillus_leucophaeus:1,Mandrillus_sphinx:1):6.1):7.8,(Lophocebus_albigena:10.2,((Papio_hamadryas:7.5,Papio_anubis:7.5,Papio_cynocephalus:7.5,Papio_papio:7.5,Papio_ursinus:7.5):0.8,Theropithecus_gelada:8.3):1.9):4.7):0.2,(((Macaca_arctoides:7.5,(Macaca_radiata:7.2,Macaca_sinica:7.2):0.3):1.1,(((Macaca_cyclopis:4.7,Macaca_mulatta:4.7):0.2,Macaca_fuscata:4.9):2.4,Macaca_fascicularis:7.3):1.3):0.2,((Macaca_maura:5.5,(Macaca_nigra:5.3,Macaca_ochreata:5.3):0.2,Macaca_tonkeana:5.5):3.1,(Macaca_nemestrina:2.5,Macaca_silenus:2.5):6.1):0.2,Macaca_sylvanus:8.8):6.3):1.1):4,(((Colobus_guereza:1.4,Colobus_polykomos:1.4):9.1,(Procolobus_badius:9,Procolobus_rufomitratus:9):1.5):3.4,((Presbytis_melalophos:6.5,Semnopithecus_entellus:6.5,(Trachypithecus_cristatus:3.3,Trachypithecus_francoisi:3.3,Trachypithecus_obscurus:3.3):3.2):2.4,Pygathrix_nemaeus:8.9):5):6.3):15.1,((((Gorilla_gorilla:5.5,Gorilla_beringei:5.5):6,(Homo_sapiens:8.8,(Pan_paniscus:4.5,Pan_troglodytes:4.5):4.3):2.7):6.9,(Pongo_pygmaeus:6.1,Pongo_abelii:6.1):12.3):3.5,((Hylobates_lar:4.3,Hylobates_moloch:4.3,Hylobates_pileatus:4.3):4.6,Nomascus_leucogenys:8.9):13):13.4):17.1,((((Alouatta_caraya:6,Alouatta_palliata:6,Alouatta_pigra:6,Alouatta_seniculus:6):13.5,((Ateles_geoffroyi:7.9,Ateles_paniscus:7.9):7.9,Lagothrix_lagotricha:15.8):3.7):2.8,(Pithecia_monachus:8.5,Pithecia_pithecia:8.5):13.8):1.3,(Aotus_azarae:20.5,Aotus_trivirgatus:20.5,(((Mico_leucippe:5.8,(Callithrix_geoffroyi:1.3,Callithrix_jacchus:1.3):4.5):9,Leontopithecus_chrysomelas:14.8):1.3,((Saguinus_midas:6.8,((Saguinus_geoffroyi:0.8,Saguinus_oedipus:0.8):5.8,(Saguinus_labiatus:3.6,Saguinus_mystax:3.6):3):0.2):2,Saguinus_nigricollis:8.8):7.3):4.4,((Cebus_capucinus:7.5,Cebus_apella:7.5):10.5,(Saimiri_oerstedii:1.6,Saimiri_sciureus:1.6):16.4):2.5):3.1):28.8):33.6,(((Eulemur_albifrons:7.7,Eulemur_macaco:7.7):16,Lemur_catta:23.7,Varecia_variegata:23.7):50.5,(Nycticebus_coucang:39.6,Galago_senegalensis:39.6):34.6):11.8):5.8,(Tupaia_belangeri:25.2,Tupaia_glis:25.2):66.6):0.1):4.3,(((((((((((((((((Oryx_gazella:2.8,Oryx_beisa:2.8):1,Oryx_leucoryx:3.8):4.4,(Hippotragus_equinus:5.3,Hippotragus_niger:5.3):2.9):9.9,(Alcelaphus_buselaphus:14.7,(Connochaetes_gnou:4.8,Connochaetes_taurinus:4.8):9.9,(Damaliscus_lunatus:11,Damaliscus_pygargus:11):3.7):3.4):2.1,((Ammotragus_lervia:15,((Ovis_aries:5.4,Ovis_orientalis:5.4,(Ovis_canadensis:3.4,Ovis_dalli:3.4):2):8.3,((Capra_hircus:7.1,Capra_aegagrus:7.1,Capra_ibex:7.1,Capra_pyrenaica:7.1):5.6,Pseudois_nayaur:12.7):1):1.3,(Rupicapra_pyrenaica:4.7,Rupicapra_rupicapra:4.7):10.3):0.2,((Capricornis_crispus:3.9,Ovibos_moschatus:3.9):6.3,Oreamnos_americanus:10.2):5):5):1.6,Aepyceros_melampus:21.8,((Antidorcas_marsupialis:10,(Antilope_cervicapra:7.2,((Gazella_subgutturosa:2.4,(Gazella_dorcas:2,Gazella_gazella:2):0.4):3.7,Nanger_granti:6.1,Eudorcas_thomsonii:6.1):1.1):2.8):0.1,Saiga_tatarica:10.1):11.7,((((Cephalophus_callipygus:2.6,Cephalophus_weynsi:2.6):4,Cephalophus_dorsalis:6.6,Cephalophus_nigrifrons:6.6,Cephalophus_leucogaster:6.6):1.1,Sylvicapra_grimmia:7.7):4.3,Philantomba_monticola:12):9.8,Raphicerus_sharpei:21.8,(Kobus_ellipsiprymnus:19.2,(Redunca_arundinum:9,Redunca_fulvorufula:9):10.2):2.6,Ourebia_ourebi:21.8,Procapra_gutturosa:21.8):4.7,((((((Bison_bison:3.7,Bison_bonasus:3.7):0.2,Bos_mutus:3.9):1.6,Bos_taurus:5.5):0.1,(Bos_gaurus:4.9,Bos_javanicus:4.9):0.7):13,(Bubalus_bubalis:12,Bubalus_arnee:12,Syncerus_caffer:12):6.6):2.7,(Boselaphus_tragocamelus:20.8,((Tragelaphus_oryx:8,Tragelaphus_strepsiceros:8):9,Tragelaphus_angasii:17,(Tragelaphus_eurycerus:9.5,Tragelaphus_scriptus:9.5):7.5,Tragelaphus_imberbis:17):3.8):0.5):5.2):0.2,(((Alces_alces:15,Capreolus_capreolus:15):1.1,((Blastocerus_dichotomus:4,Ozotoceros_bezoarticus:4,Mazama_gouazoubira:4,(Odocoileus_hemionus:3.8,Odocoileus_virginianus:3.8):0.2,Pudu_puda:4):7.2,Rangifer_tarandus:11.2):4.9):1.6,((Axis_axis:12.9,((Cervus_elaphus:8.6,Cervus_nippon:8.6,Cervus_timorensis:8.6,Rusa_unicolor:8.6):4.2,Dama_dama:12.8):0.1):3.4,Muntiacus_muntjak:16.3):1.4):9):0.1,(Antilocapra_americana:20.2,Giraffa_camelopardalis:20.2):6.6):21.5,Tragulus_javanicus:48.3):11.2,(((((Phocoena_phocoena:8.1,Phocoena_spinipinnis:8.1,Phocoenoides_dalli:8.1):21.7,((Delphinus_delphis:11.1,Stenella_coeruleoalba:11.1,Tursiops_truncatus:11.1):4.9,Globicephala_melas:16,Orcinus_orca:16):13.8):21.7,Physeter_macrocephalus:51.5):0.7,(Balaenoptera_acutorostrata:26.2,(Balaenoptera_borealis:25.3,Balaenoptera_physalus:25.3,Eschrichtius_robustus:25.3):0.9):26):0.5,Choeropsis_liberiensis:52.7):6.8):6.1,((Babyrousa_babyrussa:26.4,((Potamochoerus_porcus:21.5,Sus_scrofa:21.5):0.2,(Phacochoerus_aethiopicus:18.6,Phacochoerus_africanus:18.6):3.1):4.7):18.3,(Tayassu_pecari:21.9,Pecari_tajacu:21.9):22.8):20.9):0.2,((Camelus_bactrianus:10.4,Camelus_dromedarius:10.4):11.4,(Lama_glama:8.3,Lama_pacos:8.3,Vicugna_vicugna:8.3):13.5):44):19.5,((Ceratotherium_simum:15.3,Diceros_bicornis:15.3):43.2,((Equus_asinus:1.9,Equus_quagga:1.9,Equus_hemionus:1.9):10.3,Equus_caballus:12.2):46.3):26.8):0.1,((((((((((Mustela_lutreola:4.8,Mustela_nigripes:4.8):8.3,Neovison_vison:13.1):9.8,((Martes_foina:14.4,Martes_pennanti:14.4):6.2,Galictis_cuja:20.6):2.3):2.7,Mellivora_capensis:25.6):0.3,Meles_meles:25.9,Melogale_moschata:25.9,((Lontra_canadensis:6.1,Lutra_lutra:6.1):17.9,Mephitis_mephitis:24):1.9,Taxidea_taxus:25.9):6.2,((Procyon_lotor:17.2,Nasua_narica:17.2):9.3,(Bassaricyon_gabbii:16.1,Potos_flavus:16.1):10.4):5.6):14.4,((Odobenus_rosmarus:24.8,(Arctocephalus_australis:9.2,(Eumetopias_jubatus:9,Zalophus_californianus:9):0.2):15.6):8.9,((((((Pusa_caspica:3.5,Pusa_hispida:3.5,Pusa_sibirica:3.5):0.1,Phoca_vitulina:3.6):0.2,Halichoerus_grypus:3.8):5.3,Pagophilus_groenlandicus:9.1):2.9,Cystophora_cristata:12):10.8,(((Hydrurga_leptonyx:8.7,Lobodon_carcinophaga:8.7):0.2,Leptonychotes_weddellii:8.9):5.3,Mirounga_leonina:14.2):8.6):10.9):12.8):3,((Ursus_arctos:2.1,Ursus_maritimus:2.1):8.8,Ursus_americanus:10.9):38.6):6.4,(((((Canis_lupus:1.4,Canis_familiaris:1.4,Canis_latrans:1.4,Canis_simensis:1.4):0.2,((Canis_adustus:1.3,Canis_aureus:1.3):0.2,Canis_mesomelas:1.5):0.1):1.8,(Pseudalopex_gymnocercus:0.9,Pseudalopex_vetulus:0.9):2.5,Cerdocyon_thous:3.4,Chrysocyon_brachyurus:3.4,Lycaon_pictus:3.4):2.9,Nyctereutes_procyonoides:6.3):0.7,((((Vulpes_corsac:1.5,Vulpes_vulpes:1.5):0.2,(Alopex_lagopus:1.5,Vulpes_velox:1.5):0.2):5.1,(Urocyon_cinereoargenteus:2.8,Urocyon_littoralis:2.8):4):0.1,Otocyon_megalotis:6.9):0.1):48.9):8.2,(((((((((Panthera_leo:5.8,Panthera_pardus:5.8):5.1,((Lynx_lynx:5.4,Lynx_pardinus:5.4):3.5,Lynx_rufus:8.9):2):0.3,(Leopardus_geoffroyi:9.4,Leopardus_pardalis:9.4):1.8):0.1,(((Felis_margarita:3.6,Felis_nigripes:3.6):1.4,(Felis_silvestris:2.4,Felis_catus:2.4):2.6):4.2,Caracal_caracal:9.2):2.1):3.9,Prionailurus_bengalensis:15.2):0.2,Puma_concolor:15.4):1.9,Acinonyx_jubatus:17.3):22.6,(Crocuta_crocuta:25.2,Proteles_cristata:25.2):14.7):2.2,((((((Mungos_mungo:12.3,Ichneumia_albicauda:12.3):0.7,Suricata_suricatta:13):6.4,Cynictis_penicillata:19.4):0.3,Herpestes_sanguineus:19.7):6.2,Atilax_paludinosus:25.9):14.5,((Genetta_maculata:7.8,Genetta_genetta:7.8):18.2,Paguma_larvata:26):14.4):1.7):22):21.3):0.2,(((Cynopterus_sphinx:7.3,Cynopterus_brachyotis:7.3):17.8,(((Eidolon_helvum:3.8,Eidolon_dupreanum:3.8):9.8,Myonycteris_torquata:13.6,(Rousettus_aegyptiacus:1.2,Rousettus_amplexicaudatus:1.2,Rousettus_leschenaultii:1.2,Rousettus_madagascariensis:1.2):12.4,((Hypsignathus_monstrosus:3.4,(Epomops_dobsonii:2.1,Epomops_franqueti:2.1):1.3):1.1,(Micropteropus_pusillus:2.5,(Epomophorus_wahlbergi:2.4,(Epomophorus_gambianus:2.2,Epomophorus_labiatus:2.2):0.2):0.1):2):9.1):10.7,((Eonycteris_spelaea:24,(Macroglossus_minimus:21.1,Syconycteris_australis:21.1):2.9):0.1,((Dobsonia_moluccensis:1.9,Dobsonia_anderseni:1.9):20.6,(Pteropus_neohibernicus:12.7,Pteropus_hypomelanus:12.7,Pteropus_admiralitatum:12.7,Pteropus_alecto:12.7,Pteropus_conspicillatus:12.7,Pteropus_capistratus:12.7,Pteropus_poliocephalus:12.7,(Pteropus_giganteus:5,Pteropus_lylei:5,Pteropus_vampyrus:5):7.7,Pteropus_scapulatus:12.7,Pteropus_rufus:12.7):9.8):1.6):0.2):0.8):46.1,(((((Saccolaimus_flaviventris:13.8,Saccolaimus_saccolaimus:13.8):20.8,(Taphozous_theobaldi:31.2,(Taphozous_perforatus:23.6,Taphozous_melanopogon:23.6):7.6):3.4):16.7,(Rhynchonycteris_naso:33.5,Diclidurus_albus:33.5):17.8):17.4,(Megaderma_lyra:61.5,((Nycteris_nana:12.3,(Nycteris_gambiensis:5.2,Nycteris_thebaica:5.2):7.1):49.1,((Rhinolophus_pusillus:19.6,(Rhinolophus_lepidus:19.5,(Rhinolophus_affinis:4,Rhinolophus_blasii:4,Rhinolophus_eloquens:4,Rhinolophus_ferrumequinum:4,Rhinolophus_hildebrandti:4,Rhinolophus_macrotis:4,Rhinolophus_pearsonii:4,(Rhinolophus_rouxii:0.7,Rhinolophus_sinicus:0.7):3.3,(Rhinolophus_mehelyi:0.7,Rhinolophus_euryale:0.7):3.3):15.5):0.1):27.9,(Hipposideros_abae:32.8,Hipposideros_bicolor:32.8,Hipposideros_caffer:32.8,Hipposideros_cineraceus:32.8,Hipposideros_pomona:32.8,Hipposideros_speoris:32.8,(Hipposideros_armiger:32.6,Hipposideros_diadema:32.6,Hipposideros_lankadiva:32.6,Hipposideros_larvatus:32.6):0.2):14.7):13.9):0.1):7.2):0.6,((Natalus_stramineus:20,Natalus_tumidirostris:20):40.4,((Mormoops_megalophylla:36.7,(Pteronotus_parnellii:18.5,Pteronotus_davyi:18.5):18.2):6.5,((Diphylla_ecaudata:26.8,(Desmodus_rotundus:14.2,Diaemus_youngi:14.2):12.6):5.3,((Lonchorhina_aurita:28.7,(Macrotus_californicus:28.4,Micronycteris_megalotis:28.4,(Trachops_cirrhosus:23.7,Chrotopterus_auritus:23.7,((Tonatia_bidens:9.9,Lophostoma_brasiliense:9.9,Lophostoma_silvicolum:9.9):9.1,(Mimon_crenulatum:16.6,(Phyllostomus_discolor:11.2,Phyllostomus_hastatus:11.2):5.4):2.4):4.7):4.7):0.3):0.1,((Lonchophylla_robusta:22.5,(((Leptonycteris_curasoae:7.2,Leptonycteris_nivalis:7.2):8.5,(Glossophaga_commissarisi:7.4,Glossophaga_soricina:7.4,(Glossophaga_longirostris:5.9,Glossophaga_morenoi:5.9):1.5):8.3):4.1,(Anoura_caudifer:8.7,Anoura_geoffroyi:8.7):11.1):2.7):5.1,((Rhinophylla_pumilio:21.8,(Carollia_brevicauda:5.2,Carollia_perspicillata:5.2,Carollia_subrufa:5.2):16.6):1,((Sturnira_lilium:8.1,(Sturnira_ludovici:6.8,Sturnira_tildae:6.8):1.3):9.7,(Ariteus_flavescens:13.7,(((Artibeus_phaeotis:8,Artibeus_toltecus:8,Artibeus_cinereus:8):0.6,(Artibeus_fimbriatus:4.9,(Artibeus_jamaicensis:3.8,Artibeus_planirostris:3.8,Artibeus_lituratus:3.8):1.1):3.7):4.9,(Uroderma_bilobatum:10.4,(Vampyrodes_caraccioli:8.5,(Platyrrhinus_helleri:8.3,Platyrrhinus_lineatus:8.3):0.2):1.9):3.1):0.2):4.1):5):4.8):1.2):3.3):11.1):17.2,(((Molossops_neglectus:15.1,(Cynomops_abrasus:10,Cynomops_planirostris:10):5.1):9.3,((Tadarida_brasiliensis:14.5,Tadarida_teniotis:14.5):9.1,((Nyctinomops_femorosaccus:10.6,Nyctinomops_laticaudatus:10.6,Nyctinomops_macrotis:10.6):12.3,(((Molossus_molossus:22.1,Molossus_rufus:22.1):0.4,(Eumops_perotis:15.2,(Eumops_patagonicus:12.6,(Eumops_glaucinus:8.3,Eumops_auripendulus:8.3):4.3):2.6):7.3):0.3,((Tadarida_plicata:11.7,Tadarida_pumila:11.7):0.3,Tadarida_condylura:12):10.8):0.1):0.7):0.8):29.9,((Miniopterus_schreibersii:14.7,Miniopterus_fuliginosus:14.7,Miniopterus_inflatus:14.7):36.8,(Lasionycteris_noctivagans:25.9,Nycticeius_humeralis:25.9,Philetor_brachypterus:25.9,Pipistrellus_subflavus:25.9,Antrozous_pallidus:25.9,Pipistrellus_hesperus:25.9,(Vespertilio_murinus:8.5,Vespertilio_sinensis:8.5):17.4,(Histiotus_montanus:13.3,Histiotus_velatus:13.3):12.6,Vespadelus_pumilus:25.9,Nyctalus_noctula:25.9,Rhogeessa_parvula:25.9,(Lasiurus_egregius:11.2,((Lasiurus_ega:3.9,Lasiurus_xanthinus:3.9):4.5,Lasiurus_intermedius:8.4):2.8,(Lasiurus_cinereus:8.4,((Lasiurus_borealis:4.8,Lasiurus_blossevillii:4.8):0.2,Lasiurus_seminolus:5):3.4):2.8):14.7,Glauconycteris_argentata:25.9,(Barbastella_barbastellus:19.3,(Euderma_maculatum:18.4,(Corynorhinus_townsendii:16.9,Plecotus_auritus:16.9):1.5):0.9):6.6,(Scotophilus_kuhlii:5,Scotophilus_nigrita:5):20.9,(Pipistrellus_ceylonicus:16,Pipistrellus_kuhlii:16,((Pipistrellus_nathusii:12.7,Pipistrellus_pipistrellus:12.7):1.3,Pipistrellus_abramus:14):2):9.9,(Eptesicus_diminutus:9.3,Eptesicus_brasiliensis:9.3,Eptesicus_furinalis:9.3,Eptesicus_fuscus:9.3,Eptesicus_serotinus:9.3):16.6,(Murina_aurata:7.7,Murina_leucogaster:7.7):18.2,(Myotis_albescens:10.8,Myotis_austroriparius:10.8,Myotis_chiloensis:10.8,Myotis_dasycneme:10.8,Myotis_grisescens:10.8,Myotis_levis:10.8,Myotis_lucifugus:10.8,Myotis_pilosus:10.8,Myotis_velifer:10.8,Myotis_volans:10.8,Myotis_yumanensis:10.8,Myotis_riparius:10.8,(Myotis_daubentonii:6.2,Myotis_macrodactylus:6.2):4.6,((Myotis_blythii:3.6,Myotis_myotis:3.6):4.4,(Myotis_evotis:5.4,(Myotis_keenii:2.5,Myotis_septentrionalis:2.5):2.9):2.6,(Myotis_nattereri:7.1,Myotis_thysanodes:7.1):0.9):2.8,((Myotis_californicus:1.8,Myotis_leibii:1.8):8.8,Myotis_mystacinus:10.6,Myotis_nigricans:10.6):0.2):15.1):25.6):2.8):6.1):8.9):1.9):14.4):2.9,((Erinaceus_europaeus:12.6,Atelerix_albiventris:12.6):62.8,(((Crocidura_leucodon:11.9,Crocidura_russula:11.9):5.7,Suncus_murinus:17.6):29,Sorex_araneus:46.6):28.8):13.1):7.7):2.5,(((Choloepus_didactylus:4.7,Choloepus_hoffmanni:4.7):26.3,(Bradypus_tridactylus:1.1,Bradypus_variegatus:1.1):29.9):40.3,(Tamandua_tetradactyla:16.7,Myrmecophaga_tridactyla:16.7):54.6,((Chaetophractus_vellerosus:32.5,(Tolypeutes_matacus:20.9,Cabassous_centralis:20.9):11.6):7.7,Dasypus_novemcinctus:40.2):31.1):27.4):0.2,(Elephas_maximus:19.5,Loxodonta_africana:19.5):79.4):48.2,(((Trichosurus_vulpecula:45.8,((((Macropus_agilis:10,Macropus_parma:10,Macropus_rufogriseus:10):0.1,((Macropus_rufus:8,Macropus_robustus:8):1.4,(Macropus_fuliginosus:3,Macropus_giganteus:3):6.4):0.7):0.3,Setonix_brachyurus:10.4):3.8,Dorcopsis_muelleri:14.2):31.6):20,(Isoodon_macrourus:12.4,Perameles_nasuta:12.4):53.4):16.7,((Caluromys_derbianus:4.3,Caluromys_philander:4.3):50.9,(((Chironectes_minimus:18.7,((Didelphis_marsupialis:18.3,Didelphis_virginiana:18.3):0.1,Philander_opossum:18.4):0.3):17.8,Metachirus_nudicaudatus:36.5):15.1,Marmosa_murina:51.6):3.6):27.3):64.6):19.1);</td>
+      </tr>
+</table>
+
+  <details class="details-reset details-overlay BlobToolbar position-absolute js-file-line-actions dropdown d-none" aria-hidden="true">
+    <summary class="btn-octicon ml-0 px-2 p-0 bg-white border border-gray-dark rounded-1" aria-label="Inline file action toolbar">
+      <svg class="octicon octicon-kebab-horizontal" viewBox="0 0 13 16" version="1.1" width="13" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm5 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM13 7.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
+    </summary>
+    <details-menu>
+      <ul class="BlobToolbar-dropdown dropdown-menu dropdown-menu-se mt-2">
+        <li><clipboard-copy role="menuitem" class="dropdown-item" id="js-copy-lines" style="cursor:pointer;" data-original-text="Copy lines">Copy lines</clipboard-copy></li>
+        <li><clipboard-copy role="menuitem" class="dropdown-item" id="js-copy-permalink" style="cursor:pointer;" data-original-text="Copy permalink">Copy permalink</clipboard-copy></li>
+        <li><a class="dropdown-item js-update-url-with-hash" id="js-view-git-blame" role="menuitem" href="/ecohealthalliance/HP3/blame/9cc09bbabaaa69225c28f5cb1b678f99f1ae339d/data/supertree_mammals.tree">View git blame</a></li>
+          <li><a class="dropdown-item" id="js-new-issue" role="menuitem" href="/ecohealthalliance/HP3/issues/new">Open new issue</a></li>
+      </ul>
+    </details-menu>
+  </details>
+
+  </div>
+
+    </div>
+
+  
+
+  <details class="details-reset details-overlay details-overlay-dark">
+    <summary data-hotkey="l" aria-label="Jump to line"></summary>
+    <details-dialog class="Box Box--overlay d-flex flex-column anim-fade-in fast linejump" aria-label="Jump to line">
+      <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="js-jump-to-line-form Box-body d-flex" action="" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="&#x2713;" />
+        <input class="form-control flex-auto mr-3 linejump-input js-jump-to-line-field" type="text" placeholder="Jump to line&hellip;" aria-label="Jump to line" autofocus>
+        <button type="submit" class="btn" data-close-dialog>Go</button>
+</form>    </details-dialog>
+  </details>
+
+
+
+  </div>
+  <div class="modal-backdrop js-touch-events"></div>
+</div>
+
+    </div>
+  </div>
+
+  </div>
+
+        
+<div class="footer container-lg px-3" role="contentinfo">
+  <div class="position-relative d-flex flex-justify-between pt-6 pb-2 mt-6 f6 text-gray border-top border-gray-light ">
+    <ul class="list-style-none d-flex flex-wrap ">
+      <li class="mr-3">&copy; 2019 <span title="0.44952s from unicorn-755d465b4-4lzrz">GitHub</span>, Inc.</li>
+        <li class="mr-3"><a data-ga-click="Footer, go to terms, text:terms" href="https://github.com/site/terms">Terms</a></li>
+        <li class="mr-3"><a data-ga-click="Footer, go to privacy, text:privacy" href="https://github.com/site/privacy">Privacy</a></li>
+        <li class="mr-3"><a href="/security" data-ga-click="Footer, go to security, text:security">Security</a></li>
+        <li class="mr-3"><a href="https://githubstatus.com/" data-ga-click="Footer, go to status, text:status">Status</a></li>
+        <li><a data-ga-click="Footer, go to help, text:help" href="https://help.github.com">Help</a></li>
+    </ul>
+
+    <a aria-label="Homepage" title="GitHub" class="footer-octicon mr-lg-4" href="https://github.com">
+      <svg height="24" class="octicon octicon-mark-github" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+</a>
+   <ul class="list-style-none d-flex flex-wrap ">
+        <li class="mr-3"><a data-ga-click="Footer, go to contact, text:contact" href="https://github.com/contact">Contact GitHub</a></li>
+        <li class="mr-3"><a href="https://github.com/pricing" data-ga-click="Footer, go to Pricing, text:Pricing">Pricing</a></li>
+      <li class="mr-3"><a href="https://developer.github.com" data-ga-click="Footer, go to api, text:api">API</a></li>
+      <li class="mr-3"><a href="https://training.github.com" data-ga-click="Footer, go to training, text:training">Training</a></li>
+        <li class="mr-3"><a href="https://blog.github.com" data-ga-click="Footer, go to blog, text:blog">Blog</a></li>
+        <li><a data-ga-click="Footer, go to about, text:about" href="https://github.com/about">About</a></li>
+
+    </ul>
+  </div>
+  <div class="d-flex flex-justify-center pb-6">
+    <span class="f6 text-gray-light"></span>
+  </div>
+</div>
+
+
+
+  <div id="ajax-error-message" class="ajax-error-message flash flash-error">
+    <svg class="octicon octicon-alert" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"/></svg>
+    <button type="button" class="flash-close js-ajax-error-dismiss" aria-label="Dismiss error">
+      <svg class="octicon octicon-x" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48L7.48 8z"/></svg>
+    </button>
+    You can’t perform that action at this time.
+  </div>
+
+
+    
+    <script crossorigin="anonymous" integrity="sha512-qj1Z4g+YDVWKElb6FC42CcUWNq8P0W9aiU0CtKWjzuEMO9tb8sbbJ48dWUkmaOIe7WlLJXkI4YsUCKMxRMxT5A==" type="application/javascript" src="https://github.githubassets.com/assets/frameworks-9ee26246cce2c45ef24accded28cdabe.js"></script>
+    
+    <script crossorigin="anonymous" async="async" integrity="sha512-YYH23K1Oh9x3CNVzd2CnhVQL/gUoH9dtnd3CwFUJPCVlnMrB0dQqfoKVcCxuTV5ahpvOIpx1lV2P2iq36K9Wnw==" type="application/javascript" src="https://github.githubassets.com/assets/github-d2b6a5f75cab71bb70cefcc3266be8e4.js"></script>
+    
+    
+    
+  <div class="js-stale-session-flash stale-session-flash flash flash-warn flash-banner d-none">
+    <svg class="octicon octicon-alert" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"/></svg>
+    <span class="signed-in-tab-flash">You signed in with another tab or window. <a href="">Reload</a> to refresh your session.</span>
+    <span class="signed-out-tab-flash">You signed out in another tab or window. <a href="">Reload</a> to refresh your session.</span>
+  </div>
+  <div class="facebox" id="facebox" style="display:none;">
+  <div class="facebox-popup">
+    <div class="facebox-content" role="dialog" aria-labelledby="facebox-header" aria-describedby="facebox-description">
+    </div>
+    <button type="button" class="facebox-close js-facebox-close" aria-label="Close modal">
+      <svg class="octicon octicon-x" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48L7.48 8z"/></svg>
+    </button>
+  </div>
+</div>
+
+  <template id="site-details-dialog">
+  <details class="details-reset details-overlay details-overlay-dark lh-default text-gray-dark" open>
+    <summary aria-haspopup="dialog" aria-label="Close dialog"></summary>
+    <details-dialog class="Box Box--overlay d-flex flex-column anim-fade-in fast">
+      <button class="Box-btn-octicon m-0 btn-octicon position-absolute right-0 top-0" type="button" aria-label="Close dialog" data-close-dialog>
+        <svg class="octicon octicon-x" viewBox="0 0 12 16" version="1.1" width="12" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.48 8l3.75 3.75-1.48 1.48L6 9.48l-3.75 3.75-1.48-1.48L4.52 8 .77 4.25l1.48-1.48L6 6.52l3.75-3.75 1.48 1.48L7.48 8z"/></svg>
+      </button>
+      <div class="octocat-spinner my-6 js-details-dialog-spinner"></div>
+    </details-dialog>
+  </details>
+</template>
+
+  <div class="Popover js-hovercard-content position-absolute" style="display: none; outline: none;" tabindex="0">
+  <div class="Popover-message Popover-message--bottom-left Popover-message--large Box box-shadow-large" style="width:360px;">
+  </div>
+</div>
+
+<div id="hovercard-aria-description" class="sr-only">
+  Press h to open a hovercard with more details.
+</div>
+
+  <div aria-live="polite" class="js-global-screen-reader-notice sr-only"></div>
+
+  </body>
+</html>
+

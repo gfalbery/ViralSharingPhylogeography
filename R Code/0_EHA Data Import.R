@@ -1,6 +1,6 @@
 # Data import for EHA ###
 
-remove(list = ls())
+#remove(list = ls())
 
 library(igraph); library(magrittr); library(dplyr); library(ggplot2); require(RCurl); library(readr)
 
@@ -8,18 +8,21 @@ AssocsBase <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/
 HostTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/hosts.csv") %>% data.frame()
 VirusTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/viruses.csv") %>% data.frame()
 
+write.csv(AssocsBase, file = "data/Associations.csv", row.names = F)
+write.csv(HostTraits, file = "data/Hosts.csv", row.names = F)
+write.csv(VirusTraits, file = "data/Viruses.csv", row.names = F)
+
 names(AssocsBase)[1:2] <- c("Virus", "Host")
-AssocsBase <-mutate(AssocsBase,
-                    Virus = as.factor(Virus),
-                    Host = as.factor(Host))
+AssocsBase <-mutate(AssocsBase, Virus = as.factor(Virus), Host = as.factor(Host))
 
 AssocsBase2 <- AssocsBase
 
 # Rabies and humans are both highly central in the networks
-#AssocsBase2 <- droplevels(AssocsBase[!AssocsBase$Host == "Homo_sapiens"&
+# AssocsBase2 <- droplevels(AssocsBase[!AssocsBase$Host == "Homo_sapiens"&
 #                               !AssocsBase$Virus == "Rabies_virus",])
+
 AssocsBase2 <- droplevels(AssocsBase[#!AssocsBase$Host == "Homo_sapiens"&
-                               !AssocsBase$Virus == "Rabies_virus",])
+  !AssocsBase$Virus == "Rabies_virus",])
 
 # Making bipartite projections ####
 
@@ -105,20 +108,35 @@ Viruses$vEigenvector[round(Viruses$vEigenvector,4)==1] <- 0.999
 Viruses$vGenomeAveLengthLn <- log(Viruses$vGenomeAveLength)
 Viruses$vPubMedCitesLn <- log(Viruses$vPubMedCites + 1)
 
+# Download shapefiles which are stored on S3, which are too large to store in git
+P <- rprojroot::find_rstudio_root_file
+
+shapefiles <- c("Mammals_Terrestrial", "mam", "host_zg_area")
+
+lapply(shapefiles, function(shapefile) {
+  download.file(paste0("https://s3.amazonaws.com/hp3-shapefiles/", shapefile, ".zip"),
+                destfile = P("shapefiles", paste0(shapefile, ".zip")))
+  unzip(P("shapefiles", paste0(shapefile, ".zip")),
+        exdir = "shapefiles")
+  unlink(paste0(P("shapefiles", "shapefile", ".zip")))
+})
+
 # Loading functions, determining themes ####
 
 #devtools::install_github("gfalbery/ggregplot")
-library(ggregplot)
+library(ggregplot); library(ggplot2)
 
 AlberPalettes <- c("YlGnBu","Reds","BuPu", "PiYG")
 AlberColours <- sapply(AlberPalettes, function(a) RColorBrewer::brewer.pal(5, a)[4])
 AlberColours[length(AlberColours)+1:2] <- RColorBrewer::brewer.pal(11, AlberPalettes[[4]])[c(2,10)]
 
-AlberTheme <- theme(axis.text.x = element_text(size = 12, colour = "black"), 
-               axis.text.y = element_text(size = 12, colour = "black")) + 
-  theme(axis.title.x = element_text(vjust = -0.35), 
-        axis.title.y = element_text(vjust=1.2)) + 
-  theme_bw()
+AlberTheme <- theme_bw() +
+  theme(axis.title.x = element_text(vjust = -0.35, 
+                                    size = 12, 
+                                    colour = "black"), 
+        axis.title.y = element_text(vjust = 1.2, 
+                                    size = 12, 
+                                    colour = "black"))
 
 theme_set(AlberTheme)
 
