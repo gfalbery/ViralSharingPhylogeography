@@ -1,10 +1,10 @@
-# Distances ####
+# Viral Distances to Humans and Domestic Animals ####
 
 library(igraph); library(ggregplot)
 
 NARows <-function(df, vars){
-  apply(df[,vars], 1, function(a){
-    any(is.na(a)|a==Inf|a==-Inf)
+  apply(as.data.frame(df[,vars]), 1, function(a){
+    any(is.na(a)|a=="Inf"|a=="-Inf")
   })
 }
 
@@ -21,7 +21,7 @@ vHumanDist2 <- data.frame(Sp = rownames(vHumanDist),
 vDomDist <- distances(bipgraph, v = V(bipgraph)[1:(dim(Viruses)[1])],
                       to = V(bipgraph)[which(names(V(bipgraph)) %in% Domestics)], weights=NA)
 
-vDomDist[,3:dim(vDomDist)[2]] <- (vDomDist[,3:dim(vDomDist)[2]]-1)/2
+vDomDist <- (vDomDist-1)/2
 
 vDomDist2 <- data.frame(Sp = rownames(vDomDist),
                         MeanDomDist = apply(vDomDist, 1, function(a) mean(a[!a=="Inf"], na.rm = T)),
@@ -29,6 +29,28 @@ vDomDist2 <- data.frame(Sp = rownames(vDomDist),
                         MaxDomDist = apply(vDomDist, 1, function(a) max(a, na.rm = T)),
                         Human = Viruses$Human,
                         Family = Viruses$vFamily)
+
+# Merging distances and traits ####
+
+Viruses <- merge(Viruses, 
+                 vDomDist2[,c("Sp", "MeanDomDist", "MinDomDist", "MaxDomDist")], 
+                 by = "Sp", all.x = T)
+
+Viruses <- merge(Viruses, 
+                 vHumanDist2[,c("Sp", "HumanDist")], 
+                 by = "Sp", all.x = T)
+
+# Making long dataset with all links ####
+
+vDomDistLong <- reshape2::melt(vDomDist)
+
+ggplot(vDomDistLong, aes(Var1, value, colour = Var1)) + 
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, 
+                                   hjust = 1)) +
+  geom_point(position = position_jitter(w = 0.5)) 
+
+# Attempting some plots ####
 
 # Distance to Domestics ####
 
@@ -102,14 +124,4 @@ ggMMplot(vHumanDist2, "Family", "HumanDist") +
        y = "vFamily Distance from Humans",
        title = "Family Distances to Humans") + coord_fixed() +
   ggsave("Figures/vFamily Distance to Humans Mosaic.tiff", units = "mm", width = 100, height = 100, dpi = 300)
-
-# Merging distances and traits ####
-
-Viruses <- merge(Viruses, 
-                 vDomDist2[,c("Sp", "MeanDomDist", "MinDomDist", "MaxDomDist")], 
-                 by = "Sp", all.x = T)
-
-Viruses <- merge(Viruses, 
-                 vHumanDist2[,c("Sp", "HumanDist")], 
-                 by = "Sp", all.x = T)
 

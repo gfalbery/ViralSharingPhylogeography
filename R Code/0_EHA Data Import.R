@@ -4,6 +4,10 @@
 
 library(igraph); library(magrittr); library(dplyr); library(ggplot2); require(RCurl); library(readr)
 
+AssocsBase <- read.csv("data/associations.csv", header = T)
+HostTraits <- read.csv("data/hosts.csv", header = T)
+VirusTraits <- read.csv("data/viruses.csv", header = T)
+
 AssocsBase <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/associations.csv") %>% data.frame()
 HostTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/hosts.csv") %>% data.frame()
 VirusTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/viruses.csv") %>% data.frame()
@@ -17,12 +21,8 @@ AssocsBase <-mutate(AssocsBase, Virus = as.factor(Virus), Host = as.factor(Host)
 
 AssocsBase2 <- AssocsBase
 
-# Rabies and humans are both highly central in the networks
-# AssocsBase2 <- droplevels(AssocsBase[!AssocsBase$Host == "Homo_sapiens"&
-#                               !AssocsBase$Virus == "Rabies_virus",])
-
-AssocsBase2 <- droplevels(AssocsBase[#!AssocsBase$Host == "Homo_sapiens"&
-  !AssocsBase$Virus == "Rabies_virus",])
+#AssocsBase2 <- droplevels(AssocsBase[#!AssocsBase$Host == "Homo_sapiens"&
+#  !AssocsBase$Virus == "Rabies_virus",])
 
 # Making bipartite projections ####
 
@@ -66,6 +66,7 @@ Wildlife <- Hosts[Hosts$hDom == "wild", "Sp"]
 
 DomesticViruses <- as.factor(AssocsBase[AssocsBase$Host %in% Domestics, "Virus"])
 WildlifeViruses <- as.factor(AssocsBase[AssocsBase$Host %in% Wildlife, "Virus"])
+HumanViruses <- as.factor(AssocsBase[AssocsBase$Host == "Homo_sapiens", "Virus"])
 
 AssocsTraits <- merge(AssocsTraits, HostTraits, by.x = "Host", by.y = "hHostNameFinal", all.x = T)
 AssocsTraits <- merge(AssocsTraits, VirusTraits, by.x = "Virus", by.y = "vVirusNameCorrected", all.x = T)
@@ -75,7 +76,9 @@ AssocsTraits$Wildlife <- ifelse(AssocsTraits$Host%in%Wildlife,1,0)
 
 Viruses <- Viruses %>%
   mutate(
-    Human = IsZoonotic,
+    Human = case_when(
+      Sp %in% HumanViruses ~ 1,
+      TRUE ~ 0),
     
     Domestic = case_when(
       Sp %in% DomesticViruses ~ 1,
@@ -92,8 +95,13 @@ Viruses <- Viruses %>%
                        table(AssocsTraits$Virus)),
     
     Records = c(table(AssocsTraits$Virus))
-  ) %>%
-  select(-IsZoonotic)
+  )
+
+
+Viruses$HumDomWild <- factor(with(Viruses, 
+                                  paste(ifelse(Human,"Human",""), 
+                                        ifelse(Domestic,"Domestic",""), 
+                                        ifelse(Wildlife,"Wild",""), sep = "")))
 
 vCentrality <- c("vDegree", "vEigenvector", "vCore")
 vDists <- c("gaussian", "beta", "binomial")
