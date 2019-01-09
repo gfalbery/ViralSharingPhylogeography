@@ -36,8 +36,17 @@ bipgraph <- graph.incidence(M, weighted = T)
 Virusgraph <- bipartite.projection(bipgraph)$proj1
 Hostgraph <- bipartite.projection(bipgraph)$proj2
 
-Virusadj <- as.matrix(get.adjacency(Virusgraph))
-Hostadj <- as.matrix(get.adjacency(Hostgraph))
+VirusAdj <- as.matrix(get.adjacency(Virusgraph, attr = "weight"))
+diag(VirusAdj) <- table(AssocsBase$Virus)
+VirusA <- matrix(rep(table(AssocsBase$Virus), nrow(VirusAdj)), nrow(VirusAdj))
+VirusB <- matrix(rep(table(AssocsBase$Virus), each = nrow(VirusAdj)), nrow(VirusAdj))
+VirusAdj2 <- VirusAdj/(VirusA + VirusB - VirusAdj)
+
+HostAdj <- as.matrix(get.adjacency(Hostgraph, attr = "weight"))
+diag(HostAdj) <- table(AssocsBase$Host)
+HostA <- matrix(rep(table(AssocsBase$Host), nrow(HostAdj)), nrow(HostAdj))
+HostB <- matrix(rep(table(AssocsBase$Host), each = nrow(HostAdj)), nrow(HostAdj))
+HostAdj2 <- HostAdj/(HostA + HostB - HostAdj)
 
 # Deriving metrics from the networks ####
 
@@ -115,19 +124,6 @@ Viruses$vEigenvector[round(Viruses$vEigenvector,4)==1] <- 0.999
 
 Viruses$vGenomeAveLengthLn <- log(Viruses$vGenomeAveLength)
 Viruses$vPubMedCitesLn <- log(Viruses$vPubMedCites + 1)
-
-# Download shapefiles which are stored on S3, which are too large to store in git
-P <- rprojroot::find_rstudio_root_file
-
-shapefiles <- c("Mammals_Terrestrial", "mam", "host_zg_area")
-
-lapply(shapefiles, function(shapefile) {
-  download.file(paste0("https://s3.amazonaws.com/hp3-shapefiles/", shapefile, ".zip"),
-                destfile = P("shapefiles", paste0(shapefile, ".zip")))
-  unzip(P("shapefiles", paste0(shapefile, ".zip")),
-        exdir = "shapefiles")
-  unlink(paste0(P("shapefiles", "shapefile", ".zip")))
-})
 
 # Loading functions, determining themes ####
 

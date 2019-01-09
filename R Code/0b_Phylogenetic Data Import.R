@@ -1,5 +1,7 @@
 # 0b_Phylogenetic Data
 
+if(!file.exists("data/intermediate/HP3-ST_PDmatrix.csv")){
+  
 ## 23 June 2016 - KJO
 # Phylogenetic matrix code, from  Cleaning_v41.r
 #require(dplyr)
@@ -8,6 +10,7 @@
 P <- rprojroot::find_rstudio_root_file
 library(PVR) # Note this package has been removed from CRAN
 library(ape)
+library(phylogram)
 
 asc <- AssocsBase
 h <- HostTraits
@@ -27,11 +30,11 @@ ST <- read.tree(P("data/supertree_mammals.tree")) #improved ST, fixed all taxa p
 
 #drop tips from trees for hosts dropped from most recent host-virus association file
 #cytb$tip.label[sort.list(cytb$tip.label)] #665 spp in original cytb
-cytb_drop <- setdiff (cytb$tip.label, h$hHostNameFinal) #21 spp in cytb tree, not in h file
+cytb_drop <- setdiff(cytb$tip.label, h$hHostNameFinal) #21 spp in cytb tree, not in h file
 cytb2 <- drop.tip(cytb, which(cytb$tip.label %in% cytb_drop)) #new tree, drop all tips in cytb not in h
 
 #ST$tip.label[sort.list(ST$tip.label)] #770 spp in original ST tree
-ST_drop <- setdiff (ST$tip.label, h$hHostNameFinal) #17 spp in ST tree, not in h file
+ST_drop <- setdiff(ST$tip.label, h$hHostNameFinal) #17 spp in ST tree, not in h file
 ST2 <- drop.tip(ST, which(ST$tip.label %in% ST_drop)) #new tree, drop all tips in ST not in h
 
 ## Calculate sp to sp maxtrix of phylo distance (cophenetic)
@@ -40,13 +43,21 @@ write.csv(vSTphylodist, P("data/intermediate/HP3-ST_PDmatrix.csv")) #write ST PD
 vCYTBphylodist <- as.data.frame(cophenetic(cytb2)) #calculate cytb phylo distance matrix, #644 spp.
 write.csv(vCYTBphylodist, P("data/intermediate/HP3-cytb_PDmatrix.csv")) #write cytb PD matrix to file
 
+STMatrix <- as.matrix(vSTphylodist)
+CytBMatrix <- as.matrix(vCYTBphylodist)
 
+} else { 
+  STMatrix <- read.csv("data/intermediate/HP3-ST_PDmatrix.csv", header = T) 
+  CytBMatrix <- read.csv("data/intermediate/HP3-cytb_PDmatrix.csv", header = T) 
+}
 
 #Phylogenetic Eigenvector Regression - calculate PVR Body Mass
 
 
 ##### Phylogenetic Eigenvector Regression (PVR), 18 Mar 2016 on body mass for HP3
 #supertree PVR calculations failed, used cytB PVR calculations only
+
+if(!exists(P("data/intermediate/PVR_cytb_hostmass.csv"))){
 
 #names(h)
 mass <- h[, c("hHostNameFinal","hMassGrams")]
@@ -108,3 +119,23 @@ mass3_cytb <- data.frame(x,PVRcytb_resid) #merged residuals with cytb mass in co
 #names(mass3_cytb)
 #plot(mass3_cytb$hMassGramsLn, mass3_cytb$PVRcytb_resid)
 write.csv(mass3_cytb, file=P("data/intermediate/PVR_cytb_hostmass.csv"))  #write new PVR body mass file, calculated with cytb tree
+
+}else{read.csv(P("data/intermediate/PVR_cytb_hostmass.csv"))}
+
+# Getting on with it ####
+
+PHMat <- vCYTBphylodist
+PHMat2 <- vSTphylodist
+
+HostadjRed <- Hostadj[rownames(Hostadj)%in%names(PHMat),rownames(Hostadj)%in%names(PHMat)]
+HostadjRed2 <- Hostadj[rownames(Hostadj)%in%names(PHMat2),rownames(Hostadj)%in%names(PHMat2)]
+
+qplot(unlist(PHMat), c(HostadjRed), geom = c("point", "smooth")) 
+qplot(unlist(PHMat2), c(HostadjRed2), geom = c("point", "smooth")) 
+
+
+
+
+
+
+
