@@ -114,7 +114,7 @@ HostCentroids <- data.frame(LongMean = with(HostPolygons, tapply(long, Host, mea
 VirusAssocs <- apply(M, 1, function(a) names(a[a>0]))
 
 VirusRanges <- lapply(1:length(VirusAssocs), function(b) data.frame(HostPolygons[HostPolygons$Host%in%VirusAssocs[[b]],]) %>%
-                        mutate(Virus = b)) %>% bind_rows()
+                        mutate(Virus = names(VirusAssocs)[b])) %>% bind_rows()
 
 VirusCentroids <- data.frame(LongMean = with(VirusRanges, tapply(long, Virus, mean)),
                             LatMean = with(VirusRanges, tapply(lat, Virus, mean)),
@@ -122,9 +122,30 @@ VirusCentroids <- data.frame(LongMean = with(VirusRanges, tapply(long, Virus, me
 
 # Plotting out ####
 
-ggplot(HostCentroids, aes(LongMean, LatMean)) + geom_point() + coord_fixed() +
+ggplot(HostCentroids, aes(LongMean, LatMean)) + 
+  geom_point(alpha = 0.6, colour = AlberColours[3]) + 
+  coord_fixed() +
   ggsave("Figures/HostCentroids.jpg", units = "mm", width = 150, height = 80)
 
-ggplot(VirusCentroids, aes(LongMean, LatMean)) + geom_point() + coord_fixed() +
+ggplot(VirusCentroids, aes(LongMean, LatMean)) + 
+  geom_point(alpha = 0.6, colour = AlberColours[3]) + 
+  coord_fixed() +
   ggsave("Figures/VirusCentroids.jpg", units = "mm", width = 150, height = 80)
+
+# Merging ####
+
+SpatialHosts <- merge(Hosts, HostCentroids, by.x = "Sp", by.y = "Host")
+SpatialViruses <- merge(Viruses, VirusCentroids, by.x = "Sp", by.y = "Virus")
+
+# I wonder if centrality in the network is spatially autocorrelated?
+
+ggplot(SpatialHosts, aes(LongMean, LatMean)) + 
+  geom_point(aes(size = Eigenvector), alpha = 0.6, colour = AlberColours[3]) + 
+  coord_fixed() +
+  ggsave("Figures/HostCentroids2.jpg", units = "mm", width = 150, height = 80)
+
+ggplot(SpatialViruses, aes(LongMean, LatMean)) + 
+  geom_point(aes(size = vEigenvector), alpha = 0.6, colour = AlberColours[5]) + 
+  coord_fixed() +
+  ggsave("Figures/VirusCentroids2.jpg", units = "mm", width = 150, height = 80)
 
