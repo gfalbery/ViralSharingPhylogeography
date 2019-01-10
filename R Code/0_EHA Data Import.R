@@ -130,7 +130,6 @@ Viruses$vPubMedCitesLn <- log(Viruses$vPubMedCites + 1)
 #devtools::install_github("gfalbery/ggregplot")
 library(ggregplot); library(ggplot2); library(RColorBrewer)
 
-
 ParasitePalettes<-c("PuRd","PuBu","BuGn","Purples","Oranges")
 ParasiteColours<-c("#DD1c77","#2B8CBE","#2CA25F",brewer.pal(5,"Purples")[4],brewer.pal(5,"Oranges")[4])
 

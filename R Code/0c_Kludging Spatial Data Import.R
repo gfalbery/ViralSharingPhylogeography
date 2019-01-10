@@ -29,14 +29,14 @@ if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata"
 WorldOutline <- AllMammals %>% rasterToPolygons(dissolve=TRUE) %>% fortify
 
 ggplot(WorldOutline, aes(long, lat, group = group, colour = rownames(WorldOutline))) + 
-  geom_path() + theme(legend.position = "none") + 
+  geom_path() + theme_void() + theme(legend.position = "none") + 
   coord_fixed() +
   ggsave("Figures/CoolMap.tiff", units = "mm", width = 250, height = 120, dpi = 300)
 
 ggplot(WorldOutline, aes(long, lat, group = group, colour = rownames(WorldOutline))) + 
-  geom_path() + theme_void() + #theme(legend.position = "none") + 
+  geom_path(size = 0.25) + theme_void() + theme(legend.position = "none") + 
   coord_fixed() +
-  ggsave("Figures/CoolMap.tiff", units = "mm", width = 150, height = 80, dpi = 600)
+  ggsave("Figures/CoolMap.jpeg", units = "mm", width = 250, height = 120, dpi = 300)
 
 remove("mammal_raster", "mammal_shapes", "mammal_shapes_red")
 
@@ -163,6 +163,32 @@ VirusCentroids2 <- data.frame(LongMean = with(VirusRanges, tapply(long, Virus, m
                               LatMean = with(VirusRanges, tapply(lat, Virus, mean)),
                               Virus = unique(VirusRanges$Virus))
 
+# Merging ####
+
+SpatialHosts <- merge(Hosts, HostCentroids, by.x = "Sp", by.y = "Host")
+SpatialViruses <- merge(Viruses, VirusCentroids, by.x = "Sp", by.y = "Virus")
+
+VirusRangeOverlap <- matrix(0, nrow = nunique(SpatialViruses$Sp), 
+                            ncol = nunique(SpatialViruses$Sp))
+
+dimnames(VirusRangeOverlap) <- list(unique(SpatialViruses$Sp),
+                                    unique(SpatialViruses$Sp))
+
+GridList <- lapply(VirusAssocs, function(x){
+  
+  unique(Rangedf[Rangedf$Host %in% x,"GridID"]) %>% return
+  
+})
+
+
+for(x in unique(SpatialViruses$Sp)){
+  
+  VirusRangeOverlap[x,] <- sapply(GridList[unique(SpatialViruses$Sp)], function(y) length(unlist(intersect(GridList[unique(SpatialViruses$Sp)][[x]], y))))
+  
+}
+
+diag(VirusRangeOverlap) <- sapply(GridList[unique(SpatialViruses$Sp)], length)
+
 # Plotting out ####
 
 ggplot(HostCentroids, aes(LongMean, LatMean)) + 
@@ -174,11 +200,6 @@ ggplot(VirusCentroids, aes(LongMean, LatMean)) +
   geom_point(alpha = 0.6, colour = AlberColours[5]) + 
   coord_fixed() + ggtitle("Virus Geographic Centroids") +
   ggsave("Figures/VirusCentroids.jpg", units = "mm", width = 150, height = 80)
-
-# Merging ####
-
-SpatialHosts <- merge(Hosts, HostCentroids, by.x = "Sp", by.y = "Host")
-SpatialViruses <- merge(Viruses, VirusCentroids, by.x = "Sp", by.y = "Virus")
 
 # I wonder if centrality in the network is spatially autocorrelated?
 
@@ -202,26 +223,9 @@ ggplot(SpatialHosts, aes(LongMean, LatMean)) +
   ggsave("Figures/HostCentroids3.jpg", units = "mm", width = 150, height = 80)
 
 ggplot(SpatialViruses, aes(LongMean, LatMean)) + 
-  geom_path(data = VirusPolygons, aes(long, lat, colour = Virus, group = paste(Virus, group)), alpha = 0.6) + 
-  geom_point(alpha = 0.6, colour = "black") + 
-  coord_fixed() + ggtitle("Virus Ranges") +
-  theme(legend.position = "none") +
-  ggsave("Figures/VirusCentroids3a.jpg", units = "mm", width = 150, height = 80)
-
-ggplot(SpatialViruses, aes(LongMean, LatMean)) + 
   geom_path(data = VirusPolygons, 
             aes(long, lat, colour = Virus, group = paste(Virus, group)), alpha = 0.6) + 
   geom_point(alpha = 0.6, colour = "black") + 
-  geom_point(data = VirusCentroids2, colour = "red") +
   coord_fixed() + ggtitle("Virus Ranges") +
   theme(legend.position = "none") +
-  ggsave("Figures/VirusCentroids3a.jpg", units = "mm", width = 150, height = 80)
-
-ggplot(SpatialViruses, aes(LongMean, LatMean)) + 
-  geom_path(data = VirusRanges, 
-            aes(long, lat, colour = Virus, group = paste(Virus, Host, group)), alpha = 0.6) + 
-  geom_point(alpha = 0.6, colour = "black") + 
-  coord_fixed() + ggtitle("Virus Ranges") +
-  theme(legend.position = "none") +
-  ggsave("Figures/VirusCentroids3b.jpg", units = "mm", width = 150, height = 80)
-
+  ggsave("Figures/VirusCentroids3.jpg", units = "mm", width = 150, height = 80)
