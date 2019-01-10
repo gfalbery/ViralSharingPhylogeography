@@ -1,5 +1,9 @@
 # 0_Kludging spatial data import ####
 
+# This was all done in 2 days and is probably circuitous
+# Because I mashed everything into pixels and data frames rather than working
+# With spatial dataframes :howdy:
+
 library(sf); library(fasterize); library(Matrix);
 library(ggregplot); library(raster); library(tidyverse); library(igraph)
 
@@ -7,10 +11,8 @@ if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata"
   
   mammal_shapes <- st_read("maps/Mammals_Terrestrial")
   
-  #crs(mammal_shapes) <- # Equal area projection seems a good idea
-  #  '+proj=moll +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs'
-  
-  mammal_shapes <- st_transform(mammal_shapes, 54009) 
+  mammal_shapes <- st_transform(mammal_shapes, 54009) # Mollweide projection
+  # This projection retains grid size as much as possible, but at the expense of shape
   
   mammal_shapes$binomial = str_replace(mammal_shapes$binomial, " ", "_")
   mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
@@ -20,7 +22,21 @@ if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata"
   MammalRanges = fasterize(mammal_shapes_red, mammal_raster, by = "binomial")
   #save(MammalRanges, file = "data/MammalRanges.Rdata")
   
+  AllMammals = fasterize(mammal_shapes_red[-which(mammal_shapes_red$binomial == "Ursus_maritimus"),], mammal_raster, fun = "sum")
+  
 }
+
+WorldOutline <- AllMammals %>% rasterToPolygons(dissolve=TRUE) %>% fortify
+
+ggplot(WorldOutline, aes(long, lat, group = group, colour = rownames(WorldOutline))) + 
+  geom_path() + theme(legend.position = "none") + 
+  coord_fixed() +
+  ggsave("Figures/CoolMap.tiff", units = "mm", width = 250, height = 120, dpi = 300)
+
+ggplot(WorldOutline, aes(long, lat, group = group, colour = rownames(WorldOutline))) + 
+  geom_path() + theme_void() + #theme(legend.position = "none") + 
+  coord_fixed() +
+  ggsave("Figures/CoolMap.tiff", units = "mm", width = 150, height = 80, dpi = 600)
 
 remove("mammal_raster", "mammal_shapes", "mammal_shapes_red")
 
@@ -78,14 +94,6 @@ RangeAdj1 <- RangeOverlap/(RangeA + RangeB - RangeOverlap) # Weighted evenly
 RangeAdj2 <- RangeOverlap/(RangeB) # Asymmetrical
 
 # Making polygons for display ####
-# To get a polygon that surrounds cells that are not NA
-
-# make all values the same. Either do
-r <- x > -Inf
-# or alternatively
-# r <- reclassify(x, cbind(-Inf, Inf, 1))
-
-# convert to polygons (you need to have package 'rgeos' installed for this to work)
 
 HostPolygons <- lapply(levels(Valuedf2$variable), function(x) {
   
@@ -96,12 +104,13 @@ HostPolygons <- lapply(levels(Valuedf2$variable), function(x) {
     r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
       mutate(Host = x) %>% return
   }
+  
 })
 
 HostPolygons <- bind_rows(HostPolygons)
 
 ggplot(HostPolygons, aes(long, lat, colour = Host, group = paste(Host, group))) + 
-  geom_path(fill = NA, alpha = 0.6) + coord_fixed() + theme(legend.position = "none")
+  geom_path(alpha = 0.6) + coord_fixed() + theme(legend.position = "none")
 
 # Deriving centroids ####
 
@@ -116,20 +125,54 @@ VirusAssocs <- apply(M, 1, function(a) names(a[a>0]))
 VirusRanges <- lapply(1:length(VirusAssocs), function(b) data.frame(HostPolygons[HostPolygons$Host%in%VirusAssocs[[b]],]) %>%
                         mutate(Virus = names(VirusAssocs)[b])) %>% bind_rows()
 
-VirusCentroids <- data.frame(LongMean = with(VirusRanges, tapply(long, Virus, mean)),
-                            LatMean = with(VirusRanges, tapply(lat, Virus, mean)),
-                            Virus = unique(VirusRanges$Virus))
+VirusPolygons <- lapply(1:length(VirusAssocs), function(x) {
+  
+  templist <- list()
+  
+  NumAssocs <- which(unique(mammal_shapes_red$binomial)%in%VirusAssocs[[x]])
+  
+  return(
+    
+    if(length(NumAssocs)>0){
+      if(length(NumAssocs)>1){
+        for(y in 1:length(NumAssocs)){
+          r <- MammalRanges[[NumAssocs[y]]] > -Inf
+          templist[[y]] <- r
+        }
+        
+        m <- do.call(merge, templist)
+        m %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
+          mutate(Virus = names(VirusAssocs)[x])
+        
+      } else {
+        r <- MammalRanges[[NumAssocs]] > -Inf
+        r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
+          mutate(Virus = names(VirusAssocs)[x])
+      }
+    } else NULL
+  )
+}) 
+
+VirusPolygons <- VirusPolygons[!is.na(VirusPolygons)] %>% bind_rows()
+
+VirusCentroids <- data.frame(LongMean = with(VirusPolygons, tapply(long, Virus, mean)),
+                             LatMean = with(VirusPolygons, tapply(lat, Virus, mean)),
+                             Virus = unique(VirusPolygons$Virus))
+
+VirusCentroids2 <- data.frame(LongMean = with(VirusRanges, tapply(long, Virus, mean)),
+                              LatMean = with(VirusRanges, tapply(lat, Virus, mean)),
+                              Virus = unique(VirusRanges$Virus))
 
 # Plotting out ####
 
 ggplot(HostCentroids, aes(LongMean, LatMean)) + 
   geom_point(alpha = 0.6, colour = AlberColours[3]) + 
-  coord_fixed() +
+  coord_fixed() + ggtitle("Host Geographic Centroids") +
   ggsave("Figures/HostCentroids.jpg", units = "mm", width = 150, height = 80)
 
 ggplot(VirusCentroids, aes(LongMean, LatMean)) + 
-  geom_point(alpha = 0.6, colour = AlberColours[3]) + 
-  coord_fixed() +
+  geom_point(alpha = 0.6, colour = AlberColours[5]) + 
+  coord_fixed() + ggtitle("Virus Geographic Centroids") +
   ggsave("Figures/VirusCentroids.jpg", units = "mm", width = 150, height = 80)
 
 # Merging ####
@@ -141,11 +184,44 @@ SpatialViruses <- merge(Viruses, VirusCentroids, by.x = "Sp", by.y = "Virus")
 
 ggplot(SpatialHosts, aes(LongMean, LatMean)) + 
   geom_point(aes(size = Eigenvector), alpha = 0.6, colour = AlberColours[3]) + 
-  coord_fixed() +
+  coord_fixed() + ggtitle("Host Location:Centrality") +
   ggsave("Figures/HostCentroids2.jpg", units = "mm", width = 150, height = 80)
 
 ggplot(SpatialViruses, aes(LongMean, LatMean)) + 
   geom_point(aes(size = vEigenvector), alpha = 0.6, colour = AlberColours[5]) + 
-  coord_fixed() +
+  coord_fixed() + ggtitle("Virus Location:Centrality") +
   ggsave("Figures/VirusCentroids2.jpg", units = "mm", width = 150, height = 80)
+
+# Combining Centroids and ranges ####
+
+ggplot(SpatialHosts, aes(LongMean, LatMean)) + 
+  geom_path(data = HostPolygons, aes(long, lat, colour = Host, group = paste(Host, group)), alpha = 0.6) + 
+  geom_point(alpha = 0.6, colour = "black") + 
+  coord_fixed() + ggtitle("Host Ranges") +
+  theme(legend.position = "none") +
+  ggsave("Figures/HostCentroids3.jpg", units = "mm", width = 150, height = 80)
+
+ggplot(SpatialViruses, aes(LongMean, LatMean)) + 
+  geom_path(data = VirusPolygons, aes(long, lat, colour = Virus, group = paste(Virus, group)), alpha = 0.6) + 
+  geom_point(alpha = 0.6, colour = "black") + 
+  coord_fixed() + ggtitle("Virus Ranges") +
+  theme(legend.position = "none") +
+  ggsave("Figures/VirusCentroids3a.jpg", units = "mm", width = 150, height = 80)
+
+ggplot(SpatialViruses, aes(LongMean, LatMean)) + 
+  geom_path(data = VirusPolygons, 
+            aes(long, lat, colour = Virus, group = paste(Virus, group)), alpha = 0.6) + 
+  geom_point(alpha = 0.6, colour = "black") + 
+  geom_point(data = VirusCentroids2, colour = "red") +
+  coord_fixed() + ggtitle("Virus Ranges") +
+  theme(legend.position = "none") +
+  ggsave("Figures/VirusCentroids3a.jpg", units = "mm", width = 150, height = 80)
+
+ggplot(SpatialViruses, aes(LongMean, LatMean)) + 
+  geom_path(data = VirusRanges, 
+            aes(long, lat, colour = Virus, group = paste(Virus, Host, group)), alpha = 0.6) + 
+  geom_point(alpha = 0.6, colour = "black") + 
+  coord_fixed() + ggtitle("Virus Ranges") +
+  theme(legend.position = "none") +
+  ggsave("Figures/VirusCentroids3b.jpg", units = "mm", width = 150, height = 80)
 
