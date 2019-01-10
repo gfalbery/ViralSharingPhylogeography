@@ -16,7 +16,7 @@ if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata"
   mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
   mammal_shapes_red <- mammal_shapes[mammal_shapes$binomial%in%unique(Hosts$Sp),]
   mammal_raster <- raster(mammal_shapes_red, res = 50000) # NB units differ from Mercator!
-   
+  
   MammalRanges = fasterize(mammal_shapes_red, mammal_raster, by = "binomial")
   #save(MammalRanges, file = "data/MammalRanges.Rdata")
   
@@ -37,12 +37,12 @@ Rangedf <- Rangedf %>%
 
 Rangedf %>% filter(Host %in% levels(Hosts$Sp)) %>% ggplot(aes(x, y, fill = Host)) + geom_tile() + 
   coord_fixed() +
-  lims(x = c(1, 720), y = c(1, 292)) +
+  lims(x = c(1, MammalRanges[[1]]@ncols), y = c(1, MammalRanges[[1]]@nrows)) +
   theme(legend.position = "none")
 
 Rangedf$GridID <- with(Rangedf, paste(x, y))
 
-levels(Rangedf$Host)[which(table(Rangedf$Host)==0)] # Hosts that have no spatial records??
+Range0 <- levels(Rangedf$Host)[which(table(Rangedf$Host)==0)] # Hosts that have no spatial records??
 Rangedf <- droplevels(Rangedf) 
 
 # Using igraph to project it
@@ -77,4 +77,54 @@ RangeB = matrix(rep(diag(RangeOverlap), each = nrow(RangeOverlap)), nrow(RangeOv
 RangeAdj1 <- RangeOverlap/(RangeA + RangeB - RangeOverlap) # Weighted evenly
 RangeAdj2 <- RangeOverlap/(RangeB) # Asymmetrical
 
+# Making polygons for display ####
+# To get a polygon that surrounds cells that are not NA
+
+# make all values the same. Either do
+r <- x > -Inf
+# or alternatively
+# r <- reclassify(x, cbind(-Inf, Inf, 1))
+
+# convert to polygons (you need to have package 'rgeos' installed for this to work)
+
+HostPolygons <- lapply(levels(Valuedf2$variable), function(x) {
+  
+  if(!x%in%Range0){
+    
+    r <- MammalRanges[[x]] > -Inf
+    
+    r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
+      mutate(Host = x) %>% return
+  }
+})
+
+HostPolygons <- bind_rows(HostPolygons)
+
+ggplot(HostPolygons, aes(long, lat, colour = Host, group = paste(Host, group))) + 
+  geom_path(fill = NA, alpha = 0.6) + coord_fixed() + theme(legend.position = "none")
+
+# Deriving centroids ####
+
+HostCentroids <- data.frame(LongMean = with(HostPolygons, tapply(long, Host, mean)),
+                            LatMean = with(HostPolygons, tapply(lat, Host, mean)),
+                            Host = unique(HostPolygons$Host))
+
+# Viral spatial data ####
+
+VirusAssocs <- apply(M, 1, function(a) names(a[a>0]))
+
+VirusRanges <- lapply(1:length(VirusAssocs), function(b) data.frame(HostPolygons[HostPolygons$Host%in%VirusAssocs[[b]],]) %>%
+                        mutate(Virus = b)) %>% bind_rows()
+
+VirusCentroids <- data.frame(LongMean = with(VirusRanges, tapply(long, Virus, mean)),
+                            LatMean = with(VirusRanges, tapply(lat, Virus, mean)),
+                            Virus = unique(VirusRanges$Virus))
+
+# Plotting out ####
+
+ggplot(HostCentroids, aes(LongMean, LatMean)) + geom_point() + coord_fixed() +
+  ggsave("Figures/HostCentroids.jpg", units = "mm", width = 150, height = 80)
+
+ggplot(VirusCentroids, aes(LongMean, LatMean)) + geom_point() + coord_fixed() +
+  ggsave("Figures/VirusCentroids.jpg", units = "mm", width = 150, height = 80)
 

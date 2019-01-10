@@ -15,12 +15,14 @@ LongMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
 Themselves <- # Removing diagonals, as they're uninformative
   which(upper.tri(HostAdj[FHN,FHN], diag = T)&lower.tri(HostAdj[FHN,FHN], diag  = T))
 
+png(filename = "Figures/Pairwise.jpg", units = "mm", width = 200, height = 200, res = 300)
 GGally::ggpairs(LongMatrixdf[-Themselves,], 
-                lower = list(continuous = "smooth"),
-                method = "gam") + # will take a while
-  theme(strip.background = element_rect(fill = "white", colour = "dark grey"))
+                lower = list(continuous = "smooth", method = "gam")) + # will take a while
+  theme(strip.background = element_rect(fill = "white", colour = "dark grey")) +
+  ggtitle("Space and Phylogeny Correlate with Viral Sharing")
+dev.off()
 
-# Makes sense (NB Phylo has been converted from a measure of distance).
+# Makes sense (NB Phylo has been inverted so no longer a measure of distance).
 # Better correlations with absolute virus count than observation-weighted count.
 
 FHosts <- Hosts[Hosts$Sp%in%FHN,]
