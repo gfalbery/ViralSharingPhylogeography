@@ -10,7 +10,7 @@ NARows <-function(df, vars){
 }
 
 hHumanDist <- distances(bipgraph, v = V(bipgraph)[(dim(Viruses)[1]+1):length(V(bipgraph))],
-                        to = V(bipgraph)[which(names(V(bipgraph)) == "Homo_sapiens")], weights=NA)
+                        to = V(bipgraph)[which(names(V(bipgraph)) == "Homo_sapiens")])
 
 hHumanDist[,1] <- ifelse(hHumanDist[,1] == Inf, Inf, (hHumanDist[,1])/2)
 
@@ -20,7 +20,7 @@ hHumanDist2 <- data.frame(Sp = rownames(hHumanDist),
                           Family = Hosts$hFamily)
 
 hDomDist <- distances(bipgraph, v = V(bipgraph)[(dim(Viruses)[1]+1):length(V(bipgraph))],
-                      to = V(bipgraph)[which(names(V(bipgraph)) %in% Domestics)], weights=NA)
+                      to = V(bipgraph)[which(names(V(bipgraph)) %in% Domestics)])
 
 hDomDist <- (hDomDist)/2
 

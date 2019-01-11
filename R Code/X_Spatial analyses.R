@@ -13,9 +13,6 @@ TestHosts[,c("LongMean","LatMean")] <- TestHosts[,c("LongMean","LatMean")]/50000
 
 HCentSel <- INLAModelSel(SpatialHosts, "Eigenvector")
 
-WorldBoundary <- expand.grid(range(TestHosts$LongMean)*1.1,range(TestHosts$LatMean)*1.1)[c(1,3,4,2),]
-AreaLLSP   <- SpatialPolygons(list(Polygons(WorldBoundary, ID = '0')))
-
 HostLocations = cbind(TestHosts$LongMean, TestHosts$LatMean)
 
 WorldMesh <- inla.mesh.2d(loc = HostLocations, max.edge = c(10, 25), cutoff = 10)
@@ -72,6 +69,7 @@ I3<-inla(f3, # f2 + SPDE random effect
 # Plotting ####
 
 ggField(I3, WorldMesh) + scale_fill_brewer(palette = AlberPalettes[1]) +
+  geom_path(data = WorldMap/50000, inherit.aes = F, aes(long, lat, group = group)) +
   geom_point(data = TestHosts, aes(LongMean, LatMean), inherit.aes = F)
 
 # Virus Spatial Analysis ####

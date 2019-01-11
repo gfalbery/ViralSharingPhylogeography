@@ -143,7 +143,8 @@ AlberTheme <- theme_bw() +
                                     colour = "black"), 
         axis.title.y = element_text(vjust = 1.2, 
                                     size = 12, 
-                                    colour = "black"))
+                                    colour = "black"),
+        strip.background = element_rect(fill = "white", colour = "dark grey"))
 
 theme_set(AlberTheme)
 
