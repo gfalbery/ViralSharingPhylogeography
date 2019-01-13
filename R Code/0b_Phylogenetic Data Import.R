@@ -51,8 +51,11 @@ CytBMatrix <- as.matrix(vCYTBphylodist)
   CytBMatrix <- read.csv("data/intermediate/HP3-cytb_PDmatrix.csv", header = T) 
 }
 
-#Phylogenetic Eigenvector Regression - calculate PVR Body Mass
+rownames(CytBMatrix) <- CytBMatrix[,1]
+CytBMatrix <- CytBMatrix[,-1]
+CytBMatrix <- as.matrix(CytBMatrix)
 
+#Phylogenetic Eigenvector Regression - calculate PVR Body Mass
 
 ##### Phylogenetic Eigenvector Regression (PVR), 18 Mar 2016 on body mass for HP3
 #supertree PVR calculations failed, used cytB PVR calculations only

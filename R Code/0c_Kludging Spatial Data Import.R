@@ -62,11 +62,6 @@ Rangedf <- Valuedf2[!is.na(Valuedf2$value),]
 Rangedf <- Rangedf %>% 
   rename(Host = variable, Presence = value)
 
-Rangedf %>% filter(Host %in% levels(Hosts$Sp)) %>% ggplot(aes(x, y, fill = Host)) + geom_tile() + 
-  coord_fixed() +
-  lims(x = c(1, MammalRanges[[1]]@ncols), y = c(1, MammalRanges[[1]]@nrows)) +
-  theme(legend.position = "none")
-
 Rangedf$GridID <- with(Rangedf, paste(x, y))
 
 Range0 <- levels(Rangedf$Host)[which(table(Rangedf$Host)==0)] # Hosts that have no spatial records??
@@ -120,8 +115,8 @@ HostPolygons <- lapply(levels(Valuedf2$variable), function(x) {
 
 HostPolygons <- bind_rows(HostPolygons)
 
-ggplot(HostPolygons, aes(long, lat, group = group)) + 
-  geom_path(data = WorldMap) +
+ggplot(HostPolygons, aes(long, lat, group = paste(Host, group))) + 
+  geom_path(data = WorldMap, inherit.aes = F, aes(long, lat, group = group)) +
   geom_path(alpha = 0.6, aes(colour = Host)) + coord_fixed() + theme(legend.position = "none")
 
 # Deriving centroids ####
@@ -134,38 +129,42 @@ HostCentroids <- data.frame(LongMean = with(HostPolygons, tapply(long, Host, mea
 
 VirusAssocs <- apply(M, 1, function(a) names(a[a>0]))
 
-VirusRanges <- lapply(1:length(VirusAssocs), function(b) data.frame(HostPolygons[HostPolygons$Host%in%VirusAssocs[[b]],]) %>%
-                        mutate(Virus = names(VirusAssocs)[b])) %>% bind_rows()
-
-VirusPolygons <- lapply(1:length(VirusAssocs), function(x) {
+if(file.exists("data/VirusPolygons.Rdata")) load("data/VirusPolygons.Rdata") else{
   
-  templist <- list()
+  VirusRanges <- lapply(1:length(VirusAssocs), function(b) data.frame(HostPolygons[HostPolygons$Host%in%VirusAssocs[[b]],]) %>%
+                          mutate(Virus = names(VirusAssocs)[b])) %>% bind_rows()
   
-  NumAssocs <- which(unique(mammal_shapes_red$binomial)%in%VirusAssocs[[x]])
-  
-  return(
+  VirusPolygons <- lapply(1:length(VirusAssocs), function(x) {
     
-    if(length(NumAssocs)>0){
-      if(length(NumAssocs)>1){
-        for(y in 1:length(NumAssocs)){
-          r <- MammalRanges[[NumAssocs[y]]] > -Inf
-          templist[[y]] <- r
+    templist <- list()
+    
+    NumAssocs <- which(names(MammalRanges)%in%VirusAssocs[[x]])
+    
+    return(
+      
+      if(length(NumAssocs)>0){
+        if(length(NumAssocs)>1){
+          for(y in 1:length(NumAssocs)){
+            r <- MammalRanges[[NumAssocs[y]]] > -Inf
+            templist[[y]] <- r
+          }
+          
+          m <- do.call(merge, templist)
+          m %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
+            mutate(Virus = names(VirusAssocs)[x])
+          
+        } else {
+          r <- MammalRanges[[NumAssocs]] > -Inf
+          r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
+            mutate(Virus = names(VirusAssocs)[x])
         }
-        
-        m <- do.call(merge, templist)
-        m %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
-          mutate(Virus = names(VirusAssocs)[x])
-        
-      } else {
-        r <- MammalRanges[[NumAssocs]] > -Inf
-        r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
-          mutate(Virus = names(VirusAssocs)[x])
-      }
-    } else NULL
-  )
-}) 
-
-VirusPolygons <- VirusPolygons[!is.na(VirusPolygons)] %>% bind_rows()
+      } else NULL
+    )
+  }) 
+  
+  VirusPolygons <- VirusPolygons[!is.na(VirusPolygons)] %>% bind_rows()
+  
+  save(VirusPolygons, file = "data/VirusPolygons.Rdata")}
 
 ggplot(VirusPolygons[VirusPolygons$Virus%in%head(unique(VirusPolygons$Virus), 25),], 
        aes(long, lat, colour = Virus, group = paste(Virus, group))) + 
@@ -209,7 +208,7 @@ for(x in unique(SpatialViruses$Sp)){
 
 diag(VirusRangeOverlap) <- sapply(GridList[unique(SpatialViruses$Sp)], length)
 
-all(apply(VirusRangeOverlap,1,max)==diag(VirusRangeOverlap))
+all(apply(VirusRangeOverlap,1,max) == diag(VirusRangeOverlap))
 
 VirusRangeA = matrix(rep(diag(VirusRangeOverlap), nrow(VirusRangeOverlap)), nrow(VirusRangeOverlap))
 VirusRangeB = matrix(rep(diag(VirusRangeOverlap), each = nrow(VirusRangeOverlap)), nrow(VirusRangeOverlap))

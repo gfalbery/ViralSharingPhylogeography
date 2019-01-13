@@ -2,9 +2,9 @@
 
 library(tidyverse)
 
-FinalHostNames <- reduce(list(SpatialHosts$Sp, 
+FinalHostNames <- reduce(list(as.character(SpatialHosts$Sp), 
                               rownames(RangeAdj1), 
-                              rownames(CytBMatrix),
+                              colnames(CytBMatrix),
                               rownames(HostAdj)), intersect)
 
 FHN <- FinalHostNames; length(FHN)
@@ -12,7 +12,7 @@ FHN <- FinalHostNames; length(FHN)
 LongMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            PropVirus = c(HostAdj2[FHN, FHN]),
                            Space = c(RangeAdj1[FHN, FHN]),
-                           Phylo = 1-c(CytBMatrix[FHN, FHN]) # Gonna invert this
+                           Phylo = c(1-CytBMatrix[FHN, FHN]) # Gonna invert this
 )
 
 Themselves <- # Removing diagonals, as they're uninformative
@@ -33,8 +33,43 @@ FHosts <- FHosts[order(FHosts$Sp),]
 FHosts$Pixels <- diag(RangeOverlap)[FHN]
 FHosts$ViralRichness <- diag(HostAdj)[FHN]
 
-# Virus dataset ####
+lm1 <- lm(data = LongMatrixdf, PropVirus ~ Space + Phylo)
 
+IM1 <- inla(data = LongMatrixdf, 
+            PropVirus ~ Space + Phylo,
+            family = "nbinomial")
+
+summary(IM1) # Really bad fit
+
+Efxplot(list(IM1))
+
+IM2 <- inla(data = LongMatrixdf, 
+            Virus ~ Space + Phylo,
+            family = "zeroinflatednbinomial1")
+
+mf = 1
+
+MC1 <- MCMCglmm(data = LongMatrixdf, 
+                Virus ~ Space + Phylo,
+                family = "poisson",
+                nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+                thin = 10*mf,burnin=3000*mf)
+
+MC2 <- MCMCglmm(data = LongMatrixdf, 
+                Virus ~ Space + Phylo,
+                rcov =~ idh(trait):units, 
+                family = "zipoisson",
+                nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+                thin = 10*mf,burnin=3000*mf)
+
+MC3 <- MCMCglmm(data = LongMatrixdf, 
+                Virus ~ trait -1 + trait:(Space + Phylo),
+                rcov =~ idh(trait):units, 
+                family = "zipoisson",
+                nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+                thin = 10*mf,burnin=3000*mf)
+
+# Virus dataset ####
 
 FinalVirusNames <- reduce(list(SpatialViruses$Sp, 
                                rownames(VirusRangeAdj1)[which(sapply(GridList[unique(SpatialViruses$Sp)], length)>0)]), 
@@ -47,22 +82,26 @@ FViruses <- FViruses[order(FViruses$Sp),]
 FViruses$Pixels <- diag(VirusRangeOverlap)[FVN]
 FViruses$ViralRichness <- diag(VirusRangeAdj1)[FVN]
 
-
 VirusLongMatrixdf <- data.frame(Host = c(VirusAdj[FVN, FVN]),
                            PropHost = c(VirusAdj2[FVN, FVN]),
                            Space = c(VirusRangeAdj1[FVN, FVN]) # Gonna invert this
 )
 
 VirusThemselves <- # Removing diagonals, as they're uninformative
-  which(upper.tri(VirusAdj[FVN,FVN], diag = T)&lower.tri(VirusAdj[FVN,FVN], diag  = T))
+  which(upper.tri(VirusAdj[FVN,FVN], diag = T)&
+          lower.tri(VirusAdj[FVN,FVN], diag  = T))
 
 png(filename = "Figures/Virus Pairwise Similarity Matrix Correlations.jpg", units = "mm", width = 200, height = 200, res = 300)
 GGally::ggpairs(VirusLongMatrixdf[-VirusThemselves,], 
                 lower = list(continuous = "smooth", method = "gam")) + # will take a while
   theme(strip.background = element_rect(fill = "white", colour = "dark grey")) +
-  ggtitle("Space Does Not Correlate with Host Sharing")
+  ggtitle("Space Correlates with Host Sharing")
 dev.off()
 
+FVN2 <- reduce(list(SpatialViruses$Sp, 
+                    colnames(VirusHostPD)[-which(is.na(VirusHostPD[1,]))],
+                    rownames(VirusRangeAdj1)[which(sapply(GridList[unique(SpatialViruses$Sp)], length)>0)]), 
+               intersect)
 
 
 

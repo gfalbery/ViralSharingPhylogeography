@@ -50,7 +50,7 @@ M4 <- inla(f4,
            family = "gaussian",
            control.compute = list(dic = T))
 
-Models <- list(M1, M2, M3)#, M4)
+Models <- list(M1, M2, M3, M4)
 
 sapply(Models, function(a) a$dic$dic)
 
@@ -78,15 +78,17 @@ ci.IndexPhylo = 1/inla.qmarginal(c(0.025, 0.975),
                              M3["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]]) %>%
   rev
 
-
 # Making Virus dataset ####
 
-VirusSpaceContacts <- as(solve(VirusRangeAdj1[FVN, FVN]+matrix(runif(length(FVN)^2, min=0,max=0.01), ncol = length(FVN))),"dgCMatrix")
-#GRMatrix <- as(solve(1-CytBMatrix[FVN, FVN]),"dgCMatrix")
+VirusSpaceContacts <- as(solve(VirusRangeAdj1[FVN2, FVN2] + matrix(runif(length(FVN2)^2, min=0,max=0.01), ncol = length(FVN2))),"dgCMatrix")
+VirusGRMatrix <- as(solve(1-VirusHostPD[FVN2, FVN2] + matrix(runif(length(FVN2)^2, min=0,max=0.01), ncol = length(FVN2))),"dgCMatrix")
 
 # NB phylo matrix has been inverted ####
 
-FViruses$IndexSpace = sapply(FViruses$Sp, function(a) which(FVN==a))
+FViruses <- FViruses[FViruses$Sp%in%FVN2,]
+
+FViruses$IndexSpace = sapply(FViruses$Sp, function(a) which(FVN2 == a))
+FViruses$IndexPhylo = sapply(FViruses$Sp, function(a) which(FVN2 == a))
 
 TestViruses <- FViruses
 
@@ -99,25 +101,24 @@ M1 <- inla(f1,
            family = "gaussian",
            control.compute = list(dic = T))
 
-f2 =  hEigenvector ~ f(IndexSpace, model="generic0", Cmatrix = VirusSpaceContacts,
-                       constr=TRUE,param = c(0.5, 0.5))
+f2 =  vEigenvector ~ f(IndexSpace, model="generic0", Cmatrix = VirusSpaceContacts,
+                       constr=TRUE, param = c(0.5, 0.5))
 
 M2 <- inla(f2, 
            data = TestViruses, 
            family = "gaussian",
            control.compute = list(dic = T))
 
-
-f3 = hEigenvector ~ f(IndexPhylo, model = "generic0", Cmatrix = GRMatrix,
-                      constr = TRUE,param = c(0.5, 0.5))
+f3 = vEigenvector ~ f(IndexPhylo, model = "generic0", Cmatrix = VirusGRMatrix,
+                      constr = TRUE, param = c(0.5, 0.5))
 
 M3 <- inla(f3, 
            data = TestViruses, 
            family = "gaussian",
            control.compute = list(dic = T))
 
-f4 = hEigenvector ~ f(IndexPhylo, model = "generic0", Cmatrix = GRMatrix,
-                      constr = TRUE,param = c(0.5, 0.5)) + 
+f4 = vEigenvector ~ f(IndexPhylo, model = "generic0", Cmatrix = VirusGRMatrix,
+                      constr = TRUE, param = c(0.5, 0.5)) + 
   f(IndexSpace, model="generic0", Cmatrix = VirusSpaceContacts,
     constr=TRUE,param = c(0.5, 0.5))
 
@@ -126,7 +127,7 @@ M4 <- inla(f4,
            family = "gaussian",
            control.compute = list(dic = T))
 
-Models <- list(M1, M2)#, M3)#, M4)
+Models <- list(M1, M2, M3)#, M4)
 
 sapply(Models, function(a) a$dic$dic)
 
