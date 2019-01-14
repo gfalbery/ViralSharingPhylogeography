@@ -33,18 +33,22 @@ FHosts <- FHosts[order(FHosts$Sp),]
 FHosts$Pixels <- diag(RangeOverlap)[FHN]
 FHosts$ViralRichness <- diag(HostAdj)[FHN]
 
-lm1 <- lm(data = LongMatrixdf, PropVirus ~ Space + Phylo)
-
 IM1 <- inla(data = LongMatrixdf, 
             PropVirus ~ Space + Phylo,
-            family = "nbinomial")
+            family = "gamma")
 
-summary(IM1) # Really bad fit
+summary(IM1)
 
 Efxplot(list(IM1))
 
-IM2 <- inla(data = LongMatrixdf, 
+IM1 <- inla(data = LongMatrixdf, # Doesn't fit
             Virus ~ Space + Phylo,
+            control.compute = list(dic = TRUE),
+            family = "nbinomial")
+
+IM2 <- inla(data = LongMatrixdf, # Doesn't fit
+            Virus ~ Space + Phylo,
+            control.compute = list(dic = TRUE),
             family = "zeroinflatednbinomial1")
 
 mf = 1

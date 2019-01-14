@@ -1,7 +1,7 @@
 
 # Making phylogenetic centroids and host range
 
-library(centiserve)
+library(centiserve); library(tidyverse)
 
 VirPhyloHostRangeMax <- sapply(VirusAssocs, function(a){
   
@@ -91,6 +91,7 @@ for(x in unique(Viruses$Sp)[(which(unique(Viruses$Sp)==y)+1):length(unique(Virus
 }
 
 save(CentroidList, file = "data/CentroidList.Rdata")
+load("data/CentroidList.Rdata")
 
 # Creating Viral Host Phylo Matrix ####
 

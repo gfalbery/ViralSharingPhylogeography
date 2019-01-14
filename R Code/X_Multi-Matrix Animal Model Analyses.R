@@ -45,37 +45,49 @@ f4 = hEigenvector ~ f(IndexPhylo, model = "generic0", Cmatrix = GRMatrix,
   f(IndexSpace, model="generic0", Cmatrix = SpaceContacts,
     constr=TRUE,param = c(0.5, 0.5))
 
-M4 <- inla(f4, 
+M4 <- inla(f4, # Takes about an hour ####
            data = TestHosts, 
            family = "gaussian",
            control.compute = list(dic = T))
 
-Models <- list(M1, M2, M3, M4)
+HostMMModels <- list(M1, M2, M3, M4)
 
-sapply(Models, function(a) a$dic$dic)
+sapply(HostMMModels, function(a) a$dic$dic)
+
+save(HostMMModels, file = "Model Files/HostMMModels.Rdata")
 
 # Fitting space sharing and phylogenies both improve centrality fit 
 
 # Extracting variance readings ####
 
 sigma.IndexSpace = inla.emarginal(function(x) 1/x,
-                                  M2$marginals.hyperpar$"Precision for IndexSpace")
-
-e.IndexA = inla.expectation(function(x) x, sigma.IndexSpace)
-ci.IndexA = inla.qmarginal(c(0.025, 0.975), sigma.IndexSpace)
-
-sigma.IndexSpace = inla.emarginal(function(x) 1/x,
                                   M2["marginals.hyperpar"][[1]][["Precision for IndexSpace"]])
 
 ci.IndexSpace = 1/inla.qmarginal(c(0.025, 0.975), 
-                             M2["marginals.hyperpar"][[1]][["Precision for IndexSpace"]]) %>%
+                                 M2["marginals.hyperpar"][[1]][["Precision for IndexSpace"]]) %>%
   rev
 
 sigma.IndexPhylo = inla.emarginal(function(x) 1/x,
                                   M3["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]])
 
 ci.IndexPhylo = 1/inla.qmarginal(c(0.025, 0.975), 
-                             M3["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]]) %>%
+                                 M3["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]]) %>%
+  rev
+
+# From joint models ####
+
+sigma.IndexSpace2 = inla.emarginal(function(x) 1/x,
+                                  M4["marginals.hyperpar"][[1]][["Precision for IndexSpace"]])
+
+ci.IndexSpace2 = 1/inla.qmarginal(c(0.025, 0.975), 
+                                 M4["marginals.hyperpar"][[1]][["Precision for IndexSpace"]]) %>%
+  rev
+
+sigma.IndexPhylo2 = inla.emarginal(function(x) 1/x,
+                                  M4["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]])
+
+ci.IndexPhylo2 = 1/inla.qmarginal(c(0.025, 0.975), 
+                                 M4["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]]) %>%
   rev
 
 # Making Virus dataset ####
@@ -122,7 +134,7 @@ f4 = vEigenvector ~ f(IndexPhylo, model = "generic0", Cmatrix = VirusGRMatrix,
   f(IndexSpace, model="generic0", Cmatrix = VirusSpaceContacts,
     constr=TRUE,param = c(0.5, 0.5))
 
-M4 <- inla(f4, 
+M4 <- inla(f4, # This takes a long time to run 
            data = TestViruses, 
            family = "gaussian",
            control.compute = list(dic = T))
