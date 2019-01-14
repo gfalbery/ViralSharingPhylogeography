@@ -82,12 +82,16 @@ dimnames(RangeOverlap) <- list(levels(Rangedf$Host),levels(Rangedf$Host))
 
 for(x in levels(Rangedf$Host)){
   
+  if(x == first(levels(Rangedf$Host))) t1 <- Sys.time()
+  
   Grids <- Rangedf[Rangedf$Host==x,"GridID"]
   SubRangedf <- Rangedf[Rangedf$GridID %in% Grids,]
   
   RangeOverlap[x,] <- table(SubRangedf$Host)
   
   print(x)
+  
+  if(x == last(levels(Rangedf$Host))) t2 <- Sys.time()
   
 }
 
@@ -119,13 +123,18 @@ ggplot(HostPolygons, aes(long, lat, group = paste(Host, group))) +
   geom_path(data = WorldMap, inherit.aes = F, aes(long, lat, group = group)) +
   geom_path(alpha = 0.6, aes(colour = Host)) + coord_fixed() + theme(legend.position = "none")
 
-# Deriving centroids ####
+# Deriving Host Centroids and Merging ####
 
 HostCentroids <- data.frame(LongMean = with(HostPolygons, tapply(long, Host, mean)),
                             LatMean = with(HostPolygons, tapply(lat, Host, mean)),
                             Host = unique(HostPolygons$Host))
 
+SpatialHosts <- merge(Hosts, HostCentroids, by.x = "Sp", by.y = "Host")
+
+
 # Viral spatial data ####
+
+# Making Viral Associations and Polygons ####
 
 VirusAssocs <- apply(M, 1, function(a) names(a[a>0]))
 
@@ -178,16 +187,11 @@ VirusCentroids <- data.frame(LongMean = with(VirusPolygons, tapply(long, Virus, 
                              LatMean = with(VirusPolygons, tapply(lat, Virus, mean)),
                              Virus = unique(VirusPolygons$Virus))
 
-VirusCentroids2 <- data.frame(LongMean = with(VirusRanges, tapply(long, Virus, mean)),
-                              LatMean = with(VirusRanges, tapply(lat, Virus, mean)),
-                              Virus = unique(VirusRanges$Virus))
-
-# Merging ####
-
-SpatialHosts <- merge(Hosts, HostCentroids, by.x = "Sp", by.y = "Host")
 SpatialViruses <- merge(Viruses, VirusCentroids, by.x = "Sp", by.y = "Virus")
 
-VirusRangeOverlap <- matrix(0, nrow = nunique(SpatialViruses$Sp), 
+# Creating virus range overlap matrix ####
+
+VirusRangeOverlap <- matrix(NA, nrow = nunique(SpatialViruses$Sp), 
                             ncol = nunique(SpatialViruses$Sp))
 
 dimnames(VirusRangeOverlap) <- list(unique(SpatialViruses$Sp),
@@ -204,6 +208,8 @@ for(x in unique(SpatialViruses$Sp)){
   
   VirusRangeOverlap[x,] <- sapply(GridList[unique(SpatialViruses$Sp)], function(y) length(unlist(intersect(GridList[unique(SpatialViruses$Sp)][[which(unique(SpatialViruses$Sp)==x)]], y))))
   
+  print(x)
+  
 }
 
 diag(VirusRangeOverlap) <- sapply(GridList[unique(SpatialViruses$Sp)], length)
@@ -217,6 +223,7 @@ VirusRangeAdj1 <- VirusRangeOverlap/(VirusRangeA + VirusRangeB - VirusRangeOverl
 VirusRangeAdj2 <- VirusRangeOverlap/(VirusRangeA) # Asymmetrical
 
 VirusAssocs[unique(SpatialViruses$Sp)][which(sapply(GridList[unique(SpatialViruses$Sp)], length)==0)]
+
 # Those that have no distribution data include mainly viruses of domestic, human, marine hosts
 
 # Plotting out ####
@@ -251,8 +258,6 @@ ggplot(SpatialViruses, aes(LongMean, LatMean)) +
   labs(x = "Longitude", y = "Latitude") +
   #ggrepel::geom_text_repel(data = SpatialViruses %>% filter(vEigenvector%in%Largest(SpatialViruses$Eigenvector)),aes(label = Sp)) +
   ggsave("Figures/VirusCentroids2.jpg", units = "mm", width = 150, height = 80)
-
-# Combining Centroids and ranges ####
 
 ggplot(SpatialHosts, aes(LongMean, LatMean)) + 
   geom_path(data = WorldMap, inherit.aes = F, aes(long, lat, group = group)) +

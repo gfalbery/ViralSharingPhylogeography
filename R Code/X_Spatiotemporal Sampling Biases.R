@@ -1,6 +1,12 @@
 
 # Looking at spatiotemporal sampling biases ####
 
+NARows <-function(df, vars){
+  apply(as.data.frame(df[,vars]), 1, function(a){
+    any(is.na(a)|a=="Inf"|a=="-Inf")
+  })
+}
+
 # Data frame replication ####
 
 AssocsBase2 <- AssocsBase
@@ -16,9 +22,7 @@ AssocsBase2[!substr(AssocsBase2$Year,
                     nchar(AssocsBase2$Year))%in%c("a","b"),"Year"] <-
   substr(AssocsBase2[!substr(AssocsBase2$Year, 
                              nchar(AssocsBase2$Year),
-                             nchar(AssocsBase2$Year))%in%c("a","b"),"Year"],
-         2,5)
-
+                             nchar(AssocsBase2$Year))%in%c("a","b"),"Year"],2,5)
 
 AssocsBase2[substr(AssocsBase2$Year, 
                    nchar(AssocsBase2$Year),
@@ -35,14 +39,15 @@ AssocsDiscovery <- merge(AssocsBase2,
 
 AssocsDiscovery <- merge(AssocsDiscovery, 
                          SpatialViruses,
-                         by.x = "Virus", by.y = "Sp", all.x = T,
-                         suffixes = c(".Host", ".Virus"))
+                         by.x = "Virus", by.y = "Sp", all.x = T)
+
+AssocsDiscovery %>% dplyr::rename(LongMean.Host = LongMean)
 
 ggplot(data.frame(x = as.numeric(names(table(AssocsDiscovery$Year))),
                   y = cumsum(table(AssocsDiscovery$Year))),
        aes(x, y)) +
   geom_point() + geom_smooth() +
-  labs(x = "Year", y = "Discoveries")
+  labs(x = "Year", y = "Discoveries", title = "Viral Reports Over Time")
 
 colfunc <- colorRampPalette(c("blue", "red"))
 
@@ -85,6 +90,7 @@ ggplot(AssocsDiscovery, aes(LongMean.Virus, LatMean.Virus)) +
 library(INLA)
 
 Vars <- c("LongMean.Host", "LatMean.Host",
+          #"LongMean.Centroid", "LatMean.Centroid",
           "Human", "Domestic",
           "Year")
 
@@ -92,12 +98,14 @@ TestAssocs <- AssocsDiscovery[!NARows(AssocsDiscovery[,Vars]),]
 TestAssocs <- TestAssocs %>% filter(Year>1955)
 
 TestAssocs[,c("LongMean.Host","LatMean.Host")] <- TestAssocs[,c("LongMean.Host","LatMean.Host")]/50000
+# TestAssocs[,c("LongMean.Centroid","LatMean.Centroid")] <- TestAssocs[,c("LongMean.Centroid","LatMean.Centroid")]/50000
 
-HostLocations = cbind(TestAssocs$LongMean.Host, TestAssocs$LatMean.Host)
+Locations = cbind(TestAssocs$LongMean.Host, TestAssocs$LatMean.Host)
+# HostLocations = cbind(TestAssocs$LongMean.Centroid, TestAssocs$LatMean.Centroid)
 
-WorldMesh <- inla.mesh.2d(loc = HostLocations, max.edge = c(10, 25), cutoff = 10)
+WorldMesh <- inla.mesh.2d(loc = Locations, max.edge = c(10, 25), cutoff = 10)
 
-A3 <- inla.spde.make.A(WorldMesh, loc = HostLocations) # Making A matrix
+A3 <- inla.spde.make.A(WorldMesh, loc = Locations) # Making A matrix
 spde = inla.spde2.pcmatern(mesh = WorldMesh, prior.range = c(10, 0.5), prior.sigma = c(.5, .5)) # Making SPDE
 w.index <- inla.spde.make.index('w', n.spde = spde$n.spde)
 
@@ -115,7 +123,7 @@ X<-as.data.frame(Xm[,]) # Model Matrix
 f1 <- as.formula("y ~ -1 + Intercept" )
 f2 <- as.formula(paste0("y ~ -1 + Intercept + ", "f(w, model = spde)"))
 
-DiscoveryStack <- inla.stack(
+ZooDiscoveryStack <- inla.stack(
   data = list(y = TestAssocs[,c("Human")]),  
   A = list(1, A3), # Vector of Multiplication factors              
   effects = list(
@@ -123,24 +131,26 @@ DiscoveryStack <- inla.stack(
     #X = X, # Leave
     w = w.index)) # Leave
 
-DiscoveryIM[[1]] <- inla(f1, # Base model (no random effects)
-                         family = c("binomial"),
-                         data = inla.stack.data(DiscoveryStack),
-                         control.compute = list(dic = TRUE),
-                         control.predictor = list(A = inla.stack.A(DiscoveryStack))
+ZooDiscoveryList <- list()
+
+ZooDiscoveryList[[1]] <- inla(f1, # Base model (no random effects)
+                              family = c("binomial"),
+                              data = inla.stack.data(ZooDiscoveryStack),
+                              control.compute = list(dic = TRUE),
+                              control.predictor = list(A = inla.stack.A(ZooDiscoveryStack))
 )
 
-DiscoveryIM[[2]] <- inla(f2, # f1 + SPDE random effect 
-                         family = c("binomial"),
-                         data = inla.stack.data(DiscoveryStack),
-                         control.compute = list(dic = TRUE),
-                         control.predictor = list(A = inla.stack.A(DiscoveryStack))
+ZooDiscoveryList[[2]] <- inla(f2, # f1 + SPDE random effect 
+                              family = c("binomial"),
+                              data = inla.stack.data(ZooDiscoveryStack),
+                              control.compute = list(dic = TRUE),
+                              control.predictor = list(A = inla.stack.A(ZooDiscoveryStack))
 )
 
-ggField(DiscoveryIM[[2]], WorldMesh) + 
+ggField(ZooDiscoveryList[[2]], WorldMesh) + 
   scale_fill_brewer(palette = AlberPalettes[3]) +
-  geom_path(data = WorldMap/50000, inherit.aes = F, aes(long, lat, group = group)) +
-  geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
+  geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
+  geom_point(data = dplyr::select(TestAssocs, -Group), aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
   labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
        title = "Spatial Autocorrelation in Human Infection Probability") +
   ggsave("Figures/Human Virus Discovery INLA Effect.jpeg", 
@@ -172,7 +182,7 @@ w.st <- inla.spde.make.index(
   n.spde  = spde$n.spde,
   n.repl = NGroup)  
 
-DiscoveryStack2 <- inla.stack(
+ZooDiscoveryStack2 <- inla.stack(
   data = list(y = TestAssocs[,c("Human")]),  
   A = list(1, A3), # Vector of Multiplication factors              
   effects = list(
@@ -180,23 +190,116 @@ DiscoveryStack2 <- inla.stack(
     #X = X, # Leave
     w = w.st)) # Leave
 
-DiscoveryIM[[3]] <- inla(f3, # f1 + annual SPDE random effect w/o correlations 
-                         family = c("binomial"),
-                         data = inla.stack.data(DiscoveryStack2),
-                         control.compute = list(dic = TRUE),
-                         control.predictor = list(A = inla.stack.A(DiscoveryStack2))
+ZooDiscoveryList[[3]] <- inla(f3, # f1 + annual SPDE random effect w/o correlations 
+                              family = c("binomial"),
+                              data = inla.stack.data(ZooDiscoveryStack2),
+                              control.compute = list(dic = TRUE),
+                              control.predictor = list(A = inla.stack.A(ZooDiscoveryStack2))
 )
 
-DiscoveryIM[[4]] <- inla(f4, # f1 + annual SPDE random effect 
-                         family = c("binomial"),
-                         data = inla.stack.data(DiscoveryStack2),
-                         control.compute = list(dic = TRUE),
-                         control.predictor = list(A = inla.stack.A(DiscoveryStack2))
+ZooDiscoveryList[[4]] <- inla(f4, # f1 + annual SPDE random effect 
+                              family = c("binomial"),
+                              data = inla.stack.data(ZooDiscoveryStack2),
+                              control.compute = list(dic = TRUE),
+                              control.predictor = list(A = inla.stack.A(ZooDiscoveryStack2))
 )
 
+Labels <- as.character(paste0(1:NGroup*5 +1950, "-", (1:NGroup+1)*5 +1950))
+names(Labels) <- 1:NGroup
 
-ggField(DiscoveryIM[[2]], WorldMesh, Groups = NGroups) + 
+ggField(ZooDiscoveryList[[3]], WorldMesh, Groups = NGroup) + 
+  facet_wrap(~Group, labeller = labeller(Group = Labels), nrow = 4) +
   scale_fill_brewer(palette = AlberPalettes[3]) +
-  geom_path(data = WorldMap/50000, inherit.aes = F,
-            aes(long, lat))
+  geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
+  geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
+  labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
+       title = "Spatial Autocorrelation in Human Infection Probability") +
+  ggsave("Figures/Spatiotemporal Zoonosis Discovery INLA Effect.jpeg", 
+         units = "mm", height = 300, width = 350, dpi = 300)
 
+sapply(ZooDiscoveryList, function(a) a$dic$dic)
+
+# INLA Models: domestic infection probability ####
+
+DomDiscoveryStack <- inla.stack(
+  data = list(y = TestAssocs[,c("Domestic")]),  
+  A = list(1, A3), # Vector of Multiplication factors              
+  effects = list(
+    Intercept = rep(1, N), # Leave
+    #X = X, # Leave
+    w = w.index)) # Leave
+
+DomDiscoveryList <- list()
+
+DomDiscoveryList[[1]] <- inla(f1, # Base model (no random effects)
+                              family = c("binomial"),
+                              data = inla.stack.data(DomDiscoveryStack),
+                              control.compute = list(dic = TRUE),
+                              control.predictor = list(A = inla.stack.A(DomDiscoveryStack))
+)
+
+DomDiscoveryList[[2]] <- inla(f2, # f1 + SPDE random effect 
+                              family = c("binomial"),
+                              data = inla.stack.data(DomDiscoveryStack),
+                              control.compute = list(dic = TRUE),
+                              control.predictor = list(A = inla.stack.A(DomDiscoveryStack))
+)
+
+sapply(DomDiscoveryList, function(a) a$dic$dic)
+
+ggField(DomDiscoveryList[[2]], WorldMesh) + 
+  scale_fill_brewer(palette = AlberPalettes[3]) +
+  geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
+  geom_point(data = dplyr::select(TestAssocs, -Group), aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
+  labs(x  = "Longitude", y = "Latitude", fill = "Domestic", 
+       title = "Spatial Autocorrelation in Domestic Virus Discovery") +
+  ggsave("Figures/Domestic Virus Discovery INLA Effect.jpeg", 
+         units = "mm", height = 150, width = 200, dpi = 300)
+
+# Trying spatiotemporal model ####
+
+f3 <- y ~ -1 + Intercept + 
+  f(w, model = spde, replicate = w.repl)
+
+f4 <- y ~ -1 + Intercept + 
+  f(w, model = spde, 
+    group = w.group,
+    control.group = list(model="iid"))
+
+DomDiscoveryStack2 <- inla.stack(
+  data = list(y = TestAssocs[,c("Domestic")]),  
+  A = list(1, A3), # Vector of Multiplication factors              
+  effects = list(
+    Intercept = rep(1, N), # Leave
+    #X = X, # Leave
+    w = w.st)) # Leave
+
+DomDiscoveryList[[3]] <- inla(f3, # f1 + annual SPDE random effect w/o correlations 
+                              family = c("binomial"),
+                              data = inla.stack.data(DomDiscoveryStack2),
+                              control.compute = list(dic = TRUE),
+                              control.predictor = list(A = inla.stack.A(DomDiscoveryStack2))
+)
+
+DomDiscoveryList[[4]] <- inla(f4, # f1 + annual SPDE random effect 
+                              family = c("binomial"),
+                              data = inla.stack.data(DomDiscoveryStack2),
+                              control.compute = list(dic = TRUE),
+                              control.predictor = list(A = inla.stack.A(DomDiscoveryStack2))
+)
+
+ggField(DomDiscoveryList[[3]], WorldMesh, Groups = NGroup) + 
+  facet_wrap(~Group, labeller = labeller(Group = Labels), nrow = 4) +
+  scale_fill_brewer(palette = AlberPalettes[3]) +
+  geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
+  geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
+  labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
+       title = "Spatial Autocorrelation in Human Infection Probability") +
+  ggsave("Figures/Spatiotemporal Domestic Virus Discovery INLA Effect.jpeg", 
+         units = "mm", height = 200, width = 300, dpi = 300)
+
+sapply(ZooDiscoveryList, function(a) a$dic$dic)
+
+DiscoveryModelList <- list(ZooDiscoveryList, DomDiscoveryList)
+
+save(DiscoveryModelList, file = "Model Files/Discovery Models.Rdata")
