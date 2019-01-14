@@ -89,6 +89,7 @@ Vars <- c("LongMean.Host", "LatMean.Host",
           "Year")
 
 TestAssocs <- AssocsDiscovery[!NARows(AssocsDiscovery[,Vars]),]
+TestAssocs <- TestAssocs %>% filter(Year>1955)
 
 TestAssocs[,c("LongMean.Host","LatMean.Host")] <- TestAssocs[,c("LongMean.Host","LatMean.Host")]/50000
 
@@ -113,14 +114,6 @@ X<-as.data.frame(Xm[,]) # Model Matrix
 
 f1 <- as.formula("y ~ -1 + Intercept" )
 f2 <- as.formula(paste0("y ~ -1 + Intercept + ", "f(w, model = spde)"))
-f3 <- y ~ -1 + Intercept + 
-  f(w, model = spde, 
-    group = w.group,
-    control.group = list(model="rw1"))
-f4 <- y ~ -1 + Intercept + 
-  f(w, model = spde, 
-    group = w.group,
-    control.group = list(model="iid"))
 
 DiscoveryStack <- inla.stack(
   data = list(y = TestAssocs[,c("Human")]),  
@@ -146,22 +139,38 @@ DiscoveryIM[[2]] <- inla(f2, # f1 + SPDE random effect
 
 ggField(DiscoveryIM[[2]], WorldMesh) + 
   scale_fill_brewer(palette = AlberPalettes[3]) +
-  geom_path(data = WorldMap/50000, inherit.aes = F,
-            aes(long, lat))
+  geom_path(data = WorldMap/50000, inherit.aes = F, aes(long, lat, group = group)) +
+  geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
+  labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
+       title = "Spatial Autocorrelation in Human Infection Probability") +
+  ggsave("Figures/Human Virus Discovery INLA Effect.jpeg", 
+         units = "mm", height = 150, width = 200, dpi = 300)
 
-TestAssocs$Group <- as.numeric(as.factor(TestAssocs$Year))
+# Trying spatiotemporal model ####
+
+f3 <- y ~ -1 + Intercept + 
+  f(w, model = spde, replicate = w.repl)
+
+f4 <- y ~ -1 + Intercept + 
+  f(w, model = spde, 
+    group = w.group,
+    control.group = list(model="iid"))
+
+TestAssocs$Group <- cut(TestAssocs$Year, breaks = rep(0:1000)*5, labels = 1:1000) %>% 
+  droplevels %>% factor %>% as.numeric
+TestAssocs$Group[TestAssocs$Group==13] <- 12
 NGroup <- nunique(TestAssocs$Group)
 
 spde = inla.spde2.pcmatern(mesh = WorldMesh, prior.range = c(10, 0.5), prior.sigma = c(.5, .5)) # Making SPDE
 w.index <- inla.spde.make.index('w', n.spde = spde$n.spde)
 A3 <- inla.spde.make.A(WorldMesh, loc = HostLocations,
-                       group = TestAssocs$Group,
-                       n.group = NGroup) # Making A matrix
+                       repl = as.numeric(TestAssocs$Group),
+                       n.repl = NGroup) # Making A matrix
 
 w.st <- inla.spde.make.index(
   name    = 'w', 
   n.spde  = spde$n.spde,
-  n.group = NGroup)  
+  n.repl = NGroup)  
 
 DiscoveryStack2 <- inla.stack(
   data = list(y = TestAssocs[,c("Human")]),  
@@ -171,7 +180,7 @@ DiscoveryStack2 <- inla.stack(
     #X = X, # Leave
     w = w.st)) # Leave
 
-DiscoveryIM[[3]] <- inla(f4, # f1 + annual SPDE random effect 
+DiscoveryIM[[3]] <- inla(f3, # f1 + annual SPDE random effect w/o correlations 
                          family = c("binomial"),
                          data = inla.stack.data(DiscoveryStack2),
                          control.compute = list(dic = TRUE),
