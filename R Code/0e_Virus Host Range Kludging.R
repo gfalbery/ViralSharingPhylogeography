@@ -44,13 +44,12 @@ VirPhyloHostRangeMedian <- sapply(VirusAssocs, function(a){
 
 Viruses[,c("HostRangeMax",
            "HostRangeMean",
-           "HostRangeMedian",
-           "Hosts")] <- cbind(VirPhyloHostRangeMax[Viruses$Sp],
-                              VirPhyloHostRangeMean[Viruses$Sp],
-                              VirPhyloHostRangeMedian[Viruses$Sp])
+           "HostRangeMedian")] <- cbind(VirPhyloHostRangeMax[Viruses$Sp],
+                                        VirPhyloHostRangeMean[Viruses$Sp],
+                                        VirPhyloHostRangeMedian[Viruses$Sp])
 
 jpeg("Figures/Pairs of records, host range, centrality.jpeg", units = "mm", width = 100, height = 100, res = 300)
-Viruses[,c("Records", "HostRangeMean", "vEigenvector")] %>% mutate(Records = log(Records)) %>% ggpairs(lower = list(continuous = "smooth")) +
+Viruses[,c("Records", "HostRangeMean", "HostRangeMax", "vEigenvector")] %>% mutate(Records = log(Records)) %>% ggpairs(lower = list(continuous = "smooth")) +
   ggtitle("Pairs of records, host range, centrality")
 dev.off()
 

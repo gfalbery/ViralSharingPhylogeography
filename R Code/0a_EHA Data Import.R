@@ -20,7 +20,6 @@ names(AssocsBase)[1:2] <- c("Virus", "Host")
 AssocsBase <- mutate(AssocsBase, Virus = as.factor(Virus), Host = as.factor(Host))
 
 AssocsBase2 <- AssocsBase
-
 AssocsBase2 <- droplevels(AssocsBase[!AssocsBase$Host == "Homo_sapiens"&
   !AssocsBase$Virus == "Rabies_virus",])
 
@@ -50,25 +49,22 @@ HostAdj2 <- HostAdj/(HostA + HostB - HostAdj)
 
 # Deriving metrics from the networks ####
 
-Hosts <- data.frame(Sp = unique(AssocsBase2$Host),
-                    Degree = colSums(ifelse(HostAdj>0,1,0)),
+Hosts <- data.frame(Sp = names(V(Hostgraph)),
+                    Degree = degree(Hostgraph),
                     Eigenvector = eigen_centrality(Hostgraph)$vector,
                     Kcore = coreness(Hostgraph),
                     Between = betweenness(Hostgraph))
 
-Viruses <- data.frame(Sp = unique(AssocsBase2$Virus),
-                      Degree = colSums(ifelse(VirusAdj>0,1,0)),
+Viruses <- data.frame(Sp = names(V(Virusgraph)),
+                      Degree = degree(Virusgraph),
                       Eigenvector = eigen_centrality(Virusgraph)$vector,
                       Kcore = coreness(Virusgraph),
                       Between = betweenness(Virusgraph))
 
-#GGally::ggpairs(Hosts[!Hosts$Sp=="Homo_sapiens",2:5], lower = list(continuous = "smooth"))
-#GGally::ggpairs(Viruses[,2:5], lower = list(continuous = "smooth"))
-
 Hosts <- merge(Hosts, HostTraits, by.x = "Sp", by.y = "hHostNameFinal", all.x = T)
 Viruses <- merge(Viruses, VirusTraits, by.x = "Sp", by.y = "vVirusNameCorrected", all.x = T)
 
-names(Hosts)[which(names(Hosts)=="hWildDomFAO")] <- "hDom"
+Hosts <- Hosts %>% dplyr::rename(hDom = hWildDomFAO)
 
 Domestics <- Hosts[Hosts$hDom == "domestic", "Sp"]
 Wildlife <- Hosts[Hosts$hDom == "wild", "Sp"]
@@ -77,11 +73,23 @@ DomesticViruses <- as.factor(AssocsBase[AssocsBase$Host %in% Domestics, "Virus"]
 WildlifeViruses <- as.factor(AssocsBase[AssocsBase$Host %in% Wildlife, "Virus"])
 HumanViruses <- as.factor(AssocsBase[AssocsBase$Host == "Homo_sapiens", "Virus"])
 
+ZoonoticViruses <- intersect(HumanViruses, WildlifeViruses)
+
 AssocsTraits <- merge(AssocsTraits, HostTraits, by.x = "Host", by.y = "hHostNameFinal", all.x = T)
 AssocsTraits <- merge(AssocsTraits, VirusTraits, by.x = "Virus", by.y = "vVirusNameCorrected", all.x = T)
 
 AssocsTraits$Domestic <- ifelse(AssocsTraits$Host%in%Domestics,1,0)
 AssocsTraits$Wildlife <- ifelse(AssocsTraits$Host%in%Wildlife,1,0)
+AssocsTraits$Zoonosis <- ifelse(AssocsTraits$Virus%in%ZoonoticViruses,1,0)
+
+Hosts <- Hosts %>% 
+  mutate(
+    Domestic = ifelse(Sp %in% Domestics, 1, 0),
+    Wildlife = ifelse(Sp %in% Wildlife, 1, 0),
+    hZoonosisCount = c(table(AssocsTraits[AssocsTraits$Virus%in%ZoonoticViruses,"Host"])),
+    Records = table(AssocsTraits$Host)
+  ) %>%
+  mutate(hZoonosisProp = hZoonosisCount/Records)
 
 Viruses <- Viruses %>%
   mutate(
@@ -99,11 +107,19 @@ Viruses <- Viruses %>%
     
     DomesticCount = c(table(AssocsTraits[AssocsTraits$Domestic == 1,"Virus"])),
     WildlifeCount = c(table(AssocsTraits[AssocsTraits$Wildlife == 1,"Virus"])),
-    
-    PropDomestic = c(table(AssocsTraits[AssocsTraits$Domestic == 1, "Virus"])/
-                       table(AssocsTraits$Virus)),
+    ZoonosisCount = c(table(AssocsTraits[AssocsTraits$Zoonosis == 1,"Virus"])),
+    HumanCount = c(table(AssocsBase[AssocsBase$Host == "Homo_sapiens", "Virus"]))[as.character(Viruses$Sp)],
     
     Records = c(table(AssocsTraits$Virus))
+  ) %>% mutate(
+    
+    
+    PropDomestic = DomesticCount/Records,
+    PropWildlife = WildlifeCount/Records,
+    PropHuman = HumanCount/Records,
+    
+    PropZoonosis = ZoonosisCount/Records
+    
   )
 
 

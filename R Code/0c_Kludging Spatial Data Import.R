@@ -27,6 +27,8 @@ if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata"
   
   AllMammals <- fasterize(mammal_shapes_red[-which(mammal_shapes_red$binomial == "Ursus_maritimus"),], mammal_raster, fun = "sum")
   
+  remove("mammal_raster", "mammal_shapes", "mammal_shapes_red")
+  
 }
 
 data("wrld_simpl")
@@ -43,13 +45,7 @@ WorldPolygons <- lapply(WorldMap@polygons,
 
 for(x in 1:length(WorldPolygons)) WorldPolygons[[x]]$group <- x 
 
-WorldMap <- bind_rows(WorldPolygons) %>% rename(long = V1, lat = V2)
-
-ggplot(WorldMap, aes(long, lat, group = group)) + 
-  geom_polygon(colour = "dark grey", fill = NA) +
-  coord_fixed()
-
-remove("mammal_raster", "mammal_shapes", "mammal_shapes_red")
+WorldMap <- bind_rows(WorldPolygons) %>% dplyr::rename(long = V1, lat = V2)
 
 # THIS DATA FRAME TAKES A LOT OF MEMORY - convert to sparse matrix 
 # Or learn more raster methods before pub ####
@@ -60,7 +56,7 @@ Valuedf2$x <- rep(1:MammalRanges[[1]]@ncols, MammalRanges[[1]]@nrows)
 Valuedf2$y <- rep(MammalRanges[[1]]@nrows:1, each = MammalRanges[[1]]@ncols)
 Rangedf <- Valuedf2[!is.na(Valuedf2$value),]
 Rangedf <- Rangedf %>% 
-  rename(Host = variable, Presence = value)
+  dplyr::rename(Host = variable, Presence = value)
 
 Rangedf$GridID <- with(Rangedf, paste(x, y))
 
@@ -105,19 +101,23 @@ RangeAdj2 <- RangeOverlap/(RangeA) # Asymmetrical
 
 # Making polygons for display ####
 
-HostPolygons <- lapply(levels(Valuedf2$variable), function(x) {
+if(file.exists("data/HostPolygons.Rdata")) load("data/HostPolygons.Rdata") else{
   
-  if(!x%in%Range0){
+  HostPolygons <- lapply(levels(Valuedf2$variable), function(x) {
     
-    r <- MammalRanges[[x]] > -Inf
+    if(!x%in%Range0){
+      
+      r <- MammalRanges[[x]] > -Inf
+      
+      r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
+        mutate(Host = x) %>% return
+    }
     
-    r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
-      mutate(Host = x) %>% return
-  }
+  })
   
-})
-
-HostPolygons <- bind_rows(HostPolygons)
+  HostPolygons <- bind_rows(HostPolygons)
+  
+  save(HostPolygons, file = "data/HostPolygons.Rdata")}
 
 ggplot(HostPolygons, aes(long, lat, group = paste(Host, group))) + 
   geom_path(data = WorldMap, inherit.aes = F, aes(long, lat, group = group)) +
@@ -130,7 +130,6 @@ HostCentroids <- data.frame(LongMean = with(HostPolygons, tapply(long, Host, mea
                             Host = unique(HostPolygons$Host))
 
 SpatialHosts <- merge(Hosts, HostCentroids, by.x = "Sp", by.y = "Host")
-
 
 # Viral spatial data ####
 

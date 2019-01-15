@@ -80,7 +80,7 @@ TestViruses <- SpatialViruses
 
 TestViruses$vEigenvector <- kader:::cuberoot(TestViruses$Eigenvector)
 
-TestViruses[,c("LongMean","LatMean")] <- TestViruses[,c("LongMean","LatMean")]/50000
+TestViruses[,c("LongMean","LatMean")] <- TestViruses[,c("LongMean.Total","LatMean.Total")]/50000
 
 VirusLocations = cbind(TestViruses$LongMean, TestViruses$LatMean)
 
@@ -127,6 +127,8 @@ VirusCentralityList[[2]] <- inla(f2, # f2 + SPDE random effect
                             control.compute = list(dic = TRUE),
                             control.predictor = list(A = inla.stack.A(ViralStack))
 )
+
+sapply(VirusCentralityList, function(a) a$dic$dic) # Slight Improvement
 
 # Plotting ####
 

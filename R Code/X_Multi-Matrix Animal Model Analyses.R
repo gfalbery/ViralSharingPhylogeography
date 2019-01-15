@@ -1,6 +1,8 @@
 
 # Fitting Animal Models using matrices ####
 
+load("Model Files/HostMMModels.Rdata")
+
 # Making Host Data ####
 
 SpaceContacts <- as(solve(RangeAdj1[FHN, FHN]),"dgCMatrix")
@@ -60,35 +62,25 @@ save(HostMMModels, file = "Model Files/HostMMModels.Rdata")
 
 # Extracting variance readings ####
 
-sigma.IndexSpace = inla.emarginal(function(x) 1/x,
-                                  HostMMModels[[2]]["marginals.hyperpar"][[1]][["Precision for IndexSpace"]])
-
-ci.IndexSpace = 1/inla.qmarginal(c(0.025, 0.975), 
-                                 HostMMModels[[2]]["marginals.hyperpar"][[1]][["Precision for IndexSpace"]]) %>%
-  rev
-
-sigma.IndexPhylo = inla.emarginal(function(x) 1/x,
-                                  HostMMModels[[3]]["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]])
-
-ci.IndexPhylo = 1/inla.qmarginal(c(0.025, 0.975), 
-                                 HostMMModels[[3]]["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]]) %>%
-  rev
+INLARep(HostMMModels[[2]], "IndexSpace")
+INLARep(HostMMModels[[3]], "IndexPhylo")
 
 # From joint models ####
 
-sigma.IndexSpace2 = inla.emarginal(function(x) 1/x,
-                                   HostMMModels[[4]]["marginals.hyperpar"][[1]][["Precision for IndexSpace"]])
+# Extracting variance readings ####
 
-ci.IndexSpace2 = 1/inla.qmarginal(c(0.025, 0.975), 
-                                  HostMMModels[[4]]["marginals.hyperpar"][[1]][["Precision for IndexSpace"]]) %>%
-  rev
+MySqrt <- function(x) {1 / sqrt(x) }
+tau <- Model$marginals.hyperpar$`Precision for the Gaussian observations`
+sigma <- inla.emarginal(MySqrt, tau)
+sigma
 
-sigma.IndexPhylo2 = inla.emarginal(function(x) 1/x,
-                                   HostMMModels[[4]]["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]])
+sigma2 <- inla.emarginal(MySqrt, Model$marginals.hyperpar[[paste0("Precision for ", "IndexSpace")]])
+sigma3 <- inla.emarginal(MySqrt, Model$marginals.hyperpar[[paste0("Precision for ", "IndexPhylo")]])
 
-ci.IndexPhylo2 = 1/inla.qmarginal(c(0.025, 0.975), 
-                                  HostMMModels[[4]]["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]]) %>%
-  rev
+list(IndexSpace = sigma2^2/(sigma^2 + sigma2^2 + sigma3^2),
+     IndexPhylo = sigma3^2/(sigma^2 + sigma2^2 + sigma3^2))
+
+# Phylogenetic relatedness feeds more into centrality in the network than spatial sharing does???
 
 # Making Virus dataset ####
 
@@ -145,28 +137,6 @@ sapply(VirusMMModels, function(a) a$dic$dic)
 
 # Fitting matrices do not improve centrality model fit #### 
 
-# Extracting variance readings ####
-
-sigma.IndexSpace = inla.emarginal(function(x) 1/x,
-                                  VirusMMModels[[2]]$marginals.hyperpar$"Precision for IndexSpace")
-
-e.IndexA = inla.expectation(function(x) x, sigma.IndexSpace)
-ci.IndexA = inla.qmarginal(c(0.025, 0.975), sigma.IndexSpace)
-
-sigma.IndexSpace = inla.emarginal(function(x) 1/x,
-                                  VirusMMModels[[2]]["marginals.hyperpar"][[1]][["Precision for IndexSpace"]])
-
-ci.IndexSpace = 1/inla.qmarginal(c(0.025, 0.975), 
-                                 VirusMMModels[[2]]["marginals.hyperpar"][[1]][["Precision for IndexSpace"]]) %>%
-  rev
-
-sigma.IndexPhylo = inla.emarginal(function(x) 1/x,
-                                  VirusMMModels[[3]]["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]])
-
-ci.IndexPhylo = 1/inla.qmarginal(c(0.025, 0.975), 
-                                 VirusMMModels[[3]]["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]]) %>%
-  rev
-
 # Do space and phylogeny affect zoonotic capacity? ####
 
 ZooMMModels <- list()
@@ -207,28 +177,6 @@ ZooMMModels[[4]] <- inla(f4, # This takes a long time to run
 sapply(ZooMMModels, function(a) a$dic$dic)
 
 # Nothing improves zoonotic 0/1 models 
-
-# Extracting variance readings ####
-
-sigma.IndexSpace = inla.emarginal(function(x) 1/x,
-                                  ZooMMModels[[2]]$marginals.hyperpar$"Precision for IndexSpace")
-
-e.IndexA = inla.expectation(function(x) x, sigma.IndexSpace)
-ci.IndexA = inla.qmarginal(c(0.025, 0.975), sigma.IndexSpace)
-
-sigma.IndexSpace = inla.emarginal(function(x) 1/x,
-                                  ZooMMModels[[2]]["marginals.hyperpar"][[1]][["Precision for IndexSpace"]])
-
-ci.IndexSpace = 1/inla.qmarginal(c(0.025, 0.975), 
-                                 ZooMMModels[[2]]["marginals.hyperpar"][[1]][["Precision for IndexSpace"]]) %>%
-  rev
-
-sigma.IndexPhylo = inla.emarginal(function(x) 1/x,
-                                  ZooMMModels[[3]]["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]])
-
-ci.IndexPhylo = 1/inla.qmarginal(c(0.025, 0.975), 
-                                 ZooMMModels[[3]]["marginals.hyperpar"][[1]][["Precision for IndexPhylo"]]) %>%
-  rev
 
 # Do space and phylogeny affect domestic infection capacity? ####
 

@@ -1,6 +1,8 @@
 
 # Looking at spatiotemporal sampling biases ####
 
+load("Model Files/Discovery Models.Rdata")
+
 NARows <-function(df, vars){
   apply(as.data.frame(df[,vars]), 1, function(a){
     any(is.na(a)|a=="Inf"|a=="-Inf")
@@ -41,13 +43,15 @@ AssocsDiscovery <- merge(AssocsDiscovery,
                          SpatialViruses,
                          by.x = "Virus", by.y = "Sp", all.x = T)
 
-AssocsDiscovery %>% dplyr::rename(LongMean.Host = LongMean)
+AssocsDiscovery <- AssocsDiscovery %>% dplyr::rename(LongMean.Host = LongMean, LatMean.Host = LatMean)
 
 ggplot(data.frame(x = as.numeric(names(table(AssocsDiscovery$Year))),
                   y = cumsum(table(AssocsDiscovery$Year))),
        aes(x, y)) +
-  geom_point() + geom_smooth() +
-  labs(x = "Year", y = "Discoveries", title = "Viral Reports Over Time")
+  geom_point() + geom_smooth(colour = AlberColours[3]) +
+  labs(x = "Year", y = "HP3 References", title = "Viral Reports Over Time") +
+  ggsave("Figures/Reference discovery over time.jpeg", 
+         units = "mm", width= 100, height = 100, dpi = 300)  
 
 colfunc <- colorRampPalette(c("blue", "red"))
 
@@ -73,7 +77,7 @@ ggplot(AssocsDiscovery, aes(LongMean.Host, LatMean.Host)) +
        title = "Viral Discovery Host Location in Space and Time") +
   coord_fixed()
 
-ggplot(AssocsDiscovery, aes(LongMean.Virus, LatMean.Virus)) + 
+ggplot(AssocsDiscovery, aes(LongMean.Total, LatMean.Total)) + 
   geom_path(data = WorldMap, aes(long, lat, group = group)) +
   #facet_wrap(~Year) + 
   #theme(legend.position = "none") +
@@ -99,6 +103,11 @@ TestAssocs <- TestAssocs %>% filter(Year>1955)
 
 TestAssocs[,c("LongMean.Host","LatMean.Host")] <- TestAssocs[,c("LongMean.Host","LatMean.Host")]/50000
 # TestAssocs[,c("LongMean.Centroid","LatMean.Centroid")] <- TestAssocs[,c("LongMean.Centroid","LatMean.Centroid")]/50000
+
+TestAssocs$Group <- cut(TestAssocs$Year, breaks = rep(0:1000)*5, labels = 1:1000) %>% 
+  droplevels %>% factor %>% as.numeric
+TestAssocs$Group[TestAssocs$Group==13] <- 12
+NGroup <- nunique(TestAssocs$Group)
 
 Locations = cbind(TestAssocs$LongMean.Host, TestAssocs$LatMean.Host)
 # HostLocations = cbind(TestAssocs$LongMean.Centroid, TestAssocs$LatMean.Centroid)
@@ -173,7 +182,7 @@ NGroup <- nunique(TestAssocs$Group)
 
 spde = inla.spde2.pcmatern(mesh = WorldMesh, prior.range = c(10, 0.5), prior.sigma = c(.5, .5)) # Making SPDE
 w.index <- inla.spde.make.index('w', n.spde = spde$n.spde)
-A3 <- inla.spde.make.A(WorldMesh, loc = HostLocations,
+A3 <- inla.spde.make.A(WorldMesh, loc = Locations,
                        repl = as.numeric(TestAssocs$Group),
                        n.repl = NGroup) # Making A matrix
 
@@ -213,13 +222,17 @@ ggField(ZooDiscoveryList[[3]], WorldMesh, Groups = NGroup) +
   geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
   geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
   labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
-       title = "Spatial Autocorrelation in Human Infection Probability") +
+       title = "Spatiotemporal Autocorrelation in Human Infection Probability") +
   ggsave("Figures/Spatiotemporal Zoonosis Discovery INLA Effect.jpeg", 
          units = "mm", height = 300, width = 350, dpi = 300)
 
 sapply(ZooDiscoveryList, function(a) a$dic$dic)
 
 # INLA Models: domestic infection probability ####
+
+A3 <- inla.spde.make.A(WorldMesh, loc = Locations) # Making A matrix
+spde = inla.spde2.pcmatern(mesh = WorldMesh, prior.range = c(10, 0.5), prior.sigma = c(.5, .5)) # Making SPDE
+w.index <- inla.spde.make.index('w', n.spde = spde$n.spde)
 
 DomDiscoveryStack <- inla.stack(
   data = list(y = TestAssocs[,c("Domestic")]),  
@@ -266,6 +279,17 @@ f4 <- y ~ -1 + Intercept +
     group = w.group,
     control.group = list(model="iid"))
 
+spde = inla.spde2.pcmatern(mesh = WorldMesh, prior.range = c(10, 0.5), prior.sigma = c(.5, .5)) # Making SPDE
+w.index <- inla.spde.make.index('w', n.spde = spde$n.spde)
+A3 <- inla.spde.make.A(WorldMesh, loc = Locations,
+                       repl = as.numeric(TestAssocs$Group),
+                       n.repl = NGroup) # Making A matrix
+
+w.st <- inla.spde.make.index(
+  name    = 'w', 
+  n.spde  = spde$n.spde,
+  n.repl = NGroup)  
+
 DomDiscoveryStack2 <- inla.stack(
   data = list(y = TestAssocs[,c("Domestic")]),  
   A = list(1, A3), # Vector of Multiplication factors              
@@ -294,11 +318,11 @@ ggField(DomDiscoveryList[[3]], WorldMesh, Groups = NGroup) +
   geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
   geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
   labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
-       title = "Spatial Autocorrelation in Human Infection Probability") +
+       title = "Spatial Autocorrelation in Domestic Infection Probability") +
   ggsave("Figures/Spatiotemporal Domestic Virus Discovery INLA Effect.jpeg", 
          units = "mm", height = 200, width = 300, dpi = 300)
 
-sapply(ZooDiscoveryList, function(a) a$dic$dic)
+sapply(DomDiscoveryList, function(a) a$dic$dic)
 
 DiscoveryModelList <- list(ZooDiscoveryList, DomDiscoveryList)
 
