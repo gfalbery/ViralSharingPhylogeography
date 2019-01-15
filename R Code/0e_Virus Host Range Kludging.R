@@ -3,14 +3,18 @@
 
 library(centiserve); library(tidyverse); library(GGally)
 
+human <- which(rownames(CytBMatrix) == "Homo_sapiens")
+
+nhCytBMatrix <- CytBMatrix[-human,-human] # Want this to be non-human host range 
+
 VirPhyloHostRangeMax <- sapply(VirusAssocs, function(a){
   
-  if(length(a[a%in%rownames(CytBMatrix)])>0){
+  if(length(a[a%in%rownames(nhCytBMatrix)])>0){
     
-    b <- a[a%in%rownames(CytBMatrix)]
+    b <- a[a%in%rownames(nhCytBMatrix)]
     
     if(length(b)>1){
-      max(CytBMatrix[b, b][upper.tri(CytBMatrix[b, b])])
+      max(nhCytBMatrix[b, b][upper.tri(nhCytBMatrix[b, b])])
     } else 0
   } else NA
   
@@ -18,12 +22,12 @@ VirPhyloHostRangeMax <- sapply(VirusAssocs, function(a){
 
 VirPhyloHostRangeMean <- sapply(VirusAssocs, function(a){
   
-  if(length(a[a%in%rownames(CytBMatrix)])>0){
+  if(length(a[a%in%rownames(nhCytBMatrix)])>0){
     
-    b <- a[a%in%rownames(CytBMatrix)]
+    b <- a[a%in%rownames(nhCytBMatrix)]
     
     if(length(b)>1){
-      mean(CytBMatrix[b, b][upper.tri(CytBMatrix[b, b])])
+      mean(nhCytBMatrix[b, b][upper.tri(nhCytBMatrix[b, b])])
     } else 0
   } else NA
   
@@ -31,12 +35,12 @@ VirPhyloHostRangeMean <- sapply(VirusAssocs, function(a){
 
 VirPhyloHostRangeMedian <- sapply(VirusAssocs, function(a){
   
-  if(length(a[a%in%rownames(CytBMatrix)])>0){
+  if(length(a[a%in%rownames(nhCytBMatrix)])>0){
     
-    b <- a[a%in%rownames(CytBMatrix)]
+    b <- a[a%in%rownames(nhCytBMatrix)]
     
     if(length(b)>1){
-      median(CytBMatrix[b, b][upper.tri(CytBMatrix[b, b])])
+      median(nhCytBMatrix[b, b][upper.tri(nhCytBMatrix[b, b])])
     } else 0
   } else NA
   
@@ -44,9 +48,9 @@ VirPhyloHostRangeMedian <- sapply(VirusAssocs, function(a){
 
 Viruses[,c("HostRangeMax",
            "HostRangeMean",
-           "HostRangeMedian")] <- cbind(VirPhyloHostRangeMax[Viruses$Sp],
-                                        VirPhyloHostRangeMean[Viruses$Sp],
-                                        VirPhyloHostRangeMedian[Viruses$Sp])
+           "HostRangeMedian")] <- cbind(VirPhyloHostRangeMax[as.character(Viruses$Sp)],
+                                        VirPhyloHostRangeMean[as.character(Viruses$Sp)],
+                                        VirPhyloHostRangeMedian[as.character(Viruses$Sp)])
 
 jpeg("Figures/Pairs of records, host range, centrality.jpeg", units = "mm", width = 100, height = 100, res = 300)
 Viruses[,c("Records", "HostRangeMean", "HostRangeMax", "vEigenvector", "vDegree")] %>% 
@@ -66,14 +70,14 @@ PhyloGraph <- graph.adjacency(1-M2, weighted = T, mode = "undirected", diag = F)
 
 SubGraphList <- CentroidList <- list()
 
-for(x in unique(Viruses$Sp)){
+for(x in unique(as.character(Viruses$Sp))){
   SubGraph <- induced_subgraph(PhyloGraph, V(PhyloGraph)$name%in%VirusAssocs[[x]])
   SubGraphList[[x]] <- SubGraph
 }
 
 if(file.exists("data/CentroidList.Rdata")) load("data/CentroidList.Rdata") else {
     
-  for(x in unique(Viruses$Sp)){
+  for(x in unique(as.character(Viruses$Sp))){
     
     if(class(try(centroid(SubGraph[[x]]), silent = T)) != "try-error"){ # Throws up errors with cliques.
       SubCentroids <- centroid(SubGraph[[x]])

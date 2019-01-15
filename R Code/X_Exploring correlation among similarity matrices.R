@@ -1,10 +1,15 @@
 # X_ Exploring Similarity Matrix Models
 
-IM1 <- inla(data = LongMatrixdf, 
-            PropVirus ~ Space + Phylo,
-            family = "gamma")
+LowerHosts <- which(lower.tri(HostAdj[FHN,FHN], diag  = T))
 
-summary(IM1)
+LongMatrixdf$PropVirus[LongMatrixdf$PropVirus==0] <- 0.0001
+LongMatrixdf$PropVirus[LongMatrixdf$PropVirus==1] <- 0.9999
+
+IM1 <- inla(data = LongMatrixdf[-HostThemselves,], 
+            PropVirus ~ Space + Phylo,
+            family = "beta")
+
+summary(IM1) # Interesting space is more important here ####
 
 Efxplot(list(IM1))
 
@@ -39,6 +44,57 @@ MC3 <- MCMCglmm(data = LongMatrixdf,
                 family = "zipoisson",
                 nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
                 thin = 10*mf,burnin=3000*mf)
+
+
+arrange_ggplot2(list(
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Space, Phylo)) + 
+    geom_point(colour = AlberColours[1], alpha = 0.3) + geom_smooth(colour = "black") +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
+    #coord_fixed(ratio = max(LongMatrixdf$Space)/max(LongMatrixdf$Phylo))
+    labs(title = "Space ~ Phylogeny"), #+ ggpubr::stat_cor(method = "spearman"),
+  
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Space, Virus)) + 
+    geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(colour = "black") +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
+    labs(title = "Sharing ~ Space"),# + ggpubr::stat_cor(method = "spearman"),
+  
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Phylo, Virus)) + 
+    geom_point(colour = AlberColours[3], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
+    labs(title = "Sharing ~ Phylogeny")# + ggpubr::stat_cor(method = "spearman")
+  
+), ncol = 3)
+
+
+arrange_ggplot2(list(
+  
+  ggplot(LongMatrixdf[-LowerHosts,], aes(Space, PropVirus)) + 
+    geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
+    labs(title = "Sharing ~ Space") + ggpubr::stat_cor(method = "spearman"),
+  
+  ggplot(LongMatrixdf[-LowerHosts,], aes(Space, PropVirus2)) + 
+    geom_point(colour = AlberColours[3], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
+    labs(title = "Sharing2 ~ Space") + ggpubr::stat_cor(method = "spearman")
+  
+), ncol = 2)
+
+
+arrange_ggplot2(list(
+  
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Space, PropVirus)) + 
+    geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
+    labs(title = "Sharing ~ Space") + ggpubr::stat_cor(method = "spearman"),
+  
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Space, PropVirus2)) + 
+    geom_point(colour = AlberColours[3], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
+    labs(title = "Sharing2 ~ Space") + ggpubr::stat_cor(method = "spearman")
+  
+), ncol = 2)
+
 
 library(GGally)
 

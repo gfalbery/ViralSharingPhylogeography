@@ -210,7 +210,7 @@ names(Labels) <- 1:NGroup
 ggField(ZooDiscoveryList[[3]], WorldMesh, Groups = NGroup) + 
   facet_wrap(~Group, labeller = labeller(Group = Labels), nrow = 4) +
   scale_fill_brewer(palette = AlberPalettes[3]) +
-  geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
+  geom_path(data = WorldMap/50000,  colour = "black",inherit.aes = F, aes(long, lat, group = group)) +
   geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
   labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
        title = "Spatiotemporal Autocorrelation in Human Infection Probability") +
@@ -226,7 +226,7 @@ spde = inla.spde2.pcmatern(mesh = WorldMesh, prior.range = c(10, 0.5), prior.sig
 w.index <- inla.spde.make.index('w', n.spde = spde$n.spde)
 
 DomDiscoveryStack <- inla.stack(
-  data = list(y = TestAssocs[,c("Domestic")]),  
+  data = list(y = TestAssocs[,c("Domestic.Virus")]),  
   A = list(1, A3), # Vector of Multiplication factors              
   effects = list(
     Intercept = rep(1, N), # Leave
@@ -282,7 +282,7 @@ w.st <- inla.spde.make.index(
   n.repl = NGroup)  
 
 DomDiscoveryStack2 <- inla.stack(
-  data = list(y = TestAssocs[,c("Domestic")]),  
+  data = list(y = TestAssocs[,c("Domestic.Virus")]),  
   A = list(1, A3), # Vector of Multiplication factors              
   effects = list(
     Intercept = rep(1, N), # Leave
@@ -308,7 +308,7 @@ ggField(DomDiscoveryList[[3]], WorldMesh, Groups = NGroup) +
   scale_fill_brewer(palette = AlberPalettes[3]) +
   geom_path(data = WorldMap/50000,  inherit.aes = F, aes(long, lat, group = group)) +
   geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
-  labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
+  labs(x  = "Longitude", y = "Latitude", fill = "Domestic", 
        title = "Spatial Autocorrelation in Domestic Infection Probability") +
   ggsave("Figures/Spatiotemporal Domestic Virus Discovery INLA Effect.jpeg", 
          units = "mm", height = 200, width = 300, dpi = 300)
@@ -317,4 +317,5 @@ sapply(DomDiscoveryList, function(a) a$dic$dic)
 
 DiscoveryModelList <- list(ZooDiscoveryList, DomDiscoveryList)
 
-save(ZooDiscoveryList, DomDiscoveryList, file = "Model Files/Discovery Models.Rdata")
+save(ZooDiscoveryList, file = "Model Files/Human Discovery Models.Rdata")
+save(DomDiscoveryList, file = "Model Files/Domestic Discovery Models.Rdata")

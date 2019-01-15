@@ -40,12 +40,14 @@ diag(VirusAdj) <- table(AssocsBase2$Virus)
 VirusA <- matrix(rep(table(AssocsBase2$Virus), nrow(VirusAdj)), nrow(VirusAdj))
 VirusB <- matrix(rep(table(AssocsBase2$Virus), each = nrow(VirusAdj)), nrow(VirusAdj))
 VirusAdj2 <- VirusAdj/(VirusA + VirusB - VirusAdj)
+VirusAdj3 <- VirusAdj/(VirusA) # Asymmetrical
 
 HostAdj <- as.matrix(get.adjacency(Hostgraph, attr = "weight"))
 diag(HostAdj) <- table(AssocsBase2$Host)
 HostA <- matrix(rep(table(AssocsBase2$Host), nrow(HostAdj)), nrow(HostAdj))
 HostB <- matrix(rep(table(AssocsBase2$Host), each = nrow(HostAdj)), nrow(HostAdj))
 HostAdj2 <- HostAdj/(HostA + HostB - HostAdj)
+HostAdj3 <- HostAdj/(HostA)
 
 # Deriving metrics from the networks ####
 

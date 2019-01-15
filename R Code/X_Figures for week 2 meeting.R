@@ -3,7 +3,6 @@
 
 library(grid)
 
-
 # Are domestic viruses more central? ####
 
 BarGraph(Hosts, "hDom", "Eigenvector", text = "N") +
@@ -21,7 +20,32 @@ ggplot(Hosts, aes(log(hAllZACites+1), kader:::cuberoot(Eigenvector), colour = hD
   labs(colour = "Domestic", title = "Publication Bias in Centrality") +
   ggsave("Figures/Domestic Publication Bias.jpeg", 
          units = "mm", height = 100, width = 100, dpi = 300)
+
+# Space and Phylogeny correlate with viral sharing
+
+jpeg("Figures/Space and phylogeny correlate with viral sharing.jpeg", units = "mm", width = 200, height = 100, res = 300)
+
+arrange_ggplot2(list(
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Space, Phylo)) + 
+    geom_point(colour = AlberColours[1], alpha = 0.3) + geom_smooth(colour = "black") +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
+    #coord_fixed(ratio = max(LongMatrixdf$Space)/max(LongMatrixdf$Phylo))
+    labs(title = "Space ~ Phylogeny"), #+ ggpubr::stat_cor(method = "spearman"),
   
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Space, Virus)) + 
+    geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(colour = "black") +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
+    labs(title = "Sharing ~ Space"),# + ggpubr::stat_cor(method = "spearman"),
+  
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Phylo, Virus)) + 
+    geom_point(colour = AlberColours[3], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
+    labs(title = "Sharing ~ Phylogeny")# + ggpubr::stat_cor(method = "spearman")
+  
+), ncol = 3)
+
+dev.off()
+
 # Do domestics harbour more zoonoses?
 
 jpeg("Figures/Domestics do not harbour more zoonoses.jpeg", units = "mm", width = 200, height = 100, res = 300)
@@ -58,6 +82,17 @@ arrange_ggplot2(list(
 
 dev.off()
 
+Viruses %>% BarGraph("Domestic", "Human", "Wildlife", text = "N") + scale_fill_brewer(palette = AlberPalettes[2]) +
+  scale_x_continuous(breaks = 0:1) + ggsave("Figures/Domestic Virus_Wildlife Virus interactions.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
+
+BarBarGraph(Viruses, "DomWild", "HostRangeMean", "Human") + 
+  scale_color_manual(values = brewer.pal(6, AlberPalettes[4])[c(6,5,1)]) +
+  ggsave("Figures/Domestic Virus_Wildlife Virus interactions2.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
+
+BarBarGraph(Viruses, "DomWild", "Centroid_Human_Distance", "Human") + 
+  scale_color_manual(values = brewer.pal(6, AlberPalettes[4])[c(6,5,1)])
+  ggsave("Figures/Domestic Virus_Wildlife Virus interactions3.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
+
 jpeg("Figures/Domestics do not host more zoonoses2.jpeg", units = "mm", width = 200, height = 100, res = 300)
 
 arrange_ggplot2(list(
@@ -88,9 +123,9 @@ ggplot(Hosts, aes(log(DOMYearBP), c(hZoonosisCount))) + geom_point() +
 ggplot(Hosts, aes(log(DOMYearBP), c(hZoonosisProp))) + geom_point() +
   labs(y = "Proportion Zoonotic Viruses") +
   ggrepel::geom_text_repel(aes(label = Sp), 
-                            data = Hosts[Hosts$hZoonosisProp>0.5,],
-                            arrow = arrow(length = unit(0.03, "npc")),
-                            segment.size = 0.2, segment.color = "black") +
+                           data = Hosts[Hosts$hZoonosisProp>0.5,],
+                           arrow = arrow(length = unit(0.03, "npc")),
+                           segment.size = 0.2, segment.color = "black") +
   coord_fixed(ratio = 7) +
   ggsave("Figures/Time since domestication and proportion zoonoses.jpeg",
          units = "mm", width = 100, height = 100, dpi = 300)

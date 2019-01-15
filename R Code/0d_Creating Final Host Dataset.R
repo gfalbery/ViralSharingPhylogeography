@@ -11,6 +11,7 @@ FHN <- FinalHostNames; length(FHN)
 
 LongMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            PropVirus = c(HostAdj2[FHN, FHN]),
+                           PropVirus2 = c(HostAdj3[FHN, FHN]),
                            Space = c(RangeAdj1[FHN, FHN]),
                            Phylo = c(1-CytBMatrix[FHN, FHN]) # Gonna invert this
 )

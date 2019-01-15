@@ -70,15 +70,36 @@ INLARep(HostMMModels[[3]], "IndexPhylo")
 # Extracting variance readings ####
 
 MySqrt <- function(x) {1 / sqrt(x) }
-tau <- Model$marginals.hyperpar$`Precision for the Gaussian observations`
+tau <- HostMMModels[[4]]$marginals.hyperpar$`Precision for the Gaussian observations`
 sigma <- inla.emarginal(MySqrt, tau)
 sigma
 
-sigma2 <- inla.emarginal(MySqrt, Model$marginals.hyperpar[[paste0("Precision for ", "IndexSpace")]])
-sigma3 <- inla.emarginal(MySqrt, Model$marginals.hyperpar[[paste0("Precision for ", "IndexPhylo")]])
+sigma2 <- inla.emarginal(MySqrt, HostMMModels[[4]]$marginals.hyperpar[[paste0("Precision for ", "IndexSpace")]])
+sigma3 <- inla.emarginal(MySqrt, HostMMModels[[4]]$marginals.hyperpar[[paste0("Precision for ", "IndexPhylo")]])
+
+allvar <- sigma^2 + sigma2^2 + sigma3^2
+
+Sigma1 <- sigma^2/allvar
+Sigma2 <- sigma2^2/allvar
+Sigma3 <- sigma3^2/allvar
 
 list(IndexSpace = sigma2^2/(sigma^2 + sigma2^2 + sigma3^2),
      IndexPhylo = sigma3^2/(sigma^2 + sigma2^2 + sigma3^2))
+
+df = data.frame(Model = c("Space", "Space", "Phylo", "Phylo", "Both", "Both", "Both"),
+                Var = c("Resid", "Space", "Resid", "Phylo", "Resid", "Space", "Phylo"),
+                Value = c(1-INLARep(HostMMModels[[2]], "IndexSpace")$Estimate, 
+                          INLARep(HostMMModels[[2]], "IndexSpace")$Estimate,
+                          1-INLARep(HostMMModels[[3]], "IndexPhylo")$Estimate,
+                          INLARep(HostMMModels[[3]], "IndexPhylo")$Estimate,
+                          Sigma1, Sigma2, Sigma3))
+
+df$Var = factor(df$Var, levels = c("Resid", "Space", "Phylo"))
+df$Model = factor(df$Model, levels = c("Space", "Phylo", "Both"))
+
+ggplot(df, aes(Model, Value, fill = Var)) + geom_col(position = "stack") + 
+  scale_fill_manual(values = c("grey", "#2C7FB8","#DE2D26")) + labs(y = "Variance accounted for", fill = "Component") +
+  ggsave("Figures/Variance Components.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
 
 # Phylogenetic relatedness feeds more into centrality in the network than spatial sharing does???
 
