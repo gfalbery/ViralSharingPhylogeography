@@ -66,15 +66,17 @@ PhyloGraph <- graph.adjacency(1-M2, weighted = T, mode = "undirected", diag = F)
 
 SubGraphList <- CentroidList <- list()
 
+for(x in unique(Viruses$Sp)){
+  SubGraph <- induced_subgraph(PhyloGraph, V(PhyloGraph)$name%in%VirusAssocs[[x]])
+  SubGraphList[[x]] <- SubGraph
+}
+
 if(file.exists("data/CentroidList.Rdata")) load("data/CentroidList.Rdata") else {
-  
+    
   for(x in unique(Viruses$Sp)){
     
-    SubGraph <- induced_subgraph(PhyloGraph, V(PhyloGraph)$name%in%VirusAssocs[[x]])
-    SubGraphList[[x]] <- SubGraph
-    
-    if(class(try(centroid(SubGraph), silent = T)) != "try-error"){ # Throws up errors with cliques.
-      SubCentroids <- centroid(SubGraph)
+    if(class(try(centroid(SubGraph[[x]]), silent = T)) != "try-error"){ # Throws up errors with cliques.
+      SubCentroids <- centroid(SubGraph[[x]])
       Centroids <- names(SubCentroids[SubCentroids==min(SubCentroids)])
       CentroidList[[x]] <- Centroids
     } else CentroidList[[x]] <- NA
@@ -127,11 +129,6 @@ for(i in rownames(VirusHostPD)){
   print(i)
 }
 
-FVN2 <- reduce(list(SpatialViruses$Sp, 
-                    colnames(VirusHostPD)[-which(is.na(VirusHostPD[1,]))],
-                    rownames(VirusRangeAdj1)[which(sapply(GridList[unique(SpatialViruses$Sp)], length)>0)]), 
-               intersect)
-
 # Calculating Distance from Humans ####
 
 Viruses$Centroid_Human_Distance <- sapply(
@@ -173,13 +170,6 @@ CentroidCentroids <- lapply(
   }
 ) %>% bind_rows
 
-SpatialViruses <- merge(SpatialViruses, CentroidCentroids, by = "Sp", all.x = T, suffixes = c(".Total", ".Centroid"))
-
-ggplot(SpatialViruses, aes(LatMean.Total, LatMean.Centroid)) + geom_point() + coord_fixed()
-ggplot(SpatialViruses, aes(LongMean.Total, LongMean.Centroid)) + geom_point() + coord_fixed()
-
-ggplot(SpatialViruses, aes(LongMean.Centroid, LatMean.Centroid)) + 
-  geom_path(data = WorldMap, inherit.aes = F, aes(long, lat, group = group)) +
-  geom_point(alpha = 0.6, colour = AlberColours[5]) + 
-  coord_fixed() + ggtitle("Virus Spatial Centroids of Centroid Host") +
-  labs(x = "Longitude", y = "Latitude")
+Viruses <- merge(Viruses, CentroidCentroids, 
+                 by = "Sp", all.x = T, 
+                 suffixes = c(".Total", ".Centroid"))

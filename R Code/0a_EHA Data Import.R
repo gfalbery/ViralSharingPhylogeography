@@ -132,11 +132,11 @@ vCentrality <- c("vDegree", "vEigenvector", "vCore")
 vDists <- c("gaussian", "beta", "binomial")
 
 Viruses$vDegree <- kader:::cuberoot(Viruses$Degree)
-Viruses$vEigenvector <- Viruses$Eigenvector
+Viruses$vEigenvector <- kader:::cuberoot(Viruses$Eigenvector)
 Viruses$vCore <- ifelse(Viruses$Kcore==max(Viruses$Kcore),1,0)
 
-Viruses$vEigenvector[round(Viruses$vEigenvector,4)==0] <- 0.0001 # Needed for a beta-distribution
-Viruses$vEigenvector[round(Viruses$vEigenvector,4)==1] <- 0.999
+#Viruses$vEigenvector[round(Viruses$vEigenvector,4)==0] <- 0.0001 # Needed for a beta-distribution
+#Viruses$vEigenvector[round(Viruses$vEigenvector,4)==1] <- 0.999
 
 Viruses$vGenomeAveLengthLn <- log(Viruses$vGenomeAveLength)
 Viruses$vPubMedCitesLn <- log(Viruses$vPubMedCites + 1)

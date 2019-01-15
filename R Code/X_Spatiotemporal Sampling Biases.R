@@ -36,12 +36,13 @@ AssocsBase2[substr(AssocsBase2$Year,
 AssocsBase2$Year <- as.numeric(AssocsBase2$Year)
 
 AssocsDiscovery <- merge(AssocsBase2, 
-                         SpatialHosts,
+                         Hosts,
                          by.x = "Host", by.y = "Sp", all.x = T)
 
 AssocsDiscovery <- merge(AssocsDiscovery, 
-                         SpatialViruses,
-                         by.x = "Virus", by.y = "Sp", all.x = T)
+                         Viruses,
+                         by.x = "Virus", by.y = "Sp", all.x = T,
+                         suffixes = c(".Host", ".Virus"))
 
 AssocsDiscovery <- AssocsDiscovery %>% dplyr::rename(LongMean.Host = LongMean, LatMean.Host = LatMean)
 
@@ -67,16 +68,6 @@ ggplot(AssocsDiscovery, aes(LongMean.Host, LatMean.Host)) +
   ggsave("Figures/Hosts in Space and Time.jpeg", 
          units = "mm", width= 200, height = 150, dpi = 300)
 
-ggplot(AssocsDiscovery, aes(LongMean.Host, LatMean.Host)) + 
-  #geom_path(data = WorldMap, aes(long, lat, group = group)) +
-  facet_wrap(~Year) + 
-  theme(legend.position = "none") +
-  geom_point(size = 5, aes(colour = as.factor(Human)), alpha = 0.1) +
-  scale_colour_manual(values = colfunc(2)) +
-  labs(x = "Longitude", y = "Latitude", colour = "Year", 
-       title = "Viral Discovery Host Location in Space and Time") +
-  coord_fixed()
-
 ggplot(AssocsDiscovery, aes(LongMean.Total, LatMean.Total)) + 
   geom_path(data = WorldMap, aes(long, lat, group = group)) +
   #facet_wrap(~Year) + 
@@ -95,7 +86,7 @@ library(INLA)
 
 Vars <- c("LongMean.Host", "LatMean.Host",
           #"LongMean.Centroid", "LatMean.Centroid",
-          "Human", "Domestic",
+          "Human", "Domestic.Virus",
           "Year")
 
 TestAssocs <- AssocsDiscovery[!NARows(AssocsDiscovery[,Vars]),]
@@ -158,7 +149,7 @@ ZooDiscoveryList[[2]] <- inla(f2, # f1 + SPDE random effect
 
 ggField(ZooDiscoveryList[[2]], WorldMesh) + 
   scale_fill_brewer(palette = AlberPalettes[3]) +
-  geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
+  geom_path(data = WorldMap/50000,  inherit.aes = F, aes(long, lat, group = group)) +
   geom_point(data = dplyr::select(TestAssocs, -Group), aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
   labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
        title = "Spatial Autocorrelation in Human Infection Probability") +
@@ -262,7 +253,7 @@ sapply(DomDiscoveryList, function(a) a$dic$dic)
 
 ggField(DomDiscoveryList[[2]], WorldMesh) + 
   scale_fill_brewer(palette = AlberPalettes[3]) +
-  geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
+  geom_path(data = WorldMap/50000,  inherit.aes = F, aes(long, lat, group = group)) +
   geom_point(data = dplyr::select(TestAssocs, -Group), aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
   labs(x  = "Longitude", y = "Latitude", fill = "Domestic", 
        title = "Spatial Autocorrelation in Domestic Virus Discovery") +
@@ -315,7 +306,7 @@ DomDiscoveryList[[4]] <- inla(f4, # f1 + annual SPDE random effect
 ggField(DomDiscoveryList[[3]], WorldMesh, Groups = NGroup) + 
   facet_wrap(~Group, labeller = labeller(Group = Labels), nrow = 4) +
   scale_fill_brewer(palette = AlberPalettes[3]) +
-  geom_path(data = WorldMap/50000,  colour = "dark grey",inherit.aes = F, aes(long, lat, group = group)) +
+  geom_path(data = WorldMap/50000,  inherit.aes = F, aes(long, lat, group = group)) +
   geom_point(data = TestAssocs, aes(LongMean.Host, LatMean.Host), inherit.aes = F) +
   labs(x  = "Longitude", y = "Latitude", fill = "Zoonosis", 
        title = "Spatial Autocorrelation in Domestic Infection Probability") +
@@ -326,4 +317,4 @@ sapply(DomDiscoveryList, function(a) a$dic$dic)
 
 DiscoveryModelList <- list(ZooDiscoveryList, DomDiscoveryList)
 
-save(DiscoveryModelList, file = "Model Files/Discovery Models.Rdata")
+save(ZooDiscoveryList, DomDiscoveryList, file = "Model Files/Discovery Models.Rdata")
