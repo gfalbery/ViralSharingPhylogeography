@@ -89,7 +89,7 @@ Hosts <- Hosts %>%
     Domestic = ifelse(Sp %in% Domestics, 1, 0),
     Wildlife = ifelse(Sp %in% Wildlife, 1, 0),
     hZoonosisCount = c(table(AssocsTraits[AssocsTraits$Virus%in%ZoonoticViruses,"Host"])),
-    Records = table(AssocsTraits$Host)
+    Records = c(table(AssocsTraits$Host))
   ) %>%
   mutate(hZoonosisProp = hZoonosisCount/Records)
 

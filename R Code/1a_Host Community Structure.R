@@ -56,12 +56,16 @@ sapply(hCommTests, function(a){ # Clusters ~substantially by Family and Order
 
 hOrderlist <- hFamilylist <- list()
 
-for(x in 1:nunique(Hosts$hOrder)){
+for(x in unique(Hosts$hOrder)){
   hOrderlist[[x]] <- induced_subgraph(Hostgraph, 
-                                     as.numeric(as.factor(Hosts$hOrder)) == x)
+                                     Hosts$hOrder == x)
 }
 
-for(x in 1:nunique(Hosts$hFamily)){
+sapply(hOrderlist, transitivity)
+
+for(x in unique(Hosts$hFamily)){
   hFamilylist[[x]] <- induced_subgraph(Hostgraph, 
-                                     as.numeric(as.factor(Hosts$hFamily)) == x)
+                                     Hosts$hFamily == x)
 }
+
+sapply(hFamilylist, transitivity)

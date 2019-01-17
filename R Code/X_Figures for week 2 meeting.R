@@ -23,6 +23,10 @@ ggplot(Hosts, aes(log(hAllZACites+1), kader:::cuberoot(Eigenvector), colour = hD
 
 # Space and Phylogeny correlate with viral sharing
 
+
+HostThemselves <- # Removing diagonals, as they're uninformative
+  which(upper.tri(HostAdj[FHN,FHN], diag = T)&lower.tri(HostAdj[FHN,FHN], diag  = T))
+
 jpeg("Figures/Space and phylogeny correlate with viral sharing.jpeg", units = "mm", width = 200, height = 100, res = 300)
 
 arrange_ggplot2(list(
@@ -31,6 +35,8 @@ arrange_ggplot2(list(
     stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
     #coord_fixed(ratio = max(LongMatrixdf$Space)/max(LongMatrixdf$Phylo))
     labs(title = "Space ~ Phylogeny"), #+ ggpubr::stat_cor(method = "spearman"),
+  
+  ggplot() + theme_void(),
   
   ggplot(LongMatrixdf[-HostThemselves,], aes(Space, Virus)) + 
     geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(colour = "black") +
@@ -42,7 +48,63 @@ arrange_ggplot2(list(
     stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
     labs(title = "Sharing ~ Phylogeny")# + ggpubr::stat_cor(method = "spearman")
   
-), ncol = 3)
+), ncol = 2)
+
+dev.off()
+
+cor1 <- with(LongMatrixdf[-HostThemselves,], cor.test(Space, Phylo, method = "spearman")$estimate) %>% round(2)
+cor2 <- with(LongMatrixdf[-HostThemselves,], cor.test(Space, Virus, method = "spearman")$estimate) %>% round(2)
+cor3 <- with(LongMatrixdf[-HostThemselves,], cor.test(Phylo, Virus, method = "spearman")$estimate) %>% round(2)
+
+p1 <- with(LongMatrixdf[-HostThemselves,], cor.test(Space, Phylo, method = "spearman")$p.value)
+p2 <- with(LongMatrixdf[-HostThemselves,], cor.test(Space, Virus, method = "spearman")$p.value)
+p3 <- with(LongMatrixdf[-HostThemselves,], cor.test(Phylo, Virus, method = "spearman")$p.value)
+
+ThemeRevert()
+
+jpeg("Figures/Space and phylogeny correlate with viral sharing.jpeg", units = "mm", width = 150, height = 150, res = 300)
+
+arrange_ggplot2(list(
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Space, Phylo)) + 
+    geom_point(colour = AlberColours[1], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    #labs(title = "Phylogeny ~ Space") +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") + 
+    AlberTheme,
+  
+  ggplot(LongMatrixdf[1,], aes(Space, Space)) + 
+    lims(x = c(0,1), y = c(0,1)) + theme_void() + 
+    
+    geom_text(data = data.frame(x = 0.5, y = 0.65), 
+              inherit.aes = F, aes(x, y),
+              label = paste0("R = ",cor1,", p < E-16"),
+              colour = AlberColours[1],
+              size = 5) + 
+    
+    geom_text(data = data.frame(x = 0.5, y = 0.5), 
+              inherit.aes = F, aes(x, y),
+              label = paste0("R = ",cor2,", p < E-16"),
+              colour = AlberColours[2],
+              size = 5) +
+    
+    geom_text(data = data.frame(x = 0.5, y = 0.35), 
+              inherit.aes = F, aes(x, y),
+              label = paste0("R = ",cor3,", p < E-16"),
+              colour = AlberColours[3],
+              size = 5),
+  
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Space, Virus)) + 
+    geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    #labs(title = "Sharing ~ Space")  + 
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
+    AlberTheme,# + ggpubr::stat_cor(method = "spearman"),
+  
+  ggplot(LongMatrixdf[-HostThemselves,], aes(Phylo, Virus)) + 
+    geom_point(colour = AlberColours[3], alpha = 0.3) + geom_smooth(colour = "black", fill = NA) +
+    #labs(title = "Sharing ~ Phylogeny") + 
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, col = "black") +
+    AlberTheme# + ggpubr::stat_cor(method = "spearman")
+  
+), ncol = 2)
 
 dev.off()
 
@@ -91,7 +153,7 @@ BarBarGraph(Viruses, "DomWild", "HostRangeMean", "Human") +
 
 BarBarGraph(Viruses, "DomWild", "Centroid_Human_Distance", "Human") + 
   scale_color_manual(values = brewer.pal(6, AlberPalettes[4])[c(6,5,1)])
-  ggsave("Figures/Domestic Virus_Wildlife Virus interactions3.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
+ggsave("Figures/Domestic Virus_Wildlife Virus interactions3.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
 jpeg("Figures/Domestics do not host more zoonoses2.jpeg", units = "mm", width = 200, height = 100, res = 300)
 
@@ -136,4 +198,9 @@ ggplot(Hosts, aes(c(hZoonosisCount),c(hZoonosisProp))) + geom_point() + geom_smo
 ggplot(Hosts, aes(log(hAllZACites),c(hZoonosisProp))) + geom_point() + 
   geom_smooth(method = lm, formula = y~poly(x,2))
 
-
+jpeg("Proportional spatial overlap with other mammals explains zoonosis count.Rdata")
+ggpairs(Hosts[,c(paste0("S",c("",c(2,4,5,8,10)*10)),"S.Greg1","S.Greg2","hZoonosisCount", "hZoonosisProp")] %>% 
+          mutate(lZoos = log(hZoonosisCount + 1)), 
+        lower = list(continuous = wrap("smooth", method = "loess"))) + 
+  AlberTheme
+dev.off()

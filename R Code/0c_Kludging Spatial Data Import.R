@@ -33,8 +33,6 @@ if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata"
 
 data("wrld_simpl")
 WorldMap <- spTransform(wrld_simpl, CRS("+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"))
-#WorldMapRaster <- raster(WorldMap, res = 50000) # NB units differ from Mercator!
-#World <- fasterize()
 
 # I HATE this 
 
@@ -43,9 +41,19 @@ WorldPolygons <- lapply(WorldMap@polygons,
                                             function(a) as.data.frame(a@coords))}) %>% 
   unlist(recursive = F)
 
+
+WorldPolygons <- lapply(1:length(WorldMap@polygons), 
+                        function(b){ lapply(WorldMap@polygons[[b]]@Polygons, 
+                                            function(a){ as.data.frame(a@coords) %>%
+                                              mutate(Country = WorldMap@data[b,"NAME"])})}) %>% 
+  unlist(recursive = F)
+
 for(x in 1:length(WorldPolygons)) WorldPolygons[[x]]$group <- x 
 
 WorldMap <- bind_rows(WorldPolygons) %>% dplyr::rename(long = V1, lat = V2)
+
+CountryCentroids <- WorldMap %>% group_by(Country) %>% 
+  summarise(long = mean(long), lat = mean(lat)) %>% data.frame
 
 # THIS DATA FRAME TAKES A LOT OF MEMORY - convert to sparse matrix 
 # Or learn more raster methods before pub ####
@@ -91,11 +99,16 @@ for(x in levels(Rangedf$Host)){
   
 }
 
+Hosts$GeogRange <- diag(RangeOverlap)[as.character(Hosts$Sp)]
+
 RangeA = matrix(rep(diag(RangeOverlap), nrow(RangeOverlap)), nrow(RangeOverlap))
 RangeB = matrix(rep(diag(RangeOverlap), each = nrow(RangeOverlap)), nrow(RangeOverlap))
 
 RangeAdj1 <- RangeOverlap/(RangeA + RangeB - RangeOverlap) # Weighted evenly
 RangeAdj2 <- RangeOverlap/(RangeA) # Asymmetrical
+
+Hosts[Hosts$Sp%in%rownames(RangeAdj1),"S.Greg1"] <- rowSums(RangeAdj1[as.character(Hosts[Hosts$Sp%in%rownames(RangeAdj1),"Sp"]),])
+Hosts[Hosts$Sp%in%rownames(RangeAdj2),"S.Greg2"] <- rowSums(RangeAdj2[as.character(Hosts[Hosts$Sp%in%rownames(RangeAdj2),"Sp"]),])
 
 # Making polygons for display ####
 
@@ -190,7 +203,6 @@ if(file.exists("data/VirusRangeOverlap.Rdata")) load("data/VirusRangeOverlap.Rda
     unique(Rangedf[Rangedf$Host %in% x,"GridID"]) %>% return
     
   })
-  
   
   for(x in unique(Viruses$Sp)){
     

@@ -1,13 +1,13 @@
 # Incorporating RNA virus data ####
 
-library(stringr); library(grid); library(tidyverse); library(igraph)
+library(stringr); library(grid); library(tidyverse); library(igraph); library(ggnet)
 
 # Virus name disputes ####
 
 # Downloading Brierley et al. (2018) data: https://datashare.is.ed.ac.uk/handle/10283/2970
 BrierleyRNA <- read.csv("data/BrierleyRNA.csv", header = T)
 
-BrierleyRNA$Species <- as.factor(str_replace_all(BrierleyRNA$Species, " ", "_"))
+BrierleyRNA$Species <- str_replace_all(BrierleyRNA$Species, " ", "_")
 
 RemoveUnderscores <- substr(BrierleyRNA$Species,nchar(BrierleyRNA$Species),nchar(BrierleyRNA$Species)) == "_"
 
@@ -35,7 +35,7 @@ BrierleyRNA$Sp <- sapply(BrierleyRNA$Species, function(a) ifelse(as.character(a)
 
 RNAViruses <- Viruses[Viruses$vDNAoRNA == "RNA",]
 RNAViruses <- merge(RNAViruses, BrierleyRNA, by.x = "Sp", by.y = "Sp")
-RNAViruses <- rename(RNAViruses, c(Iatrogenic..inc..blood. = "Iatrogenic"))
+RNAViruses <- RNAViruses %>% rename("Iatrogenic" = "Iatrogenic..inc..blood.")
 
 RNAcovar <- c("Vector", "Inhalation", "Ingestion", "Sexual", "Iatrogenic",
               "Fomites", "Broken.Skin", "Maternal", "Direct.Contact",
