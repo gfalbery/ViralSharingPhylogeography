@@ -2,6 +2,8 @@
 
 library(tidyverse)
 
+tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
+
 FinalHostNames <- reduce(list(as.character(Hosts$Sp), 
                               rownames(RangeAdj1), 
                               colnames(CytBMatrix),
@@ -9,11 +11,12 @@ FinalHostNames <- reduce(list(as.character(Hosts$Sp),
 
 FHN <- FinalHostNames; length(FHN)
 
-LongMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
+HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            PropVirus = c(HostAdj2[FHN, FHN]),
                            PropVirus2 = c(HostAdj3[FHN, FHN]),
                            Space = c(RangeAdj1[FHN, FHN]),
-                           Phylo = c(1-CytBMatrix[FHN, FHN]) # Gonna invert this
+                           Phylo = c(tCytBMatrix[FHN, FHN]), # Gonna invert this
+                           Host = rep(FHN, each = length(FHN)) 
 )
 
 FHosts <- Hosts[Hosts$Sp%in%FHN,]
