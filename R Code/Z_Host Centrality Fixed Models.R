@@ -18,6 +18,7 @@ RecordsHostCentCovar = c(
   "hAllZACites",
   #"hDiseaseZACites",
   "GeogRange",
+  "PVRMass",
   #"hArtfclHbttUsrIUCN",
   #"hOrder",
   #"hMassGrams"

@@ -1,5 +1,7 @@
 # X_ Exploring Host Similarity Matrix Models
 
+library(MCMCglmm)
+
 HostMatrixdf$PropVirus[HostMatrixdf$PropVirus==0] <- 0.0001
 HostMatrixdf$PropVirus[HostMatrixdf$PropVirus==1] <- 0.9999
 
@@ -8,8 +10,6 @@ IM1 <- inla(data = HostMatrixdf[-HostThemselves,],
             family = "beta")
 
 summary(IM1) # Interesting space is more important here ####
-
-
 
 Efxplot(list(IM1))
 
@@ -31,20 +31,19 @@ MC1 <- MCMCglmm(data = HostMatrixdf,
                 nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
                 thin = 10*mf,burnin=3000*mf)
 
-MC2 <- MCMCglmm(data = HostMatrixdf, 
+MC2 <- MCMCglmm(data = HostMatrixdf[-HostThemselves,], 
                 Virus ~ Space + Phylo,
                 rcov =~ idh(trait):units, 
                 family = "zipoisson",
                 nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
                 thin = 10*mf,burnin=3000*mf)
 
-MC3 <- MCMCglmm(data = HostMatrixdf, 
+MC3 <- MCMCglmm(data = HostMatrixdf[-HostThemselves,], 
                 Virus ~ trait -1 + trait:(Space + Phylo),
                 rcov =~ idh(trait):units, 
                 family = "zipoisson",
                 nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
                 thin = 10*mf,burnin=3000*mf)
-
 
 arrange_ggplot2(list(
   ggplot(HostMatrixdf[-HostThemselves,], aes(Space, Phylo)) + 

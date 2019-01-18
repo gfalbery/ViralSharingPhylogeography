@@ -55,3 +55,11 @@ if(!file.exists("data/intermediate/HP3-ST_PDmatrix.csv")){
   CytBMatrix <- as.matrix(CytBMatrix)
   
 }
+
+PVRMass <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/intermediate/PVR_cytb_hostmass.csv") %>% data.frame
+PVRMass <- PVRMass[order(PVRMass$hHostNameFinal),] %>% rename(Host = hHostNameFinal, PVRMass = PVRcytb_resid)
+rownames(PVRMass) <- PVRMass$Host
+
+Hosts[Hosts$Sp%in%PVRMass$Host,"PVRMass"] <- PVRMass[as.character(Hosts[Hosts$Sp%in%PVRMass$Host,"Sp"]),"PVRMass"]
+
+

@@ -4,17 +4,9 @@
 
 library(igraph); library(magrittr); library(dplyr); library(ggplot2); require(RCurl); library(readr)
 
-AssocsBase <- read.csv("data/associations.csv", header = T)
-HostTraits <- read.csv("data/hosts.csv", header = T)
-VirusTraits <- read.csv("data/viruses.csv", header = T)
-
 AssocsBase <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/associations.csv") %>% data.frame()
 HostTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/hosts.csv") %>% data.frame()
 VirusTraits <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/viruses.csv") %>% data.frame()
-
-write.csv(AssocsBase, file = "data/Associations.csv", row.names = F)
-write.csv(HostTraits, file = "data/Hosts.csv", row.names = F)
-write.csv(VirusTraits, file = "data/Viruses.csv", row.names = F)
 
 names(AssocsBase)[1:2] <- c("Virus", "Host")
 AssocsBase <- mutate(AssocsBase, Virus = as.factor(Virus), Host = as.factor(Host))
