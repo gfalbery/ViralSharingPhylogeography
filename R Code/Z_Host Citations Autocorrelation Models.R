@@ -47,7 +47,7 @@ CentStack <- inla.stack(
     w = w.index)) # Leave
 
 CiteModelList[[1]] <- inla(f1, # Base model (no random effects)
-                           family = c("gaussian"),
+                           family = c("nbinomial"),
                            data = inla.stack.data(CentStack),
                            control.compute = list(dic = TRUE),
                            control.predictor = list(A = inla.stack.A(CentStack))
@@ -55,7 +55,7 @@ CiteModelList[[1]] <- inla(f1, # Base model (no random effects)
 
 
 CiteModelList[[2]] <- inla(f2, # Base model (no random effects)
-                           family = c("gaussian"),
+                           family = c("nbinomial"),
                            data = inla.stack.data(CentStack),
                            control.compute = list(dic = TRUE),
                            control.predictor = list(A = inla.stack.A(CentStack))
@@ -114,7 +114,7 @@ CentStack <- inla.stack(
     w = w.index)) # Leave
 
 CiteModelList[[3]] <- inla(f1, # Base model (no random effects)
-                           family = c("gaussian"),
+                           family = c("nbinomial"),
                            data = inla.stack.data(CentStack),
                            control.compute = list(dic = TRUE),
                            control.predictor = list(A = inla.stack.A(CentStack))
@@ -122,7 +122,7 @@ CiteModelList[[3]] <- inla(f1, # Base model (no random effects)
 
 
 CiteModelList[[4]] <- inla(f2, # Base model (no random effects)
-                           family = c("gaussian"),
+                           family = c("nbinomial"),
                            data = inla.stack.data(CentStack),
                            control.compute = list(dic = TRUE),
                            control.predictor = list(A = inla.stack.A(CentStack))
@@ -131,7 +131,7 @@ CiteModelList[[4]] <- inla(f2, # Base model (no random effects)
 sapply(CiteModelList, function(a) a$dic$dic) %>% diff
 
 ggField(CiteModelList[[4]], WorldMesh) + 
-  scale_fill_brewer(palette = AlberColours[2]) +
+  scale_fill_brewer(palette = AlberPalettes[2]) +
   geom_path(data = WorldMap[,c("long", "lat", "group")]/50000, inherit.aes = F, aes(long, lat, group = group)) + 
   geom_point(data = TestHosts, inherit.aes = F, aes(x = LongMean, y = LatMean))
 
@@ -140,3 +140,5 @@ ggField(CiteModelList[[4]], WorldMesh) +
 qplot(CiteModelList[[2]]$summary.random$w$mean,CiteModelList[[4]]$summary.random$w$mean)
 
 # Hells ye
+
+SaveCiteModelList <- CiteModelList

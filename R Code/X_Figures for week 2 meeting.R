@@ -23,10 +23,6 @@ ggplot(Hosts, aes(log(hAllZACites+1), kader:::cuberoot(Eigenvector), colour = hD
 
 # Space and Phylogeny correlate with viral sharing
 
-
-HostThemselves <- # Removing diagonals, as they're uninformative
-  which(upper.tri(HostAdj[FHN,FHN], diag = T)&lower.tri(HostAdj[FHN,FHN], diag  = T))
-
 jpeg("Figures/Space and phylogeny correlate with viral sharing.jpeg", units = "mm", width = 200, height = 100, res = 300)
 
 arrange_ggplot2(list(

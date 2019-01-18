@@ -366,7 +366,7 @@ CentStack <- inla.stack(
     IndexPhylo = TestHosts$IndexPhylo,
     w = w.index)) # Leave
 
-HostMMModelsEigen[[5]] <- inla(f5, # Base model (no random effects)
+HostMMModelsDeg[[5]] <- inla(f5, # Base model (no random effects)
                                family = c("beta"),
                                data = inla.stack.data(CentStack),
                                control.compute = list(dic = TRUE),
