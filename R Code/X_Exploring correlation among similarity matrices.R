@@ -43,7 +43,11 @@ MC3 <- MCMCglmm(data = HostMatrixdf[-HostThemselves,],
                 rcov =~ idh(trait):units, 
                 family = "zipoisson",
                 nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+<<<<<<< HEAD
                 thin = 10*mf, burnin=3000*mf)
+=======
+                thin = 10*mf,burnin=3000*mf)
+>>>>>>> 64b3451dddac873ecd003d835e3681e24b6f0f68
 
 arrange_ggplot2(list(
   ggplot(HostMatrixdf[-HostThemselves,], aes(Space, Phylo)) + 
