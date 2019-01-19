@@ -124,9 +124,7 @@ if(file.exists("data/HostPolygons.Rdata")) load("data/HostPolygons.Rdata") else{
         mutate(Host = x) %>% return
     }
     
-  })
-  
-  HostPolygons <- bind_rows(HostPolygons)
+  }) %>% bind_rows()
   
   save(HostPolygons, file = "data/HostPolygons.Rdata")}
 

@@ -18,6 +18,7 @@ RecordsHostCentCovar = c(
   "hAllZACites",
   #"hDiseaseZACites",
   "GeogRange",
+  "PVRMass",
   #"hArtfclHbttUsrIUCN",
   #"hOrder",
   #"hMassGrams"
@@ -508,15 +509,14 @@ Efxplot(HostMMModelsEigen)
 
 # Trying model addition to model with phylo ####
 
-Expl = 'f(IndexPhylo, model="generic0", Cmatrix = GRMatrix,
-constr=TRUE,param = c(0.5, 0.5))'
+Expl = 'f(IndexPhylo, model="generic0", Cmatrix = GRMatrix, constr=TRUE, param = c(0.5, 0.5))'
 
 Expl = 'f(IndexSpace, model="generic0", Cmatrix = GRMatrix,
                        constr=TRUE,param = c(0.5, 0.5))'
 
-Resp = "Degree"
+Resps = c("Records", "Degree", "Eigenvector")
 
-TestHosts <- FHosts %>% dplyr::select(Resp, DegreeKeptCovar, "LongMean", "LatMean", "IndexPhylo") %>%
+TestHosts <- FHosts %>% dplyr::select(Resps, DegreeKeptCovar, "LongMean", "LatMean", "IndexPhylo") %>%
   
   mutate(hAllZACites = log(hAllZACites + 1),
          #hDiseaseZACites = log(hDiseaseZACites + 1),
@@ -524,9 +524,10 @@ TestHosts <- FHosts %>% dplyr::select(Resp, DegreeKeptCovar, "LongMean", "LatMea
          #hMassGrams = log(hMassGrams), 
          S.Greg1 = sqrt(S.Greg1)) %>%
   
-  slice(which(!NARows(Hosts[,c(Resp,DegreeKeptCovar, "LongMean", "LatMean")])))
+  slice(which(!NARows(Hosts[,c(Resps,DegreeKeptCovar, "LongMean", "LatMean")])))
 
-FullAdd1 <- INLAModelAdd(Resp, Expl, DegreeKeptCovar, Family = "poisson", Data = TestHosts)
-FullAdd2 <- INLAModelAdd(Resp, Expl, DegreeKeptCovar, Family = "poisson", Data = TestHosts)
+FullAdd1 <- INLAModelAdd(Resps[1], Expl, RecordsKeptCovar, Family = "nbinomial", Data = TestHosts)
+FullAdd2 <- INLAModelAdd(Resps[2], Expl, DegreeKeptCovar, Family = "poisson", Data = TestHosts)
+FullAdd3 <- INLAModelAdd(Resps[3], Expl, EigenKeptCovar, Family = "beta", Data = TestHosts)
 
 
