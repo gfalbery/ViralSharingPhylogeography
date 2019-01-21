@@ -102,6 +102,8 @@ Efxplot(NoZeroesList,
   ggsave("Space reduces the effect of phylogeny.jpeg", 
          units = "mm", width = 100, height = 100, dpi = 300)
 
+FinalZeroesModel <- rDomNoZeroesIM2
+
 # This is encouraging
 # In the absence of the effect of space itself, increasing spatial 
 # overlap increases the effect of phylogeny.
