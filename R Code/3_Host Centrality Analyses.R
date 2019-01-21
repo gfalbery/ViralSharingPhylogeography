@@ -23,7 +23,7 @@ HostCentCovar = c(
   "S.Greg1"
 )
 
-TestHosts <- Hosts %>% dplyr::select(Resps, HostCentCovar, "LongMean", "LatMean", "hOrder") %>%
+TestHosts <- Hosts %>% dplyr::select(Resps, HostCentCovar, "Sp", "LongMean", "LatMean", "hOrder") %>%
   
   mutate(hAllZACites = log(hAllZACites + 1),
          GeogRange = kader:::cuberoot(GeogRange), 
@@ -47,6 +47,16 @@ Xm <- model.matrix(as.formula(paste0("~ -1 + ", paste(HostCentCovar, collapse = 
 N <- nrow(TestHosts)
 X <- as.data.frame(Xm[, -which(colnames(Xm) == "hDomdomestic")]) # Model Matrix
 
+# Establishing distance matrices ####
+tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
+
+SpaceContacts <- as(solve(RangeAdj1[FHN, FHN]),"dgCMatrix")
+GRMatrix <- as(solve(tCytBMatrix[FHN, FHN]),"dgCMatrix")
+
+TestHosts$IndexSpace = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
+TestHosts$IndexPhylo = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
+
+# Establishing model formulae ####
 f1 = as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + ")))
 
 f2 <- as.formula(paste0("y ~ -1 + Intercept + ",
@@ -61,28 +71,53 @@ f4 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "
 
 FormulaList <- list(f1, f2, f3, f4)
 ModelNames <- c("Base", "SPDE", "SpaceMat", "PDMat")
-FamilyList <- c("poisson", "nbinomial", "beta")
+FamilyList <- c("nbinomial", "poisson", "beta")
 CentralityList <- list()
 
 for(r in 1:length(Resps)){ # Takes a while I bet
   
+  print(Resps[r])
+  
   CentralityList[[Resps[r]]] <- list()
   
   CentStack <- inla.stack(
-    data = list(y = TestHosts[,Resp]),  
-    A = list(1, 1, A3), # Vector of Multiplication factors              
+    data = list(y = TestHosts[,Resps[r]]),  
+    A = list(1, 1, 1, 1, A3), # Vector of Multiplication factors              
     effects = list(
       Intercept = rep(1, N), # Leave
       X = X, # Leave
+      IndexSpace = TestHosts$IndexSpace,
+      IndexPhylo = TestHosts$IndexPhylo,
       w = w.index)) # Leave
   
   for(q in 1:length(ModelNames)){
-    CentralityList[[Resps[r]]][[ModelNames[[q]]]] <-inla(
-      FormulaList[[q]], 
-      data = TestHosts, 
-      family = "poisson",
-      control.compute = list(dic = T))
+    print(ModelNames[q])
+    CentralityList[[Resps[r]]][[ModelNames[[q]]]] <-
+      inla(
+        FormulaList[[q]], 
+        family = FamilyList[r],
+        data = inla.stack.data(CentStack),
+        control.compute = list(dic = TRUE),
+        control.predictor = list(A = inla.stack.A(CentStack))
+      )
   }
 }
+
+SaveCentralityList <- CentralityList
+
+# Plotting out ####
+
+lapply(CentralityList, function(a) a$SPDE %>%
+         ggField(WorldMesh)) %>% arrange_ggplot2(nrow = 3)
+
+lapply(CentralityList, function(a) INLADICFig(a, ModelNames = ModelNames)) %>% 
+  arrange_ggplot2(nrow = 3)
+
+lapply(CentralityList, function(a) Efxplot(a, ModelNames = ModelNames)) %>% 
+  arrange_ggplot2(ncol = 3)
+
+
+
+
 
 

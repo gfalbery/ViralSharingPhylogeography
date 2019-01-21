@@ -187,11 +187,13 @@ Efxplot(list(ZIModel)) + ggtitle("Space and Pylogeny profoundly influence number
                               "Count:Space", "Count:Phylo")
   ) + ggsave("Zero-inflated model output.jpeg", units = "mm", height = 100, width = 100)
 
-mf = 10
 
-prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2))#,
-                 G = list(G1 = list(V = diag(2), nu = rep(0.002,2)),
-                          G2 = list(V = diag(2), nu = rep(0.002,2))))
+# Trying this with space quantile rather than space numeric to help convergence ####
+
+mf = 3
+
+prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),#,
+                 G = list(G1 = list(V = diag(2), nu = rep(2,2))))
 
 library(parallel)
 
@@ -213,9 +215,9 @@ ZI_10runs2 <- parLapply(cl = cl, 1:10, function(i) {
   
   MCMCglmm(data = HostMatrixdf[-HostThemselves,], 
     #data = HostMatrixdf %>% filter(!Sp==Sp2),
-    Virus ~ trait -1 + trait:(Space + Phylo + Space:Phylo + Cites + DomDom),
+    Virus ~ trait -1 + trait:(Space + Phylo + SpaceQuantile:Phylo + Cites + DomDom),
     rcov =~ idh(trait):units, 
-    #random =~ idh(trait):Sp + idh(trait):Sp2,
+    random =~ us(trait):Sp,# + idh(trait):Sp2,
     prior = prior.zi,
     family = "zipoisson",
     nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
