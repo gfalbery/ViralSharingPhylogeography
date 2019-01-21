@@ -28,7 +28,9 @@ TestHosts <- Hosts %>% dplyr::select(Resps, HostCentCovar, "Sp", "LongMean", "La
   mutate(hAllZACites = log(hAllZACites + 1),
          GeogRange = kader:::cuberoot(GeogRange), 
          S.Greg1 = sqrt(S.Greg1), 
-         Records = c(Records)) %>%
+         Records = c(Records),
+         Eigenvector = Eigenvector^0.2
+  ) %>%
   
   slice(which(!NARows(Hosts[,c(Resps,HostCentCovar, "LongMean", "LatMean", "hOrder")])))
 
@@ -69,9 +71,25 @@ f3 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "
 f4 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "), " + ", 'f(IndexPhylo, model="generic0", Cmatrix = GRMatrix,
                        constr=TRUE,param = c(0.5, 0.5))'))
 
+f5 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "), 
+                       " + ", 'f(IndexSpace, model="generic0", Cmatrix = SpaceContacts,
+                       constr = TRUE,param = c(0.5, 0.5))',
+                       "+ f(w, model = spde)"))
+
+f6 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "), 
+                       " + ", 'f(IndexPhylo, model="generic0", Cmatrix = GRMatrix,
+                       constr = TRUE,param = c(0.5, 0.5))',
+                       "+ f(w, model = spde)"))
+
+f7 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "), 
+                       " + ", 'f(IndexSpace, model="generic0", Cmatrix = SpaceContacts,
+                       constr = TRUE,param = c(0.5, 0.5))',
+                       "+ f(IndexPhylo, model='generic0', Cmatrix = GRMatrix,
+                       constr = TRUE,param = c(0.5, 0.5))"))
+
 FormulaList <- list(f1, f2, f3, f4)
 ModelNames <- c("Base", "SPDE", "SpaceMat", "PDMat")
-FamilyList <- c("nbinomial", "poisson", "beta")
+FamilyList <- c("poisson", "poisson", "gaussian")
 CentralityList <- list()
 
 for(r in 1:length(Resps)){ # Takes a while I bet
@@ -101,7 +119,34 @@ for(r in 1:length(Resps)){ # Takes a while I bet
         control.predictor = list(A = inla.stack.A(CentStack))
       )
   }
+  
+  CentralityList[[Resps[r]]][[5]] <-
+    inla(
+      f5, 
+      family = FamilyList[r],
+      data = inla.stack.data(CentStack),
+      control.compute = list(dic = TRUE),
+      control.predictor = list(A = inla.stack.A(CentStack))
+    )
 }
+
+CentralityList[[Resps[r]]][[6]] <-
+  inla(
+    f6, 
+    family = FamilyList[r],
+    data = inla.stack.data(CentStack),
+    control.compute = list(dic = TRUE),
+    control.predictor = list(A = inla.stack.A(CentStack))
+  )
+
+CentralityList[[Resps[r]]][[7]] <-
+  inla(
+    f7, 
+    family = FamilyList[r],
+    data = inla.stack.data(CentStack),
+    control.compute = list(dic = TRUE),
+    control.predictor = list(A = inla.stack.A(CentStack))
+  )
 
 SaveCentralityList <- CentralityList
 
@@ -117,7 +162,12 @@ lapply(CentralityList, function(a) Efxplot(a, ModelNames = ModelNames)) %>%
   arrange_ggplot2(ncol = 3)
 
 
+# Plotting field ####
 
+ggField(CentralityList[[3]][[2]], WorldMesh) + 
+  geom_path(data = WorldMap/50000, inherit.aes = F, aes(long, lat, group = group)) +
+  geom_point(data = TestHosts[,c("LongMean", "LatMean")]/50000, aes(LongMean, LatMean), inherit.aes = F) + 
+  scale_fill_brewer(palette = AlberPalettes[2])
 
 
 
