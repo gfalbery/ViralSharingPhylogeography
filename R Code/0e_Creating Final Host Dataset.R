@@ -49,8 +49,12 @@ HostMatrixdf$SpaceQuantile <- cut(HostMatrixdf$Space,
                                   labels = c(0, 0.25, 0.5, 0.75, 1))
 
 HostMatrixdf$PhyloQuantile <- cut(HostMatrixdf$Phylo, 
-                                  breaks = c(-0.1,0,0.25,0.5, 0.75, 1.1),
+                                  breaks = c(quantile(HostMatrixdf$Phylo, 0:5/5)),
                                   labels = c(0, 0.25, 0.5, 0.75, 1))
+
+HostMatrixdf$DomDom <- paste(HostMatrixdf$hDom, HostMatrixdf$hDom.Sp2)
+HostMatrixdf$DomDom <- ifelse(HostMatrixdf$DomDom == "domestic wild", "wild domestic", HostMatrixdf$DomDom) %>%
+  factor(levels = c("wild wild", "domestic domestic", "wild domestic"))
 
 FHosts <- Hosts[Hosts$Sp%in%FHN,]
 FHosts <- FHosts[order(FHosts$Sp),]

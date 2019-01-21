@@ -1,31 +1,128 @@
 # X_ Exploring Host Similarity Matrix Models
 
-library(MCMCglmm); library(ggregplot)
+library(MCMCglmm); library(ggregplot); library(INLA)
 
 UpperHosts <- which(upper.tri(HostAdj, diag = T))
 
 HostMatrixdf$PropVirus[HostMatrixdf$PropVirus==0] <- 0.0001
 HostMatrixdf$PropVirus[HostMatrixdf$PropVirus==1] <- 0.9999
 
-IM1 <- inla(data = HostMatrixdf[-HostThemselves,], 
-            PropVirus ~ Space + Phylo,
-            family = "beta")
+NoZeroesIM1 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2),
+                     Virus ~ Phylo + Cites + Space:Phylo,
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
 
-summary(IM1) # Interesting space is more important here ####
+NoZeroesIM2 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2),
+                     Virus ~ Space + Phylo + Cites + Space:Phylo,
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
 
-Efxplot(list(IM1))
+NoZeroesIM3 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2) %>% droplevels,
+                     Virus ~ Phylo + Cites + SpaceQuantile:Phylo,
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
 
-IM1 <- inla(data = HostMatrixdf[-HostThemselves,], # Doesn't fit
-            Virus ~ Space + Phylo,
-            control.compute = list(dic = TRUE),
-            family = "nbinomial")
+NoZeroesIM4 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2) %>% droplevels,
+                     Virus ~ Space + Phylo + Cites + SpaceQuantile:Phylo,
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
 
-IM2 <- inla(data = HostMatrixdf[-HostThemselves,], # Doesn't fit
-            Virus ~ Space + Phylo,
-            control.compute = list(dic = TRUE),
-            family = "zeroinflatednbinomial1")
+# Adding species-level random effect ####
 
-mf = 5
+rNoZeroesIM1 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2),
+                     Virus ~ Phylo + Cites + Space:Phylo +
+                       f(Sp, model = 'iid'),
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
+
+rNoZeroesIM2 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2),
+                     Virus ~ Space + Phylo + Cites + Space:Phylo +
+                       f(Sp, model = 'iid'),
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
+
+rNoZeroesIM3 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2) %>% droplevels,
+                     Virus ~ Phylo + Cites + SpaceQuantile:Phylo +
+                       f(Sp, model = 'iid'),
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
+
+rNoZeroesIM4 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2) %>% droplevels,
+                     Virus ~ Space + Phylo + Cites + SpaceQuantile:Phylo +
+                       f(Sp, model = 'iid'),
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
+
+save(NoZeroesIM1, file = "Model Files/NoZeroesIM1.Rdata")
+save(NoZeroesIM2, file = "Model Files/NoZeroesIM2.Rdata")
+save(NoZeroesIM3, file = "Model Files/NoZeroesIM3.Rdata")
+save(NoZeroesIM4, file = "Model Files/NoZeroesIM4.Rdata")
+
+save(rNoZeroesIM1, file = "Model Files/rNoZeroesIM1.Rdata")
+save(rNoZeroesIM2, file = "Model Files/rNoZeroesIM2.Rdata")
+save(rNoZeroesIM3, file = "Model Files/rNoZeroesIM3.Rdata")
+save(rNoZeroesIM4, file = "Model Files/rNoZeroesIM4.Rdata")
+
+# Adding shared domestics effect ####
+
+rDomNoZeroesIM1 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2),
+                     Virus ~ Phylo + Cites + Space:Phylo + DomDom +
+                       f(Sp, model = 'iid'),
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
+
+rDomNoZeroesIM2 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2),
+                     Virus ~ Space + Phylo + Cites + Space:Phylo + DomDom +
+                       f(Sp, model = 'iid'),
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
+
+rDomNoZeroesIM3 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2) %>% droplevels,
+                     Virus ~ Phylo + Cites + SpaceQuantile:Phylo + DomDom +
+                       f(Sp, model = 'iid'),
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
+
+rDomNoZeroesIM4 <- inla(data = HostMatrixdf %>% filter(Space>0 &!Sp==Sp2) %>% droplevels,
+                     Virus ~ Space + Phylo + Cites + SpaceQuantile:Phylo + DomDom +
+                       f(Sp, model = 'iid'),
+                     control.compute = list(dic = TRUE),
+                     family = "zeroinflatednbinomial1")
+
+
+NoZeroesList <- list(NoZeroesIM1,NoZeroesIM2,NoZeroesIM3,NoZeroesIM4,
+                     rNoZeroesIM1,rNoZeroesIM2,rNoZeroesIM3,rNoZeroesIM4,
+                     rDomNoZeroesIM1,rDomNoZeroesIM2,rDomNoZeroesIM3,rDomNoZeroesIM4)
+
+sapply(NoZeroesList, function(a) a$dic$dic)
+
+Efxplot(NoZeroesList, 
+        ModelNames = rep(c("No Space", "Full", "No Space Cat", "Space + Cat"))) +
+  ggtitle("Space reduces the effect of phylogeny") + 
+  ggsave("Space reduces the effect of phylogeny.jpeg", 
+         units = "mm", width = 100, height = 100, dpi = 300)
+
+# This is encouraging
+# In the absence of the effect of space itself, increasing spatial 
+# overlap increases the effect of phylogeny.
+
+# Running some MCMC models ####
+
+mf = 1
+prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),
+                 G = list(G1 = list(V = diag(2), nu=2, alpha.mu=rep(0,2), alpha.V=diag(2)*100)))
+
+MCMCglmm(#data = HostMatrixdf[-HostThemselves,], 
+  data = HostMatrixdf[-HostThemselves,],
+  Virus ~ trait -1 + trait:(Space + Phylo),
+  rcov =~ idh(trait):units, 
+  random =~ us(trait):Sp,
+  prior = prior.zi,
+  family = "zipoisson",
+  nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+  thin = 10*mf, burnin=3000*mf)
+
+mf = 10
 
 prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2))
 
@@ -90,7 +187,9 @@ Efxplot(list(ZIModel)) + ggtitle("Space and Pylogeny profoundly influence number
 
 mf = 10
 
-prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2))
+prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2))#,
+                 G = list(G1 = list(V = diag(2), nu = rep(0.002,2)),
+                          G2 = list(V = diag(2), nu = rep(0.002,2))))
 
 library(parallel)
 
@@ -103,17 +202,18 @@ cl.pkg <- clusterEvalQ(cl, library(MCMCglmm)) # load the MCMCglmm package within
 
 clusterExport(cl, "prior.zi") # Import each object that's necessary to run the function
 clusterExport(cl, "HostMatrixdf")
-clusterExport(cl, "UpperHosts")
+clusterExport(cl, "HostThemselves")
 clusterExport(cl, "mf")
 
 # use parLapply() to execute 10 runs of MCMCglmm(), each with nitt=100000
 ClusterMCStart <- Sys.time()
 ZI_10runs2 <- parLapply(cl = cl, 1:10, function(i) {
   
-  MCMCglmm(#data = HostMatrixdf[-HostThemselves,], 
-    data = HostMatrixdf[-UpperHosts,],
-    Virus ~ trait -1 + trait:(Space + Phylo + Space:Phylo + Cites),
+  MCMCglmm(data = HostMatrixdf[-HostThemselves,], 
+    #data = HostMatrixdf %>% filter(!Sp==Sp2),
+    Virus ~ trait -1 + trait:(Space + Phylo + Space:Phylo + Cites + DomDom),
     rcov =~ idh(trait):units, 
+    #random =~ idh(trait):Sp + idh(trait):Sp2,
     prior = prior.zi,
     family = "zipoisson",
     nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
@@ -133,7 +233,7 @@ mc <- do.call(mcmc.list, mc)
 par(mfrow=c(5,2), mar=c(2,2,1,2))
 gelman.plot(mc, auto.layout=F)
 gelman.diag(mc)
-par(mfrow=c(8,2), mar=c(2, 1, 1, 1))
+par(mfrow=c(12,2), mar=c(2, 1, 1, 1))
 plot(mc, ask=F, auto.layout=F)
 
 rows <- sample(1:nrow(bind_rows(ClusterMCMC2)), 1000)
@@ -147,7 +247,7 @@ ZIModel2$Sol <- SampleCluster2
 ZIModel2$VCV <- SampleClusterv2
 summary(ZIModel2)
 
-Efxplot(list(ZIModel)) + ggtitle("Space and Pylogeny profoundly influence number of viruses shared") +
+Efxplot(list(ZIModel2)) + ggtitle("Space and Pylogeny profoundly influence number of viruses shared") +
   scale_x_discrete(limits = c("traitVirus", "traitzi_Virus", 
                               "traitzi_Virus:Space", "traitzi_Virus:Phylo", 
                               "traitVirus:Space", "traitVirus:Phylo"), 
@@ -318,4 +418,5 @@ HostMatrixdf  %>% filter(!Sp==Sp2) %>%
   ggtitle("Hosts that are far away begin to share the same viruses")
 
 HostMatrixdf %>% filter(!Sp == Sp2) %>% ggplot(aes(Phylo, Virus, colour = SpaceQuantile)) + 
-  geom_point(alpha = 0.3) + geom_smooth(method = lm) + facet_wrap(~SpaceQuantile)
+  geom_point(alpha = 0.3) + geom_smooth(method = lm) + facet_wrap(~SpaceQuantile) +
+  ggsave("Figures/Phylogeny:Virus slope varies with space.jpeg", units = "mm", height = 150, width = 200, dpi = 300)
