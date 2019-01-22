@@ -89,7 +89,7 @@ f7 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "
 
 FormulaList <- list(f1, f2, f3, f4)
 ModelNames <- c("Base", "SPDE", "SpaceMat", "PDMat")
-FamilyList <- c("poisson", "poisson", "gaussian")
+FamilyList <- c("nbinomial", "poisson", "gaussian")
 CentralityList <- list()
 
 for(r in 1:length(Resps)){ # Takes a while I bet
@@ -155,7 +155,7 @@ SaveCentralityList <- CentralityList
 lapply(CentralityList, function(a) a$SPDE %>%
          ggField(WorldMesh)) %>% arrange_ggplot2(nrow = 3)
 
-lapply(CentralityList, function(a) INLADICFig(a, ModelNames = ModelNames)) %>% 
+lapply(CentralityList, function(a) INLADICFig(a)) %>% #, ModelNames = ModelNames)) %>% 
   arrange_ggplot2(nrow = 3)
 
 lapply(CentralityList, function(a) Efxplot(a, ModelNames = ModelNames)) %>% 
