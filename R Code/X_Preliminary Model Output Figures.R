@@ -25,9 +25,24 @@ theme_set(AlberTheme)
 
 # ZI Model Output ####
 
-Efxplot(list(ZIModelNoSpace)) + 
-  labs()
+ZISols <- summary(ZIModelNoSpace)$solutions %>% as.data.frame %>% mutate(
+  Component = rep(c("Count", "ZI"), dim(ZISols)[1]/2),
+  Variable = rep(c("Intercept", "Space", "Phylogeny", "Citations", "DomDom", "DomWild", 
+                   "Phylo:SpaceQuantile0.5", "Phylo:SpaceQuantile0.75", "Phylo:SpaceQuantile1"),
+                 each = 2),
+  Name = paste(Component, Variable, sep = ":")
+) %>% rename(Lower = "l-95% CI", Upper = "u-95% CI", Estimate = "post.mean")
 
+ZISols$Estimate[ZISols$Component=="ZI"] <- -ZISols$Estimate[ZISols$Component=="ZI"]
+ZISols[ZISols$Component=="ZI", c("Lower", "Upper")] <- -ZISols[ZISols$Component=="ZI", c("Upper","Lower")]
+
+ggplot(ZISols, aes(x = Variable, y = Estimate, colour = Component)) + 
+  geom_point(position = position_dodge(w = 0.5)) + 
+  geom_errorbar(position = position_dodge(w = 0.5), aes(ymin = Lower, 
+                                                        ymax = Upper), size = 0.3, width = 0.2) + 
+  geom_hline(aes(yintercept = 0), lty = 2) + THEME + labs(x = NULL) + coord_flip() +
+  ggtitle("Zero-Inflated Model Output (no spatial zeroes)") +
+  ggsave("Figures/Zero-Inflated Model Output (no spatial zeroes).jpeg", units = "mm", width = 150, height = 150, dpi = 300)
 
 # Space and phylogeny correlate with viruses ####
 
@@ -38,23 +53,23 @@ list(
   
   HostMatrixdf %>% filter(!Sp==Sp2) %>%  ggplot(aes(Space, Virus)) + 
     geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(method = lm, colour = "black") +
-    stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, colour = "black", method = lm) +
     labs(x = "Space Shared", y = "Viruses Shared", title = "Virus ~ Space"),
   
   HostMatrixdf %>% filter(Space>0, !Sp==Sp2) %>%  ggplot(aes(Space, Virus)) + 
     geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(method = lm, colour = "black") +
-    stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, colour = "black", method = lm) +
     lims(x = c(0,1)) +
     labs(x = "Space Shared", y = "Viruses Shared", title = "Virus ~ Space, >0 Space"),
   
   HostMatrixdf %>% filter(!Sp==Sp2) %>%  ggplot(aes(Phylo, Virus)) + 
     geom_point(colour = AlberColours[1], alpha = 0.3) + geom_smooth(method = lm, colour = "black") +
-    stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, colour = "black", method = lm) +
     labs(x = "Genetic Similarity", y = "Viruses Shared",title = "Virus ~ Phylogeny"),
   
   HostMatrixdf %>% filter(Space>0, !Sp==Sp2) %>%  ggplot(aes(Phylo, Virus)) + 
     geom_point(colour = AlberColours[1], alpha = 0.3) + geom_smooth(method = lm, colour = "black") +
-    stat_smooth(geom = "ribbon", fill = NA, lty = 2) +
+    stat_smooth(geom = "ribbon", fill = NA, lty = 2, colour = "black", method = lm) +
     lims(x = c(0,1)) +
     labs(x = "Genetic Similarity", y = "Viruses Shared", title = "Virus ~ Phylogeny, >0 Space")
   
@@ -93,9 +108,27 @@ ggField(CentralityList[[3]][[2]], WorldMesh) +
   ggsave("Figures/Eigenvector Centrality Spatial Distribution.jpeg", units = "mm", height = 150, width = 200, dpi = 300)
 
 
+# Model outputs ####
 
+jpeg("Figures/DIC from centrality models excluding hOrder.jpeg", units = "mm", width = 250, height = 200, res = 300)
+lapply(CentralityList, function(a) INLADICFig(a, ModelNames = c(ModelNames,"SPDE+SMat")) + 
+         theme(legend.position = "none") + labs(x  = "Model")
+       ) %>% #)) %>% 
+  arrange_ggplot2(nrow = 3)
+dev.off()
 
+jpeg("Figures/DIC from centrality models including hOrder.jpeg", units = "mm", width = 250, height = 200, res = 300)
+lapply(SaveCentralityList, function(a) INLADICFig(a, ModelNames = c(ModelNames,"SPDE+SMat")) + 
+         theme(legend.position = "none") + labs(x  = "Model")
+       ) %>% #, ModelNames = ModelNames)) %>% 
+  arrange_ggplot2(nrow = 3)
+dev.off()
 
+for(i in 1:length(SaveCentralityList)){
+  Efxplot(SaveCentralityList[[i]], ModelNames = c(ModelNames,"SPDE+SMat")) + 
+    ggtitle(paste0(names(SaveCentralityList)[i], " Model Output")) +
+    ggsave(paste0("Figures/Model Outputs including hOrder_",names(SaveCentralityList)[i],".jpeg"), units = "mm", width = 200, height = 200, dpi = 300)
+}
 
 
 
