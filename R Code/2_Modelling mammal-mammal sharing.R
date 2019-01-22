@@ -119,3 +119,11 @@ ZIModelNoSpace <- ZI_10runs2[[1]]
 ZIModelNoSpace$Sol <- SampleCluster2
 ZIModelNoSpace$VCV <- SampleClusterv2
 summary(ZIModelNoSpace)
+
+mc <- ZI_10runs2 %>% lapply(function(a) a$Sol)
+mc <- do.call(mcmc.list, mc)
+par(mfrow=c(5,2), mar=c(2,2,1,2))
+gelman.plot(mc, auto.layout=F)
+gelman.diag(mc)
+par(mfrow=c(12,2), mar=c(2, 1, 1, 1))
+plot(mc, ask=F, auto.layout=F)
