@@ -50,6 +50,10 @@ if(!file.exists("data/intermediate/HP3-ST_PDmatrix.csv")){
   STMatrix <- read.csv("data/intermediate/HP3-ST_PDmatrix.csv", header = T) 
   CytBMatrix <- read.csv("data/intermediate/HP3-cytb_PDmatrix.csv", header = T) 
   
+  rownames(STMatrix) <- STMatrix[,1]
+  STMatrix <- STMatrix[,-1]
+  STMatrix <- as.matrix(STMatrix)
+  
   rownames(CytBMatrix) <- CytBMatrix[,1]
   CytBMatrix <- CytBMatrix[,-1]
   CytBMatrix <- as.matrix(CytBMatrix)

@@ -5,10 +5,12 @@ library(tidyverse)
 rownames(Hosts) = Hosts$Sp
 
 tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
+tSTMatrix <- 1 - (STMatrix - min(STMatrix))/max(STMatrix)
 
 FinalHostNames <- reduce(list(as.character(Hosts$Sp), 
                               rownames(RangeAdj1), 
-                              colnames(CytBMatrix),
+                              #colnames(CytBMatrix),
+                              colnames(STMatrix),
                               rownames(HostAdj)), intersect)
 
 FHN <- FinalHostNames; length(FHN)
@@ -16,11 +18,15 @@ FHN <- FinalHostNames; length(FHN)
 HostThemselves <- # Removing diagonals, as they're uninformative
   which(upper.tri(HostAdj[FHN,FHN], diag = T)&lower.tri(HostAdj[FHN,FHN], diag  = T))
 
+UpperHosts <- # Removing diagonals, as they're uninformative
+  which(upper.tri(HostAdj[FHN,FHN], diag = T))
+
 HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            PropVirus = c(HostAdj2[FHN, FHN]),
                            PropVirus2 = c(HostAdj3[FHN, FHN]),
                            Space = c(RangeAdj1[FHN, FHN]),
-                           Phylo = c(tCytBMatrix[FHN, FHN]), # Gonna invert this
+                           #Phylo = c(tCytBMatrix[FHN, FHN]), 
+                           Phylo2 = c(tSTMatrix[FHN, FHN]),
                            Sp = rep(FHN, each = length(FHN)),
                            Sp2 = rep(FHN, length(FHN))
 )
@@ -40,9 +46,10 @@ HostMatrixdf <- HostMatrixdf %>% mutate(
 
 HostMatrixdf$Space0 <- ifelse(HostMatrixdf$Space == 0, "No Overlap", "Overlap")
 HostMatrixdf$Cites <- log(HostMatrixdf$hAllZACites + 1)
-HostMatrixdf$TotalCites <- log(HostMatrixdf$hAllZACites + HostMatrixdf$hAllZACites.Sp + 1)
+HostMatrixdf$TotalCites <- log(HostMatrixdf$hAllZACites + HostMatrixdf$hAllZACites.Sp2 + 1)
+HostMatrixdf$MinCites <- apply(HostMatrixdf[,c("hAllZACites", "hAllZACites.Sp2")],1,min)
 HostMatrixdf$DCites <- log(HostMatrixdf$hDiseaseZACites + 1)
-HostMatrixdf$TotalDCites <- log(HostMatrixdf$hDiseaseZACites + HostMatrixdf$hAllZACites.Sp + 1)
+HostMatrixdf$TotalDCites <- log(HostMatrixdf$hDiseaseZACites + HostMatrixdf$hAllZACites.Sp2 + 1)
 
 HostMatrixdf$SpaceQuantile <- cut(HostMatrixdf$Space, 
                                   breaks = c(-0.1,0,0.25,0.5, 0.75, 1.1),
