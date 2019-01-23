@@ -68,6 +68,11 @@ HostMatrixdf$DomDom <- paste(HostMatrixdf$hDom, HostMatrixdf$hDom.Sp2)
 HostMatrixdf$DomDom <- ifelse(HostMatrixdf$DomDom == "domestic wild", "wild domestic", HostMatrixdf$DomDom) %>%
   factor(levels = c("wild wild", "domestic domestic", "wild domestic"))
 
+UpperHosts <- # Removing diagonals and 
+  which(upper.tri(HostAdj[FHN,FHN], diag = T))
+
+FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
+
 # Virus dataset ####
 
 FinalVirusNames <- reduce(list(Viruses$Sp, 

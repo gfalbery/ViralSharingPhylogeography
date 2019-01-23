@@ -2,8 +2,6 @@ library(geiger)
 library(ape)
 library(picante)
 
-rm(list=ls())
-
 vt <- read.nexus("data/ViralTree.tre")
 
 vt$tip.label[sort.list(vt$tip.label)]  #cladogram tree, sort taxon list

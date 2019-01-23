@@ -12,9 +12,10 @@ FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
 mf = 1
 
-prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),#,
+prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),
                  G = list(G1 = list(V = diag(2), nu = 2)))
 
+mcstart <- Sys.time()
 MC1 <- MCMCglmm(
   data = FinalHostMatrix,
   Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinCites + DomDom),
@@ -22,9 +23,10 @@ MC1 <- MCMCglmm(
   prior = prior.zi,
   random =~ us(trait):mm(Sp + Sp2),
   family = "zipoisson",
-  pl = TRUE,
+  pr = TRUE,
   nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
   thin = 10*mf, burnin=3000*mf)
+mcend <- Sys.time()
 
 library(parallel)
 
