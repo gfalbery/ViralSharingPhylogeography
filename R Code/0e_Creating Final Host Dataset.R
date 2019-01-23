@@ -27,9 +27,12 @@ HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            Space = c(RangeAdj1[FHN, FHN]),
                            #Phylo = c(tCytBMatrix[FHN, FHN]), 
                            Phylo2 = c(tSTMatrix[FHN, FHN]),
-                           Sp = rep(FHN, each = length(FHN)),
-                           Sp2 = rep(FHN, length(FHN))
+                           Sp = as.character(rep(FHN, each = length(FHN))),
+                           Sp2 = as.character(rep(FHN, length(FHN)))
 )
+
+HostMatrixdf$Sp <- as.character(HostMatrixdf$Sp)
+HostMatrixdf$Sp2 <- as.character(HostMatrixdf$Sp2)
 
 HostMatrixVar <- c("hOrder", "hFamily", "hDom", "hAllZACites", "hDiseaseZACites", 
                    "LongMean", "LatMean")
@@ -47,8 +50,10 @@ HostMatrixdf <- HostMatrixdf %>% mutate(
 HostMatrixdf$Space0 <- ifelse(HostMatrixdf$Space == 0, "No Overlap", "Overlap")
 HostMatrixdf$Cites <- log(HostMatrixdf$hAllZACites + 1)
 HostMatrixdf$TotalCites <- log(HostMatrixdf$hAllZACites + HostMatrixdf$hAllZACites.Sp2 + 1)
-HostMatrixdf$MinCites <- apply(HostMatrixdf[,c("hAllZACites", "hAllZACites.Sp2")],1,min)
+HostMatrixdf$MinCites <- apply(HostMatrixdf[,c("hAllZACites", "hAllZACites.Sp2")],1, function(a) min(a, na.rm = T))
+
 HostMatrixdf$DCites <- log(HostMatrixdf$hDiseaseZACites + 1)
+HostMatrixdf$MinDCites <- apply(HostMatrixdf[,c("hDiseaseZACites", "hDiseaseZACites.Sp2")],1, function(a) min(a, na.rm = T))
 HostMatrixdf$TotalDCites <- log(HostMatrixdf$hDiseaseZACites + HostMatrixdf$hAllZACites.Sp2 + 1)
 
 HostMatrixdf$SpaceQuantile <- cut(HostMatrixdf$Space, 

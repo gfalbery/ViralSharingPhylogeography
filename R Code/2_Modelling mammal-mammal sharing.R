@@ -10,10 +10,21 @@ FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
 # Modelling all mammal-mammal pairs ####
 
-mf = 5
+mf = 1
 
 prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),#,
                  G = list(G1 = list(V = diag(2), nu = 2)))
+
+MC1 <- MCMCglmm(
+  data = FinalHostMatrix,
+  Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinCites + DomDom),
+  rcov =~ idh(trait):units, 
+  prior = prior.zi,
+  random =~ us(trait):mm(Sp + Sp2),
+  family = "zipoisson",
+  pl = TRUE,
+  nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+  thin = 10*mf, burnin=3000*mf)
 
 library(parallel)
 
@@ -34,10 +45,10 @@ ZI_10runs <- parLapply(cl = cl, 1:10, function(i) {
   
   MCMCglmm(
     data = FinalHostMatrix,
-    Virus ~ trait -1 + trait:(Space + Phylo + SpaceQuantile:Phylo + MinCites + DomDom),
+    Virus ~ trait -1 + trait:(Space + Phylo + Space:Phylo + MinCites + DomDom),
     rcov =~ idh(trait):units, 
     prior = prior.zi,
-    random =~ us(trait):Sp,
+    random =~ us(trait):mm(Sp + Sp2),
     family = "zipoisson",
     pl = TRUE,
     nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
@@ -58,4 +69,5 @@ ZIModel <- ZI_10runs[[1]]
 
 ZIModel$Sol <- SampleCluster
 ZIModel$VCV <- SampleClusterv
+
 summary(ZIModel)
