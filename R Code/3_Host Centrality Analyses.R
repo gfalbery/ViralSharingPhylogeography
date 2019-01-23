@@ -9,7 +9,7 @@ NARows <-function(df, vars){
   })
 }
 
-Resps <- c("Records", "Degree", "Eigenvector")
+Resps <- c("Records", "Degree", "Eigenvector", "hZoonosisCount", "hZoonosisProp")
 
 HostCentCovar = c(
   "hDom",
@@ -48,10 +48,7 @@ N <- nrow(TestHosts)
 X <- as.data.frame(Xm[, -which(colnames(Xm) %in%c("hDomdomestic","hOrderCARNIVORA"))]) # Model Matrix
 
 # Establishing distance matrices ####
-tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
-
 SpaceContacts <- as(solve(RangeAdj1[FHN, FHN]),"dgCMatrix")
-#GRMatrix <- as(solve(tCytBMatrix[FHN, FHN]),"dgCMatrix")
 GRMatrix <- as(solve(tSTMatrix[FHN, FHN]),"dgCMatrix")
 
 TestHosts$IndexSpace = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
@@ -89,7 +86,7 @@ f7 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "
 FormulaList <- list(f1, f2, f3, f4, f5, f6, f7)
 ModelNames <- c("Base", "SPDE", "SpaceMat", "PDMat",
                 "SpaceMat:w","PDMat:w","SpaceMat:PDMat")
-FamilyList <- c("nbinomial", "poisson", "gaussian")
+FamilyList <- c("nbinomial", "poisson", "gaussian", "poisson", "beta")
 CentralityList <- list()
 
 for(r in 1:length(Resps)){ # Takes a while I bet
@@ -159,6 +156,15 @@ lapply(1:length(CentralityList), function(a) INLADICFig(CentralityList[[a]], Mod
 lapply(CentralityList, function(a) Efxplot(a, ModelNames = ModelNames)) %>% 
   arrange_ggplot2(ncol = 3)
 
+lapply(CentralityList[[1]], function(a) qplot(a$summary.fitted.values$mean[1:dim(TestHosts)[1]], TestHosts$Records)) %>%
+  arrange_ggplot2
+
+lapply(CentralityList[[2]], function(a) qplot(a$summary.fitted.values$mean[1:dim(TestHosts)[1]], TestHosts$Degree)) %>%
+  arrange_ggplot2
+
+lapply(CentralityList[[3]], function(a) qplot(a$summary.fitted.values$mean[1:dim(TestHosts)[1]], TestHosts$Eigenvector)) %>%
+  arrange_ggplot2
+
 # Plotting field ####
 
 ggField(CentralityList[[3]][[2]], WorldMesh) + 
@@ -166,108 +172,10 @@ ggField(CentralityList[[3]][[2]], WorldMesh) +
   geom_point(data = TestHosts[,c("LongMean", "LatMean")]/50000, aes(LongMean, LatMean), inherit.aes = F) + 
   scale_fill_brewer(palette = AlberPalettes[2])
 
-# Having a go at examining space/phylogeny contributions to zoonoses ####
-
-Resps[4:5] <- c("hZoonosisCount", "hZoonosisProp")
-FamilyList[4:5] <- c("poisson", "beta")
-
-TestHosts <- Hosts %>% dplyr::select(Resps, HostCentCovar, "Sp", "LongMean", "LatMean", "hOrder") %>%
-  
-  mutate(hAllZACites = log(hAllZACites + 1),
-         GeogRange = kader:::cuberoot(GeogRange), 
-         S.Greg1 = sqrt(S.Greg1), 
-         Records = c(Records),
-         Eigenvector = Eigenvector^0.2
-  ) %>%
-  
-  slice(which(!NARows(Hosts[,c(Resps,HostCentCovar, "LongMean", "LatMean", "hOrder")])))
-
-TestHosts$hZoonosisProp[TestHosts$hZoonosisProp==0] <- 0.0001
-TestHosts$hZoonosisProp[TestHosts$hZoonosisProp==1] <- 0.9999
-
-TestHosts[,c("LongMean","LatMean")] <- TestHosts[,c("LongMean","LatMean")]/50000
-HostLocations = cbind(TestHosts$LongMean, TestHosts$LatMean)
-WorldMesh <- inla.mesh.2d(loc = HostLocations, max.edge = c(10, 25), cutoff = 10)
-A3 <- inla.spde.make.A(WorldMesh, loc = HostLocations) # Making A matrix
-spde = inla.spde2.pcmatern(mesh = WorldMesh, prior.range = c(10, 0.5), prior.sigma = c(.5, .5)) # Making SPDE
-w.index <- inla.spde.make.index('w', n.spde = spde$n.spde)
-
-# Making the models ####
-
-Xm <- model.matrix(as.formula(paste0("~ -1 + ", paste(HostCentCovar, collapse = " + "))), 
-                   data = TestHosts)
-N <- nrow(TestHosts)
-X <- as.data.frame(Xm[, -which(colnames(Xm) %in%c("hDomdomestic","hOrderCARNIVORA"))]) # Model Matrix
-
-# Establishing distance matrices ####
-tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
-
-SpaceContacts <- as(solve(RangeAdj1[FHN, FHN]),"dgCMatrix")
-GRMatrix <- as(solve(tCytBMatrix[FHN, FHN]),"dgCMatrix")
-
-TestHosts$IndexSpace = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
-TestHosts$IndexPhylo = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
-
-for(r in 1:length(Resps)){ # Takes a while I bet
-  
-  print(Resps[r])
-  
-  CentralityList[[Resps[r]]] <- list()
-  
-  CentStack <- inla.stack(
-    data = list(y = TestHosts[,Resps[r]]),  
-    A = list(1, 1, 1, 1, A3), # Vector of Multiplication factors              
-    effects = list(
-      Intercept = rep(1, N), # Leave
-      X = X, # Leave
-      IndexSpace = TestHosts$IndexSpace,
-      IndexPhylo = TestHosts$IndexPhylo,
-      w = w.index)) # Leave
-  
-  for(q in 1:length(ModelNames)){
-    print(ModelNames[q])
-    CentralityList[[Resps[r]]][[ModelNames[[q]]]] <-
-      inla(
-        FormulaList[[q]], 
-        family = FamilyList[r],
-        data = inla.stack.data(CentStack),
-        control.compute = list(dic = TRUE),
-        control.predictor = list(A = inla.stack.A(CentStack))
-      )
-  }
-  
-  CentralityList[[Resps[r]]][[5]] <-
-    inla(
-      f5, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
-  
-  CentralityList[[Resps[r]]][[6]] <-
-    inla(
-      f6, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
-  
-  CentralityList[[Resps[r]]][[7]] <-
-    inla(
-      f7, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
-}
-
 hOrderCentralityList <- CentralityList
 
-
-Resps <- c("Records", "Degree", "Eigenvector")
+# Removing Order as a variable ####
+Resps <- c("Records", "Degree", "Eigenvector","hZoonosisCount", "hZoonosisProp")
 
 HostCentCovar = c(
   "hDom",
@@ -275,7 +183,7 @@ HostCentCovar = c(
   #"hDiseaseZACites",
   "GeogRange",
   #"PVRMass",
-  "hOrder",
+  #"hOrder",
   "S.Greg1"
 )
 
@@ -347,7 +255,7 @@ f7 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "
 FormulaList <- list(f1, f2, f3, f4, f5, f6, f7)
 ModelNames <- c("Base", "SPDE", "SpaceMat", "PDMat",
                 "SpaceMat:w","PDMat:w","SpaceMat:PDMat")
-FamilyList <- c("nbinomial", "poisson", "gaussian")
+FamilyList <- c("nbinomial", "poisson", "gaussian""poisson", "beta")
 CentralityList <- list()
 
 for(r in 1:length(Resps)){ # Takes a while I bet
@@ -377,33 +285,6 @@ for(r in 1:length(Resps)){ # Takes a while I bet
         control.predictor = list(A = inla.stack.A(CentStack))
       )
   }
-  
-  CentralityList[[Resps[r]]][[5]] <-
-    inla(
-      f5, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
-  
-  CentralityList[[Resps[r]]][[6]] <-
-    inla(
-      f6, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
-  
-  CentralityList[[Resps[r]]][[7]] <-
-    inla(
-      f7, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
 }
 
 # Plotting out ####
@@ -458,10 +339,8 @@ N <- nrow(TestHosts)
 X <- as.data.frame(Xm[, -which(colnames(Xm) %in%c("hDomdomestic","hOrderCARNIVORA"))]) # Model Matrix
 
 # Establishing distance matrices ####
-tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
-
 SpaceContacts <- as(solve(RangeAdj1[FHN, FHN]),"dgCMatrix")
-GRMatrix <- as(solve(tCytBMatrix[FHN, FHN]),"dgCMatrix")
+GRMatrix <- as(solve(tSTBMatrix[FHN, FHN]),"dgCMatrix")
 
 TestHosts$IndexSpace = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
 TestHosts$IndexPhylo = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
@@ -493,33 +372,6 @@ for(r in 1:length(Resps)){ # Takes a while I bet
         control.predictor = list(A = inla.stack.A(CentStack))
       )
   }
-  
-  CentralityList[[Resps[r]]][[5]] <-
-    inla(
-      f5, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
-  
-  CentralityList[[Resps[r]]][[6]] <-
-    inla(
-      f6, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
-  
-  CentralityList[[Resps[r]]][[7]] <-
-    inla(
-      f7, 
-      family = FamilyList[r],
-      data = inla.stack.data(CentStack),
-      control.compute = list(dic = TRUE),
-      control.predictor = list(A = inla.stack.A(CentStack))
-    )
 }
 
-hOrderCentralityList <- CentralityList
+NohOrderCentralityList <- CentralityList
