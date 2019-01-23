@@ -133,17 +133,14 @@ lapply(1:length(CentralityList[1:4]), function(a) INLADICFig(CentralityList[[a]]
 lapply(CentralityList, function(a) Efxplot(a, ModelNames = ModelNames)) %>% 
   arrange_ggplot2(ncol = 3)
 
-lapply(CentralityList[[1]], function(a) qplot(a$summary.fitted.values$mean[1:dim(TestHosts)[1]], TestHosts$Records)) %>%
+lapply(1:length(CentralityList[[x]]), function(a){ 
+  qplot(TestHosts[,Resps[x]],
+        CentralityList[[x]][[a]]$summary.fitted.values$mean[1:dim(TestHosts)[1]]) + 
+    ggtitle(ModelNames[a]) + labs(x = paste("Data", Resps[x]), y = paste("Fitted", Resps[x]))
+}) %>%
   arrange_ggplot2
 
-lapply(CentralityList[[2]], function(a) qplot(a$summary.fitted.values$mean[1:dim(TestHosts)[1]], TestHosts$Degree)) %>%
-  arrange_ggplot2
-
-lapply(CentralityList[[3]], function(a) qplot(a$summary.fitted.values$mean[1:dim(TestHosts)[1]], TestHosts$Eigenvector)) %>%
-  arrange_ggplot2
-
-lapply(CentralityList[[4]], function(a) qplot(a$summary.fitted.values$mean[1:dim(TestHosts)[1]], TestHosts$hZoonosisCount)) %>%
-  arrange_ggplot2
+lapply(CentralityList, function(a) INLARep(a[[7]]))
 
 # Plotting field ####
 

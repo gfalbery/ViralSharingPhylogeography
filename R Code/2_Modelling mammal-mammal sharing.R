@@ -73,3 +73,9 @@ ZIModel$Sol <- SampleCluster
 ZIModel$VCV <- SampleClusterv
 
 summary(ZIModel)
+
+
+# Repeating sans random effect? #####
+
+
+
