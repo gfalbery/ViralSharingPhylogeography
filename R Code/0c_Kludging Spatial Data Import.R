@@ -10,9 +10,11 @@ library(maptools)
 
 if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata") else{
   
-  mammal_shapes <- st_read("maps/Mammals_Terrestrial")
+  mammal_shapes <- st_read("TERRESTRIAL_MAMMALS")
   
-  mammal_shapes <- st_transform(mammal_shapes, 54009) # Mollweide projection 
+  #mammal_shapes <- st_transform(mammal_shapes, 54009) # Mollweide projection 
+  mammal_shapes <- st_transform(mammal_shapes, 
+                                "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection 
   
   # Mollweide projection = +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs
   # This projection retains grid size as much as possible, but at the expense of shape
@@ -25,9 +27,24 @@ if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata"
   MammalRanges <- fasterize(mammal_shapes_red, mammal_raster, by = "binomial")
   #save(MammalRanges, file = "data/MammalRanges.Rdata")
   
-  AllMammals <- fasterize(mammal_shapes_red[-which(mammal_shapes_red$binomial == "Ursus_maritimus"),], mammal_raster, fun = "sum")
-  
   remove("mammal_raster", "mammal_shapes", "mammal_shapes_red")
+  
+}
+
+LeftOut <- Hosts[!Hosts$Sp%in%names(MammalRanges),"Sp"]
+
+if(file.exists("data/MammalRanges2.Rdata")) load(file = "data/MammalRanges2.Rdata") else{
+  
+  mammal_shapes2 <- st_read("Mammals_Terrestrial")
+  mammal_shapes2 <- st_transform(mammal_shapes2, "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection
+  
+  mammal_shapes2$binomial = str_replace(mammal_shapes2$BINOMIAL, " ", "_")
+  mammal_shapes2 <- mammal_shapes2[order(mammal_shapes2$binomial),]
+  mammal_shapes_red2 <- mammal_shapes2[mammal_shapes2$binomial%in%LeftOut,]
+  
+  mammal_raster2 <- raster(mammal_shapes_red2, res = 50000) # NB units differ from Mercator!
+  
+  MammalRanges2 <- fasterize(mammal_shapes_red2, mammal_raster2, by = "binomial")
   
 }
 
@@ -45,7 +62,7 @@ WorldPolygons <- lapply(WorldMap@polygons,
 WorldPolygons <- lapply(1:length(WorldMap@polygons), 
                         function(b){ lapply(WorldMap@polygons[[b]]@Polygons, 
                                             function(a){ as.data.frame(a@coords) %>%
-                                              mutate(Country = WorldMap@data[b,"NAME"])})}) %>% 
+                                                mutate(Country = WorldMap@data[b,"NAME"])})}) %>% 
   unlist(recursive = F)
 
 for(x in 1:length(WorldPolygons)) WorldPolygons[[x]]$group <- x 
@@ -62,7 +79,13 @@ Valuedf <- data.frame(getValues(MammalRanges))
 Valuedf2 <- reshape2::melt(Valuedf)
 Valuedf2$x <- rep(1:MammalRanges[[1]]@ncols, MammalRanges[[1]]@nrows)
 Valuedf2$y <- rep(MammalRanges[[1]]@nrows:1, each = MammalRanges[[1]]@ncols)
-Rangedf <- Valuedf2[!is.na(Valuedf2$value),]
+
+Valuedf3 <- data.frame(getValues(MammalRanges2))
+Valuedf4 <- reshape2::melt(Valuedf3)
+Valuedf4$x <- rep(1:MammalRanges2[[1]]@ncols, MammalRanges2[[1]]@nrows)
+Valuedf4$y <- rep(MammalRanges2[[1]]@nrows:1, each = MammalRanges2[[1]]@ncols)
+
+Rangedf <- rbind(Valuedf2[!is.na(Valuedf2$value),],Valuedf4[!is.na(Valuedf4$value),]) # This is where a load of them were lost ####
 Rangedf <- Rangedf %>% 
   dplyr::rename(Host = variable, Presence = value)
 
@@ -70,6 +93,7 @@ Rangedf$GridID <- with(Rangedf, paste(x, y))
 
 Range0 <- levels(Rangedf$Host)[which(table(Rangedf$Host)==0)] # Hosts that have no spatial records??
 Rangedf <- droplevels(Rangedf) 
+Rangedf <- Rangedf[order(Rangedf$Host),]
 
 # Using igraph to project it
 
