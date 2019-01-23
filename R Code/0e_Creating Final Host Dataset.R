@@ -55,16 +55,13 @@ HostMatrixdf$SpaceQuantile <- cut(HostMatrixdf$Space,
                                   breaks = c(-0.1,0,0.25,0.5, 0.75, 1.1),
                                   labels = c(0, 0.25, 0.5, 0.75, 1))
 
-HostMatrixdf$PhyloQuantile <- cut(HostMatrixdf$Phylo, 
-                                  breaks = c(quantile(HostMatrixdf$Phylo, 0:5/5)),
-                                  labels = c(0, 0.25, 0.5, 0.75, 1))
+#HostMatrixdf$PhyloQuantile <- cut(HostMatrixdf$Phylo2, 
+#                                  breaks = c(quantile(HostMatrixdf$Phylo2, 0:5/5)),
+#                                  labels = c(0, 0.25, 0.5, 0.75, 1))
 
 HostMatrixdf$DomDom <- paste(HostMatrixdf$hDom, HostMatrixdf$hDom.Sp2)
 HostMatrixdf$DomDom <- ifelse(HostMatrixdf$DomDom == "domestic wild", "wild domestic", HostMatrixdf$DomDom) %>%
   factor(levels = c("wild wild", "domestic domestic", "wild domestic"))
-
-FHosts <- Hosts[Hosts$Sp%in%FHN,]
-FHosts <- FHosts[order(FHosts$Sp),]
 
 # Virus dataset ####
 
@@ -83,24 +80,3 @@ VirusLongMatrixdf <- data.frame(Host = c(VirusAdj[FVN, FVN]),
                                 PropHost = c(VirusAdj2[FVN, FVN]),
                                 Space = c(VirusRangeAdj1[FVN, FVN]) # Gonna invert this
 )
-
-# Plotting some exploratory stuff ####
-
-ggplot(HostMatrixdf[-HostThemselves,], aes(Space, Virus)) + 
-  geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(aes(colour = hDom)) +
-  stat_smooth(geom = "ribbon", fill = NA, lty = 2, aes(group = hDom))
-
-ggplot(HostMatrixdf[-HostThemselves,], aes(Phylo, Virus)) + 
-  geom_point(colour = AlberColours[3], alpha = 0.3) + geom_smooth(aes(colour = hDom)) +
-  stat_smooth(geom = "ribbon", fill = NA, lty = 2, aes(group = hDom))
-
-ggplot(HostMatrixdf[-HostThemselves,], aes(Space, Virus)) + 
-  geom_point(colour = AlberColours[2], alpha = 0.3) + geom_smooth(aes(colour = hOrder)) +
-  stat_smooth(geom = "ribbon", fill = NA, lty = 2, aes(group = hOrder))
-
-ggplot(HostMatrixdf[-HostThemselves,], aes(Phylo, Virus)) + 
-  geom_point(colour = AlberColours[3], alpha = 0.3) + geom_smooth(aes(colour = hDom)) +
-  stat_smooth(geom = "ribbon", fill = NA, lty = 2, aes(group = hDom))
-
-
-
