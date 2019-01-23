@@ -11,14 +11,14 @@ NARows <-function(df, vars){
   })
 }
 
-Resps <- c("Records", "Degree", "Eigenvector", "hZoonosisCount", "hZoonosisProp")
+Resps <- c("Records", "Degree", "Eigenvector", "hZoonosisCount")
 
 HostCentCovar = c(
   "hDom",
   "hAllZACites",
   #"hDiseaseZACites",
   "GeogRange",
-  "hOrder",
+  #"hOrder",
   "S.Greg1"
 )
 
@@ -90,7 +90,7 @@ f7 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "
 FormulaList <- list(f1, f2, f3, f4, f5, f6, f7)
 ModelNames <- c("Base", "SPDE", "SpaceMat", "PDMat",
                 "SpaceMat:w","PDMat:w","SpaceMat:PDMat")
-FamilyList <- c("nbinomial", "nbinomial", "gaussian", "poisson", "beta")
+FamilyList <- c("nbinomial", "nbinomial", "gaussian", "nbinomial")
 CentralityList <- list()
 
 for(r in 1:length(Resps)){ # Takes a while I bet
@@ -124,10 +124,10 @@ for(r in 1:length(Resps)){ # Takes a while I bet
 
 # Plotting out ####
 
-lapply(CentralityList, function(a) a$SPDE %>%
+lapply(CentralityList[1:4], function(a) a$SPDE %>%
          ggField(WorldMesh)) %>% arrange_ggplot2(nrow = 3)
 
-lapply(1:length(CentralityList), function(a) INLADICFig(CentralityList[[a]], ModelNames = ModelNames)) %>% 
+lapply(1:length(CentralityList[1:4]), function(a) INLADICFig(CentralityList[[a]], ModelNames = ModelNames)) %>% 
   arrange_ggplot2(nrow = 3)
 
 lapply(CentralityList, function(a) Efxplot(a, ModelNames = ModelNames)) %>% 
@@ -266,8 +266,8 @@ NohOrderCentralityList <- CentralityList
 
 # Plotting out ####
 
-lapply(CentralityList, function(a) a$SPDE %>%
-         ggField(WorldMesh)) %>% arrange_ggplot2(nrow = 3)
+lapply(CentralityList[1:4], function(a) a$SPDE %>%
+         ggField(WorldMesh)) %>% arrange_ggplot2(nrow = 2)
 
 lapply(1:length(CentralityList), function(a) INLADICFig(CentralityList[[a]])) %>% #, ModelNames = ModelNames)) %>% 
   arrange_ggplot2(nrow = 3)
