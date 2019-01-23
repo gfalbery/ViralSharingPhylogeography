@@ -16,10 +16,8 @@ HostCentCovar = c(
   "hAllZACites",
   #"hDiseaseZACites",
   "GeogRange",
-  "PVRMass",
-  #"hArtfclHbttUsrIUCN",
+  #"PVRMass",
   "hOrder",
-  #"hMassGrams"
   "S.Greg1"
 )
 

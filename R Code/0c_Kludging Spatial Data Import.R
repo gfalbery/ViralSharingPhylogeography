@@ -97,14 +97,6 @@ Rangedf <- Rangedf[order(Rangedf$Host),]
 
 # Using igraph to project it
 
-# M2 <- with(Rangedf, table(Host, GridID))
-# spacebipgraph <- graph.incidence(M2, weighted = T)
-# SpaceHostGraph <- bipartite.projection(spacebipgraph)$proj2
-# SpaceHostadj <- as.matrix(get.adjacency(Hostgraph, attr = "weight"))
-
-# Making home range overlaps ####
-# There MUST be a quicker way of doing this but for now I don't have it
-
 RangeOverlap <- matrix(0, nrow = nlevels(Rangedf$Host), ncol = nlevels(Rangedf$Host))
 dimnames(RangeOverlap) <- list(levels(Rangedf$Host),levels(Rangedf$Host))
 
@@ -149,6 +141,20 @@ if(file.exists("data/HostPolygons.Rdata")) load("data/HostPolygons.Rdata") else{
     }
     
   }) %>% bind_rows()
+  
+  HostPolygons2 <- lapply(levels(Valuedf4$variable), function(x) {
+    
+    if(!x%in%Range0){
+      
+      r <- MammalRanges2[[x]] > -Inf
+      
+      r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
+        mutate(Host = x) %>% return
+    }
+    
+  }) %>% bind_rows()
+  
+  HostPolygons <- bind_rows(HostPolygons, HostPolygons2)
   
   save(HostPolygons, file = "data/HostPolygons.Rdata")}
 
@@ -246,5 +252,3 @@ VirusRangeB = matrix(rep(diag(VirusRangeOverlap), each = nrow(VirusRangeOverlap)
 
 VirusRangeAdj1 <- VirusRangeOverlap/(VirusRangeA + VirusRangeB - VirusRangeOverlap) # Weighted evenly
 VirusRangeAdj2 <- VirusRangeOverlap/(VirusRangeA) # Asymmetrical
-
-VirusAssocs[unique(Viruses$Sp)][which(sapply(GridList[unique(Viruses$Sp)], length)==0)]

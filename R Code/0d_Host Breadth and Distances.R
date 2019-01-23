@@ -52,13 +52,6 @@ Viruses[,c("HostRangeMax",
                                         VirPhyloHostRangeMean[as.character(Viruses$Sp)],
                                         VirPhyloHostRangeMedian[as.character(Viruses$Sp)])
 
-jpeg("Figures/Pairs of records, host range, centrality.jpeg", units = "mm", width = 100, height = 100, res = 300)
-Viruses[,c("Records", "HostRangeMean", "HostRangeMax", "vEigenvector", "vDegree")] %>% 
-  mutate(Records = log(Records)) %>% 
-  ggpairs(lower = list(continuous = wrap("smooth", method = "loess"))) +
-  ggtitle("Pairs plot of records, host range, centrality")
-dev.off()
-
 # Making centroids ####
 # This takes a long, long time
 
