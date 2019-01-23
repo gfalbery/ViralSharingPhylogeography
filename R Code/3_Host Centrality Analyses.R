@@ -51,7 +51,8 @@ X <- as.data.frame(Xm[, -which(colnames(Xm) %in%c("hDomdomestic","hOrderCARNIVOR
 tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
 
 SpaceContacts <- as(solve(RangeAdj1[FHN, FHN]),"dgCMatrix")
-GRMatrix <- as(solve(tCytBMatrix[FHN, FHN]),"dgCMatrix")
+#GRMatrix <- as(solve(tCytBMatrix[FHN, FHN]),"dgCMatrix")
+GRMatrix <- as(solve(tSTMatrix[FHN, FHN]),"dgCMatrix")
 
 TestHosts$IndexSpace = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
 TestHosts$IndexPhylo = unlist(sapply(TestHosts$Sp, function(a) which(FHN==a)))
@@ -126,33 +127,33 @@ for(r in 1:length(Resps)){ # Takes a while I bet
       control.compute = list(dic = TRUE),
       control.predictor = list(A = inla.stack.A(CentStack))
     )
+  
+  CentralityList[[Resps[r]]][[6]] <-
+    inla(
+      f6, 
+      family = FamilyList[r],
+      data = inla.stack.data(CentStack),
+      control.compute = list(dic = TRUE),
+      control.predictor = list(A = inla.stack.A(CentStack))
+    )
+  
+  CentralityList[[Resps[r]]][[7]] <-
+    inla(
+      f7, 
+      family = FamilyList[r],
+      data = inla.stack.data(CentStack),
+      control.compute = list(dic = TRUE),
+      control.predictor = list(A = inla.stack.A(CentStack))
+    )
 }
-
-CentralityList[[Resps[r]]][[6]] <-
-  inla(
-    f6, 
-    family = FamilyList[r],
-    data = inla.stack.data(CentStack),
-    control.compute = list(dic = TRUE),
-    control.predictor = list(A = inla.stack.A(CentStack))
-  )
-
-CentralityList[[Resps[r]]][[7]] <-
-  inla(
-    f7, 
-    family = FamilyList[r],
-    data = inla.stack.data(CentStack),
-    control.compute = list(dic = TRUE),
-    control.predictor = list(A = inla.stack.A(CentStack))
-  )
 
 # Plotting out ####
 
 lapply(CentralityList, function(a) a$SPDE %>%
          ggField(WorldMesh)) %>% arrange_ggplot2(nrow = 3)
 
-lapply(CentralityList, function(a) INLADICFig(a)) %>% #, ModelNames = ModelNames)) %>% 
-  arrange_ggplot2(nrow = 3)
+lapply(1:length(CentralityList), function(a) INLADICFig(CentralityList[[a]])) %>% #, ModelNames = ModelNames)) %>% 
+  arrange_ggplot2(nrow = )
 
 lapply(CentralityList, function(a) Efxplot(a)) %>% #, ModelNames = ModelNames)) %>% 
   arrange_ggplot2(ncol = 3)

@@ -1,6 +1,6 @@
 # Data import for EHA ###
 
-remove(list = ls())
+#remove(list = ls())
 
 library(igraph); library(magrittr); library(dplyr); library(ggplot2); require(RCurl); library(readr)
 
