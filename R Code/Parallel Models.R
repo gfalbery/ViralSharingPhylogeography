@@ -7,16 +7,17 @@ source("R Code/00_Master Code.R")
 
 # Run parallel
 
-library(MCMCglmm); library(ggregplot); library(INLA); library(parallel)
+library(MCMCglmm); library(ggregplot); library(INLA); library(parallel); library(dplyr)
 
 UpperHosts <- # Removing diagonals and 
   which(upper.tri(HostAdj[FHN,FHN], diag = T))
 
 FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
+FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrixNoSpace <- FinalHostMatrix %>% filter(Space>0)
 
-gp <- gelman.prior(Virus ~ Space + Phylo2 + Space:Phylo2 + MinCites + DomDom, data = FinalHostMatrix)
+gp <- gelman.prior(Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom, data = FinalHostMatrix)
 
 prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),
                  G = list(G1 = list(V = diag(2), nu = 2)),
@@ -34,24 +35,12 @@ prior.zi2$B$V[seq(2,dim(gp)[2]*2,2),seq(2,dim(gp)[2]*2,2)] <- gp
 
 mf = 15
 
-setCores <- 20 # use detectCores() by itself if you want all CPUs
-
-cl <- makeCluster(getOption("cl.cores", setCores))
-
-cl.pkg <- clusterEvalQ(cl, library(MCMCglmm)) # load the MCMCglmm package within the cluster
-
-clusterExport(cl, "prior.zi") # Import each object that's necessary to run the function
-clusterExport(cl, "prior.zi2") # Import each object that's necessary to run the function
-clusterExport(cl, "FinalHostMatrix")
-clusterExport(cl, "mf")
-
-ZI_runs <- parLapply(cl = cl, 1:10, function(i) {
-  
-  ZI_runsFull <- 
+ZI_runs <- parallel::mclapply(1:40, function(i) {
+  if(i <= 10) {
     
-    MCMCglmm(
+    return(MCMCglmm(
       data = FinalHostMatrix,
-      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinCites + DomDom),
+      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
       prior = prior.zi,
       random =~ us(trait):mm(Sp + Sp2),
@@ -59,14 +48,12 @@ ZI_runs <- parLapply(cl = cl, 1:10, function(i) {
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
       thin = 10*mf, burnin=8000*mf)
-  
-  # All mammals no G ####
-  
-  ZI_runsNoG <- 
+    )
     
-    MCMCglmm(
+  } else if (i > 10 & i <= 20) {
+    return(MCMCglmm(
       data = FinalHostMatrix,
-      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinCites + DomDom),
+      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
       prior = prior.zi2,
       #random =~ us(trait):mm(Sp + Sp2),
@@ -74,42 +61,30 @@ ZI_runs <- parLapply(cl = cl, 1:10, function(i) {
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
       thin = 10*mf, burnin=8000*mf)
-  
-  # Only overlapping mammals ####
-  
-  ZI_runsNoSpace <- 
-    
-    MCMCglmm(
+    )
+  } else if (i > 20 & i <= 30) {
+    return(MCMCglmm(
       data = FinalHostMatrix %>% filter(Space>0),
-      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinCites + DomDom),
+      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
       prior = prior.zi,
       random =~ us(trait):mm(Sp + Sp2),
       family = "zipoisson",
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-      thin = 10*mf, burnin=8000*mf)
-  
-  # Only overlapping mammals no G ####
-  
-  ZI_runsNoSpaceNoG <- 
-    
-    MCMCglmm(
+      thin = 10*mf, burnin=8000*mf))
+  } else if (i > 30 & i <= 40) {
+    return(MCMCglmm(
       data = FinalHostMatrix %>% filter(Space>0),
-      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinCites + DomDom),
+      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
       prior = prior.zi2,
       #random =~ us(trait):mm(Sp + Sp2),
       family = "zipoisson",
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-      thin = 10*mf, burnin=8000*mf)
-  
-  return(list(ZI_runsFull, ZI_runsNoG, ZI_runsNoSpace, ZI_runsNoSpaceNoG))
-  
-})
-
-stopCluster(cl) # Stop running the parallel cluster
+      thin = 10*mf, burnin=8000*mf))
+  }}, mc.cores = 40)
 
 # Save file
 
