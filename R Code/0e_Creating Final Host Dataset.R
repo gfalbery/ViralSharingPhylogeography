@@ -75,18 +75,18 @@ FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
 # Virus dataset ####
 
-FinalVirusNames <- reduce(list(Viruses$Sp, 
-                               rownames(VirusRangeAdj1)[which(sapply(GridList[unique(Viruses$Sp)], length)>0)]), 
-                          intersect)
+#FinalVirusNames <- reduce(list(Viruses$Sp, 
+#                               rownames(VirusRangeAdj1)[which(sapply(GridList[unique(Viruses$Sp)], length)>0)]), 
+#                          intersect)
 
-FVN <- FinalVirusNames; length(FVN)
+#FVN <- FinalVirusNames; length(FVN)#
 
-FViruses <- Viruses[Viruses$Sp%in%FVN,]
-FViruses <- FViruses[order(FViruses$Sp),]
-FViruses$Pixels <- diag(VirusRangeOverlap)[FVN]
-FViruses$ViralRichness <- diag(VirusRangeAdj1)[FVN]
+#FViruses <- Viruses[Viruses$Sp%in%FVN,]
+#FViruses <- FViruses[order(FViruses$Sp),]
+#FViruses$Pixels <- diag(VirusRangeOverlap)[FVN]
+#FViruses$ViralRichness <- diag(VirusRangeAdj1)[FVN]
 
-VirusLongMatrixdf <- data.frame(Host = c(VirusAdj[FVN, FVN]),
-                                PropHost = c(VirusAdj2[FVN, FVN]),
-                                Space = c(VirusRangeAdj1[FVN, FVN]) # Gonna invert this
-)
+#VirusLongMatrixdf <- data.frame(Host = c(VirusAdj[FVN, FVN]),
+#                                PropHost = c(VirusAdj2[FVN, FVN]),
+#                                Space = c(VirusRangeAdj1[FVN, FVN]) # Gonna invert this
+#)

@@ -25,10 +25,10 @@ theme_set(AlberTheme)
 
 # ZI Model Output ####
 
-ZISols <- summary(ZIModelNoSpace)$solutions %>% as.data.frame %>% mutate(
+ZISols <- summary(ZIModel)$solutions %>% as.data.frame %>% mutate(
   Component = rep(c("Count", "ZI"), dim(ZISols)[1]/2),
   Variable = rep(c("Intercept", "Space", "Phylogeny", "Citations", "DomDom", "DomWild", 
-                   "Phylo:SpaceQuantile0.5", "Phylo:SpaceQuantile0.75", "Phylo:SpaceQuantile1"),
+                   "Phylo:Space"),
                  each = 2),
   Name = paste(Component, Variable, sep = ":")
 ) %>% rename(Lower = "l-95% CI", Upper = "u-95% CI", Estimate = "post.mean")
@@ -40,7 +40,7 @@ ggplot(ZISols, aes(x = Variable, y = Estimate, colour = Component)) +
   geom_point(position = position_dodge(w = 0.5)) + 
   geom_errorbar(position = position_dodge(w = 0.5), aes(ymin = Lower, 
                                                         ymax = Upper), size = 0.3, width = 0.2) + 
-  geom_hline(aes(yintercept = 0), lty = 2) + THEME + labs(x = NULL) + coord_flip() +
+  geom_hline(aes(yintercept = 0), lty = 2) + labs(x = NULL) + coord_flip() + AlberTheme +
   ggtitle("Zero-Inflated Model Output (no spatial zeroes)") +
   ggsave("Figures/Zero-Inflated Model Output (no spatial zeroes).jpeg", units = "mm", width = 150, height = 150, dpi = 300)
 
