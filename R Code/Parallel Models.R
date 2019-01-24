@@ -21,13 +21,13 @@ gp <- gelman.prior(Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom, d
 
 prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),
                  G = list(G1 = list(V = diag(2), nu = 2)),
-                 B = list(V = diag(16)*10^8, mu = rep(0,16)))
+                 B = list(V = diag(14)*10^8, mu = rep(0,14)))
 
 prior.zi$B$V[seq(2,dim(gp)[2]*2,2),seq(2,dim(gp)[2]*2,2)] <- gp
 
 prior.zi2 <- list(R = list(V = diag(2), nu = 0, fix = 2),
                   #G = list(G1 = list(V = diag(2), nu = 2)),
-                  B = list(V = diag(16)*10^8, mu = rep(0,16)))
+                  B = list(V = diag(14)*10^8, mu = rep(0,14)))
 
 prior.zi2$B$V[seq(2,dim(gp)[2]*2,2),seq(2,dim(gp)[2]*2,2)] <- gp
 
@@ -51,6 +51,7 @@ ZI_runs <- parallel::mclapply(1:40, function(i) {
     )
     
   } else if (i > 10 & i <= 20) {
+    
     return(MCMCglmm(
       data = FinalHostMatrix,
       Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
@@ -62,7 +63,9 @@ ZI_runs <- parallel::mclapply(1:40, function(i) {
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
       thin = 10*mf, burnin=8000*mf)
     )
+    
   } else if (i > 20 & i <= 30) {
+    
     return(MCMCglmm(
       data = FinalHostMatrix %>% filter(Space>0),
       Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
@@ -73,7 +76,9 @@ ZI_runs <- parallel::mclapply(1:40, function(i) {
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
       thin = 10*mf, burnin=8000*mf))
+    
   } else if (i > 30 & i <= 40) {
+    
     return(MCMCglmm(
       data = FinalHostMatrix %>% filter(Space>0),
       Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
