@@ -87,6 +87,13 @@ f7 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "
                        "+ f(IndexPhylo, model='generic0', Cmatrix = GRMatrix,
                        constr = TRUE,param = c(0.5, 0.5))"))
 
+f8 =  as.formula(paste("y ~ -1 + Intercept + ", paste(names(X), collapse = " + "), 
+                       " + ", 'f(IndexSpace, model="generic0", Cmatrix = SpaceContacts,
+                       constr = TRUE,param = c(0.5, 0.5))',
+                       "+ f(IndexPhylo, model='generic0', Cmatrix = GRMatrix,
+                       constr = TRUE,param = c(0.5, 0.5))",
+                       "+ f(w, model = spde)"))
+
 FormulaList <- list(f1, f2, f3, f4, f5, f6, f7)
 ModelNames <- c("Base", "SPDE", "SpaceMat", "PDMat",
                 "SpaceMat:w","PDMat:w","SpaceMat:PDMat")
@@ -120,14 +127,24 @@ for(r in 1:length(Resps)){ # Takes a while I bet
         control.predictor = list(A = inla.stack.A(CentStack))
       )
   }
+  
+  CentralityList[[Resps[r]]][[8]] <-
+    inla(
+      f8, 
+      family = FamilyList[r],
+      data = inla.stack.data(CentStack),
+      control.compute = list(dic = TRUE),
+      control.predictor = list(A = inla.stack.A(CentStack))
+    )
+  
 }
 
 # Plotting out ####
 
-lapply(CentralityList[1:4], function(a) a$SPDE %>%
+lapply(CentralityList, function(a) a$SPDE %>%
          ggField(WorldMesh)) %>% arrange_ggplot2(nrow = 3)
 
-lapply(1:length(CentralityList[1:4]), function(a) INLADICFig(CentralityList[[a]], ModelNames = ModelNames)) %>% 
+lapply(1:length(CentralityList), function(a) INLADICFig(CentralityList[[a]], ModelNames = ModelNames)) %>% 
   arrange_ggplot2(nrow = 3)
 
 lapply(CentralityList, function(a) Efxplot(a, ModelNames = ModelNames)) %>% 
