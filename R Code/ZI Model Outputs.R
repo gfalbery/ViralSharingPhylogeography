@@ -19,12 +19,6 @@ gelman.diag(mc)
 par(mfrow=c(14,2), mar=c(2, 1, 1, 1))
 plot(mc, ask=F, auto.layout=F)
 
-ClusterMCMC <- ZI_10runs %>% lapply(function(a) as.data.frame(as.matrix(a$Sol[,1:14]))) %>% bind_rows
-ClusterMCMCv <- ZI_10runs %>% lapply(function(a) as.data.frame(as.matrix(a$VCV))) %:% bind_rows
-
-SampleCluster <- as.mcmc(apply(bind_rows(ClusterMCMC), 2, function(a) as.mcmc(sample(a, 1000))))
-SampleClusterv <- as.mcmc(apply(bind_rows(ClusterMCMCv), 2, function(a) as.mcmc(sample(a, 1000))))
-
 FullZIModel <- ZI_runs[[1]]
 ZINoGModel <- ZI_runs[[11]]
 OverlapZIModel <- ZI_runs[[21]]
@@ -51,9 +45,40 @@ Efxplot(ModelList[c(1,2,4)])
 
 lol1 <- predict(ModelList[[1]])
 
-
-ZISols <- lapply(1:3, function(a){ summary(ModelList[c(1,2,4)][[a]])$solutions %>% as.data.frame %>% mutate(
+ZISols <- lapply(1:2, function(a){ summary(ModelList[c(1,2,4)][[a]])$solutions %>% as.data.frame %>% mutate(
   Component = rep(c("Count", "ZI"), dim(summary(ModelList[[1]])$solutions)[1]/2),
+  Variable = rep(c("Intercept", "Space", "Phylogeny", "Citations", "DomDom", "DomWild", 
+                   "Phylo:Space"),
+                 each = 2),
+  Name = paste(Component, Variable, sep = ":"),
+  Model = c("Full", "No Random")[a]
+) %>% rename(Lower = "l-95% CI", Upper = "u-95% CI", Estimate = "post.mean")}) %>% bind_rows
+
+
+ZISols$Estimate[ZISols$Component=="ZI"] <- -ZISols$Estimate[ZISols$Component=="ZI"]
+ZISols[ZISols$Component=="ZI", c("Lower", "Upper")] <- -ZISols[ZISols$Component=="ZI", c("Upper","Lower")]
+
+ggplot(ZISols, aes(x = Variable, y = Estimate, colour = as.factor(Model))) + 
+  geom_point(position = position_dodge(w = 0.5)) + 
+  geom_errorbar(position = position_dodge(w = 0.5), aes(ymin = Lower, 
+                                                        ymax = Upper), size = 0.3, width = 0.2) + 
+  geom_hline(aes(yintercept = 0), lty = 2) + labs(x = NULL, colour = "Model") + coord_flip() + AlberTheme +
+  facet_wrap(~Component, scales = "free_x")
+
+# Creating replicates of the models as a whole ####
+
+ZI_subrun <- ZI_runs[1:10]
+
+s1 <- lapply(ZI_subrun, function(a) as.data.frame(a$Sol[,1:14])) %>% bind_rows
+v1 <- lapply(ZI_subrun, function(a) as.data.frame(a$VCV)) %>% bind_rows
+
+for(x in 1:length(ZI_subrun)){
+  ZI_subrun[[x]]$Sol <- as.mcmc(s1[sample(1:dim(s1)[1], 1000),])
+  ZI_subrun[[x]]$VCV <- as.mcmc(v1[sample(1:dim(v1)[1], 1000),])
+}
+
+ZISols <- lapply(1:10, function(a){ summary(ZI_subrun[[a]])$solutions %>% as.data.frame %>% mutate(
+  Component = rep(c("Count", "ZI"), dim(summary(ZI_runs[[1]])$solutions)[1]/2),
   Variable = rep(c("Intercept", "Space", "Phylogeny", "Citations", "DomDom", "DomWild", 
                    "Phylo:Space"),
                  each = 2),
@@ -70,4 +95,49 @@ ggplot(ZISols, aes(x = Variable, y = Estimate, colour = Component)) +
                                                         ymax = Upper), size = 0.3, width = 0.2) + 
   geom_hline(aes(yintercept = 0), lty = 2) + labs(x = NULL) + coord_flip() + AlberTheme +
   facet_wrap(~Model, scales = "free_x")
+
+ggplot(ZISols, aes(x = Variable, y = Estimate, colour = as.factor(Model), shape = as.factor(Component), lty = Component)) + 
+  geom_point(position = position_dodge(w = 0.5)) + 
+  geom_errorbar(position = position_dodge(w = 0.5), aes(ymin = Lower, 
+                                                        ymax = Upper), size = 0.3, width = 0.2) + 
+  geom_hline(aes(yintercept = 0), lty = 2) + labs(x = NULL) + coord_flip() + AlberTheme +
+  facet_wrap(~Component, scales = "free_x")
+
+# Fourth set ####
+
+ZI_subrun <- ZI_runs[1:10 + 30]
+
+s1 <- lapply(ZI_subrun, function(a) as.data.frame(a$Sol[,1:14])) %>% bind_rows
+v1 <- lapply(ZI_subrun, function(a) as.data.frame(a$VCV)) %>% bind_rows
+
+for(x in 1:length(ZI_subrun)){
+  ZI_subrun[[x]]$Sol <- as.mcmc(s1[sample(1:dim(s1)[1], 1000),])
+  ZI_subrun[[x]]$VCV <- as.mcmc(v1[sample(1:dim(v1)[1], 1000),])
+}
+
+ZISols <- lapply(1:10, function(a){ summary(ZI_subrun[[a]])$solutions %>% as.data.frame %>% mutate(
+  Component = rep(c("Count", "ZI"), dim(summary(ZI_runs[[1]])$solutions)[1]/2),
+  Variable = rep(c("Intercept", "Space", "Phylogeny", "Citations", "DomDom", "DomWild", 
+                   "Phylo:Space"),
+                 each = 2),
+  Name = paste(Component, Variable, sep = ":"),
+  Model = a
+) %>% rename(Lower = "l-95% CI", Upper = "u-95% CI", Estimate = "post.mean")}) %>% bind_rows
+
+ZISols$Estimate[ZISols$Component=="ZI"] <- -ZISols$Estimate[ZISols$Component=="ZI"]
+ZISols[ZISols$Component=="ZI", c("Lower", "Upper")] <- -ZISols[ZISols$Component=="ZI", c("Upper","Lower")]
+
+ggplot(ZISols, aes(x = Variable, y = Estimate, colour = Component)) + 
+  geom_point(position = position_dodge(w = 0.5)) + 
+  geom_errorbar(position = position_dodge(w = 0.5), aes(ymin = Lower, 
+                                                        ymax = Upper), size = 0.3, width = 0.2) + 
+  geom_hline(aes(yintercept = 0), lty = 2) + labs(x = NULL) + coord_flip() + AlberTheme +
+  facet_wrap(~Model, scales = "free_x")
+
+ggplot(ZISols, aes(x = Variable, y = Estimate, colour = as.factor(Model), shape = as.factor(Component), lty = Component)) + 
+  geom_point(position = position_dodge(w = 0.5)) + 
+  geom_errorbar(position = position_dodge(w = 0.5), aes(ymin = Lower, 
+                                                        ymax = Upper), size = 0.3, width = 0.2) + 
+  geom_hline(aes(yintercept = 0), lty = 2) + labs(x = NULL) + coord_flip() + AlberTheme +
+  facet_wrap(~Component, scales = "free_x")
 

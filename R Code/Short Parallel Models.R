@@ -1,6 +1,6 @@
 
 # Shorter parallel
-# Because the model won't run without Sp and Sp2 having the same levels
+# Because the spatial overlap model won't run without Sp and Sp2 having the same levels
 # Run source code
 
 rm(list = ls())
@@ -31,14 +31,12 @@ prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),
 
 prior.zi$B$V[seq(2,dim(gp)[2]*2,2),seq(2,dim(gp)[2]*2,2)] <- gp
 
-# Modelling all mammal-mammal pairs ####
-
 mf = 15
 
 ZI_shortruns <- parallel::mclapply(1:10, function(i) {
   
   return(MCMCglmm(
-    data = FinalHostMatrix %>% filter(Space>0),
+    data = OverlapMatrix,
     Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
     rcov =~ idh(trait):units, 
     prior = prior.zi,
@@ -52,14 +50,3 @@ ZI_shortruns <- parallel::mclapply(1:10, function(i) {
 
 save(ZI_shortruns, file = "ZI_shortruns.Rdata")
 
-
-mc2 <- MCMCglmm(
-  data = OverlapMatrix,
-  Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
-  rcov =~ idh(trait):units, 
-  prior = prior.zi,
-  random =~ us(trait):mm(Sp + Sp2),
-  family = "zipoisson",
-  pr = TRUE,
-  nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-  thin = 10*mf, burnin=8000*mf)
