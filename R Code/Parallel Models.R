@@ -17,6 +17,10 @@ FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrixNoSpace <- FinalHostMatrix %>% filter(Space>0)
 
+FinalHostMatrixNoSpace <- droplevels(FinalHostMatrix[FinalHostMatrix$Space>0,])
+FinalHostMatrixNoSpace$Sp <- factor(FinalHostMatrixNoSpace$Sp, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
+FinalHostMatrixNoSpace$Sp2 <- factor(FinalHostMatrixNoSpace$Sp2, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
+
 gp <- gelman.prior(Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom, data = FinalHostMatrix)
 
 prior.zi <- list(R = list(V = diag(2), nu = 0, fix = 2),
@@ -67,7 +71,7 @@ ZI_runs <- parallel::mclapply(1:40, function(i) {
   } else if (i > 20 & i <= 30) {
     
     return(MCMCglmm(
-      data = FinalHostMatrix %>% filter(Space>0),
+      data = FinalHostMatrixNoSpace,
       Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
       prior = prior.zi,
@@ -80,7 +84,7 @@ ZI_runs <- parallel::mclapply(1:40, function(i) {
   } else if (i > 30 & i <= 40) {
     
     return(MCMCglmm(
-      data = FinalHostMatrix %>% filter(Space>0),
+      data = FinalHostMatrixNoSpace,
       Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
       prior = prior.zi2,
