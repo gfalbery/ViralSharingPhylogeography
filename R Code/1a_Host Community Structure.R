@@ -18,12 +18,13 @@ plot(Hostgraph)
 E(Hostgraph)$color <- "black"
 #E(Hostgraph)$color[1:length(E(Hostgraph)) %in% HostBridges] <- "red"
 
-V(Hostgraph)$color <- membership(HostCommunities)
+V(Hostgraph)$color <- "white"
 V(Hostgraph)$size <- 5
-#V(Hostgraph)$label <- NULL
+V(Hostgraph)$name <- NULL
 
 vl <- layout_with_kk(Hostgraph)
-plot(Hostgraph, layout = vl)
+plot(Hostgraph, layout = vl, labels = FALSE)
+
 plot(Hostgraph, rescale = F, layout = vl*2)
 plot(Hostgraph, layout = layout_with_mds)
 

@@ -34,9 +34,6 @@ TestHosts <- Hosts %>% dplyr::select(Resps, HostCentCovar, "Sp", "LongMean", "La
   slice(which(!NARows(Hosts[,c(Resps,HostCentCovar, "LongMean", "LatMean", "hOrder")])))  %>%
   dplyr::filter(!hOrder%in%c("SCANDENTIA","PERAMELEMORPHIA"))
 
-TestHosts$hZoonosisProp[TestHosts$hZoonosisProp==1] <- 0.9999999
-TestHosts$hZoonosisProp[TestHosts$hZoonosisProp==0] <- 0.0000001
-
 TestHosts[,c("LongMean","LatMean")] <- TestHosts[,c("LongMean","LatMean")]/50000
 HostLocations = cbind(TestHosts$LongMean, TestHosts$LatMean)
 WorldMesh <- inla.mesh.2d(loc = HostLocations, max.edge = c(10, 25), cutoff = 10)
