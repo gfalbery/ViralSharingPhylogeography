@@ -1,7 +1,6 @@
 
 # Summarising parallel models ####
 
-load("Model Runs/ZI_runs.Rdata")
 
 mc <- ZI_runs[1:10] %>% lapply(function(a) a$Sol[,1:14])
 mc <- do.call(mcmc.list, mc)
@@ -28,7 +27,20 @@ ModelList <- list(FullZIModel, ZINoGModel, OverlapZIModel, OverlapNoGZIModel)
 
 for(i in 1:4){
   
-  ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol[,1:14]))) %>% bind_rows
+  if(i ==3){
+    ClusterMCMC <- ZI_runs[1:10 + (i-1)*10][-6] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol[,1:14]))) %>% bind_rows
+    ClusterMCMCv <- ZI_runs[1:10 + (i-1)*10][-6] %>% lapply(function(a) as.data.frame(as.matrix(a$VCV))) %>% bind_rows
+    
+    rows <- sample(1:dim(ClusterMCMC)[1], 1000)
+    
+    SampledSol <- ClusterMCMC[rows,]
+    SampledVCV <- ClusterMCMCv[rows,]
+    
+    ModelList[[i]]$Sol <- as.mcmc(SampledSol)
+    ModelList[[i]]$VCV <- as.mcmc(SampledVCV)
+    
+  } else {
+  ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows
   ClusterMCMCv <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$VCV))) %>% bind_rows
   
   rows <- sample(1:dim(ClusterMCMC)[1], 1000)
@@ -38,7 +50,7 @@ for(i in 1:4){
   
   ModelList[[i]]$Sol <- as.mcmc(SampledSol)
   ModelList[[i]]$VCV <- as.mcmc(SampledVCV)
-  
+  }
 }
 
 Efxplot(ModelList[c(1,2,4)])

@@ -102,7 +102,39 @@ parallel::mclapply(1:40, function(i) {
       thin = 10*mf, burnin=8000*mf), file = paste0("Model",i, ".Rdata"))
   }}, mc.cores = 40)
 
-# Save file
+# Trying Binomial test ####
 
-save(ZI_runs2, file = "ZI_runs2.Rdata")
-save.image()
+FinalHostMatrix$VirBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
+
+prior.zi3 <- list(R = list(V = diag(1), nu = 0, fix = 1),
+                  G = list(G1 = list(V = diag(1), nu = 2)))
+
+prior.zi4<- list(R = list(V = diag(1), nu = 0, fix = 1))
+
+parallel::mclapply(1:40, function(i) {
+  if(i <= 10) {
+    
+    saveRDS(MCMCglmm( # Running full matrix with simple random effect of row-species
+      data = FinalHostMatrix,
+      VirBinary ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
+      rcov =~ idh(trait):units, 
+      prior = prior.zi3,
+      random =~ us(trait):mm(Sp+Sp2),
+      family = "categorial",
+      pr = TRUE,
+      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+      thin = 10*mf, burnin=8000*mf, 
+      trunc = T), file = paste0("BinModel",i, ".Rdata"))
+    
+  } else if (i > 10 & i <= 20) {
+    
+    saveRDS(MCMCglmm( # Running full model with spacequantile effect
+      data = FinalHostMatrix,
+      VirBinary ~ Space + Phylo2 + SpaceQuantile:Phylo2 + MinDCites + DomDom,
+      prior = prior.zi4,
+      family = "categorical",
+      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+      thin = 10*mf, burnin=8000*mf, 
+      trunc = T), file = paste0("BinModel",i, ".Rdata"))}
+    
+  }) 
