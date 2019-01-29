@@ -3,36 +3,56 @@
 
 load("ZI_runs.Rdata")
 
+FullZIModel <- ZI_runs[[1]]
+ZINoGModel <- ZI_runs[[11]]
+OverlapZIModel <- ZI_runs[[21]]
+OverlapNoGZIModel <- ZI_runs[[31]]
+
+ModelList <- list(FullZIModel, ZINoGModel, OverlapZIModel, OverlapNoGZIModel)
+
 i = 1
 
-N = dim(FinalHostMatrix)[1]
+PredList1 <- list()
 
-CountColumns <- list(1:7*2-1, 15:662)
-ZIColumns <- list(1:7*2, 663:1310)
+ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
 
-RowSampled <- sample(1:nrow(ModelList[[i]]$Sol), 1)
+for(x in 1:1000){
+  
+  RowSampled <- sample(1:nrow(ClusterMCMC), 1)
+  
+  CountFXSample <- ClusterMCMC[RowSampled, unlist(CountColumns)]
+  ZIFXSample <- ClusterMCMC[RowSampled, unlist(ZIColumns)]
+  
+  XZMatrix <- cbind(ModelList[[i]]$X, ModelList[[i]]$Z)
+  
+  CountXZMatrix <- as.matrix(XZMatrix[1:N,unlist(CountColumns)])
+  ZIXZMatrix <- as.matrix(XZMatrix[(N+1):(2*N),unlist(ZIColumns)])
+  
+  CountOutput <- c(CountFXSample %*% t(CountXZMatrix))
+  ZIOutput <- c(ZIFXSample %*% t(ZIXZMatrix))
+  
+  Responses <- cbind(ZIOutput, CountOutput)
+  
+  PZero <- logit(ZIOutput)
+  PCount <- exp(CountOutput)*(1-PZero)
+  
+  PredList1[[x]] <- PCount
+  
+}
 
-CountFXSample <- ModelList[[i]]$Sol[RowSampled, unlist(CountColumns)]
-ZIFXSample <- ModelList[[i]]$Sol[RowSampled, unlist(ZIColumns)]
+PredDF1 <- as.data.frame(PredList)
+ModePredictions <- apply(PredDF1,1, function(a) a %>% as.mcmc %>% posterior.mode)
+MeanPredictions <- apply(PredDF1,1, function(a) a %>% mean)
 
-XZMatrix <- cbind(ModelList[[i]]$X, ModelList[[i]]$Z)
+FinalHostMatrix$PredVirus <- ModePredictions
 
-CountXZMatrix <- as.matrix(XZMatrix[,unlist(CountColumns)])
-ZIXZMatrix <- as.matrix(XZMatrix[,unlist(ZIColumns)])
-
-CountOutput <- c(CountFXSample %*% t(CountXZMatrix))
-ZIOutput <- c(ZIFXSample %*% t(ZIXZMatrix))
-
-CountOutput <- CountOutput[1:N]
-ZIOutput <- ZIOutput[(N+1):(2*N)]
-
-Responses <- cbind(ZIOutput, CountOutput)
+ggplot(FinalHostMatrix, aes(PredVirus, Virus)) + coord_fixed() + geom_point() + geom_smooth(method = lm)
 
 # Trying it without random effects ####
 
 i = 2
 
-PredList <- list()
+PredList2 <- list()
 
 for(x in 1:1000){
   
@@ -57,6 +77,14 @@ for(x in 1:1000){
   PZero <- logit(ZIOutput)
   PCount <- exp(CountOutput)*(1-PZero)
   
-  PredList[[x]] <- PCount
+  PredList2[[x]] <- PCount
   
 }
+
+PredDF2 <- as.data.frame(PredList2)
+ModePredictions <- apply(PredDF2,1, function(a) a %>% mean)
+
+FinalHostMatrix$PredVirus2 <- ModePredictions
+
+ggplot(FinalHostMatrix, aes(PredVirus, Virus)) + coord_fixed() + geom_point() + geom_smooth(method = lm)
+ggplot(FinalHostMatrix, aes(PredVirus, PredVirus2)) + coord_fixed() + geom_point() + geom_smooth(method = lm)
