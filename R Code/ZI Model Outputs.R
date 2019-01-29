@@ -1,7 +1,7 @@
 
 # Summarising parallel models ####
 
-load("ZI_runs.Rdata")
+load("Model Runs/ZI_runs.Rdata")
 
 mc <- ZI_runs[1:10] %>% lapply(function(a) a$Sol[,1:14])
 mc <- do.call(mcmc.list, mc)
@@ -26,7 +26,7 @@ OverlapNoGZIModel <- ZI_runs[[31]]
 
 ModelList <- list(FullZIModel, ZINoGModel, OverlapZIModel, OverlapNoGZIModel)
 
-for(i in c(1,2,4)){
+for(i in 1:4){
   
   ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol[,1:14]))) %>% bind_rows
   ClusterMCMCv <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$VCV))) %>% bind_rows

@@ -48,5 +48,4 @@ ZI_shortruns <- parallel::mclapply(1:10, function(i) {
 
 # Save file
 
-save(ZI_shortruns, file = "ZI_shortruns.Rdata")
-
+save(ZI_shortruns, file = "Model Runs/ZI_shortruns.Rdata")

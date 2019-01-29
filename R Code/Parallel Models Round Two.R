@@ -48,10 +48,10 @@ prior.zi2$B$V[seq(2,dim(gp)[2]*2,2),seq(2,dim(gp)[2]*2,2)] <- gp
 
 mf = 15
 
-ZI_runs2 <- parallel::mclapply(1:40, function(i) {
+parallel::mclapply(1:40, function(i) {
   if(i <= 10) {
     
-    return(MCMCglmm( # Running full matrix with simple random effect of row-species
+    saveRDS(MCMCglmm( # Running full matrix with simple random effect of row-species
       data = FinalHostMatrix2,
       Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
@@ -60,12 +60,11 @@ ZI_runs2 <- parallel::mclapply(1:40, function(i) {
       family = "zipoisson",
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-      thin = 10*mf, burnin=8000*mf)
-    )
+      thin = 10*mf, burnin=8000*mf), file = paste0("Model",i, ".Rdata"))
     
   } else if (i > 10 & i <= 20) {
     
-    return(MCMCglmm( # Running full model with spacequantile effect
+    saveRDS(MCMCglmm( # Running full model with spacequantile effect
       data = FinalHostMatrix,
       Virus ~ trait -1 + trait:(Space + Phylo2 + SpaceQuantile:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
@@ -74,12 +73,11 @@ ZI_runs2 <- parallel::mclapply(1:40, function(i) {
       family = "zipoisson",
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-      thin = 10*mf, burnin=8000*mf)
-    )
+      thin = 10*mf, burnin=8000*mf), file = paste0("Model",i, ".Rdata"))
     
   } else if (i > 20 & i <= 30) {
     
-    return(MCMCglmm( # Only spatial overlap with quantiles
+    saveRDS(MCMCglmm( # Only spatial overlap with quantiles
       data = FinalHostMatrixNoSpace,
       Virus ~ trait -1 + trait:(Space + Phylo2 + SpaceQuantile:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
@@ -88,11 +86,11 @@ ZI_runs2 <- parallel::mclapply(1:40, function(i) {
       family = "zipoisson",
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-      thin = 10*mf, burnin=8000*mf))
+      thin = 10*mf, burnin=8000*mf), file = paste0("Model",i, ".Rdata"))
     
   } else if (i > 30 & i <= 40) {
     
-    save(MCMCglmm( # Only spatial overlap with quantiles
+    saveRDS(MCMCglmm( # Only spatial overlap with quantiles
       data = FinalHostMatrixNoSpace,
       Virus ~ trait -1 + trait:(Space + Phylo2 + SpaceQuantile:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
