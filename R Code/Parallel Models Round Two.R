@@ -48,6 +48,43 @@ prior.zi2$B$V[seq(2,dim(gp)[2]*2,2),seq(2,dim(gp)[2]*2,2)] <- gp
 
 mf = 15
 
+
+prior.pois <- list(R = list(V = diag(1), nu = 0),
+                 G = list(G1 = list(V = diag(1), nu = 2)))
+
+prior.pois2 <- list(R = list(V = diag(1), nu = 0))
+
+# Trying a Poisson model ####
+
+parallel::mclapply(1:40, function(i) {
+  if(i <= 10) {
+    
+    saveRDS(MCMCglmm(
+      data = FinalHostMatrix,
+      Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+      rcov =~ idh(trait):units, 
+      prior = prior.pois,
+      random =~ mm(Sp + Sp2),
+      family = "poisson",
+      pr = TRUE,
+      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+      thin = 10*mf, burnin=8000*mf), file = paste0("Poisson Model ",i, ".Rdata"))
+    
+  } else if (i > 10 & i <= 20) {
+    
+    saveRDS(MCMCglmm(
+      data = FinalHostMatrix,
+      Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
+      rcov =~ idh(trait):units, 
+      prior = prior.pois2,
+      #random =~ us(trait):mm(Sp + Sp2),
+      family = "poisson",
+      pr = TRUE,
+      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+      thin = 10*mf, burnin=8000*mf), file = paste0("Poisson Model ",i, ".Rdata"))
+  }
+})
+
 parallel::mclapply(1:40, function(i) {
   if(i <= 10) {
     
@@ -114,7 +151,7 @@ prior.zi4<- list(R = list(V = diag(1), nu = 0, fix = 1))
 parallel::mclapply(1:40, function(i) {
   if(i <= 10) {
     
-    saveRDS(MCMCglmm( # Running full matrix with simple random effect of row-species
+    saveRDS(MCMCglmm( # Running binomial model with simple random effect of row-species
       data = FinalHostMatrix,
       VirBinary ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
       rcov =~ idh(trait):units, 
@@ -136,5 +173,5 @@ parallel::mclapply(1:40, function(i) {
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
       thin = 10*mf, burnin=8000*mf, 
       trunc = T), file = paste0("BinModel",i, ".Rdata"))}
-    
-  }) 
+  
+}) 
