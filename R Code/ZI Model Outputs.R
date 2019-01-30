@@ -1,8 +1,11 @@
 
 # Summarising parallel models ####
 
+load("Model Runs/ZI_runs.Rdata")
 
-i = 2
+library(MCMCglmm); library(tidyverse); library(ggregplot)
+
+i = 1
 
 mc <- ZI_runs[1:10 + 10*(i-1)] %>% lapply(function(a) a$Sol[,1:14])
 #mc <- ZI_runs[1:10 + 10*(i-1)] %>% lapply(function(a) a$VCV)
@@ -49,8 +52,6 @@ for(i in 1:4){
 }
 
 Efxplot(ModelList)
-
-lol1 <- predict(ModelList[[1]])
 
 ZISols <- lapply(1:2, function(a){ summary(ModelList[c(1,2,4)][[a]])$solutions %>% as.data.frame %>% mutate(
   Component = rep(c("Count", "ZI"), dim(summary(ModelList[[1]])$solutions)[1]/2),

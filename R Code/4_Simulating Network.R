@@ -39,8 +39,11 @@ for(x in 1:1000){
   
   Responses <- cbind(ZIOutput, CountOutput)
   
-  PZero <- logit(ZIOutput[[1]]@x)
-  PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  #PZero <- logit(ZIOutput[[1]]@x)
+  #PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  
+  PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
+  PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
   
   PredList1[[x]] <- PCount
   
@@ -72,6 +75,9 @@ for(x in 1:1000){
   
   PZero <- logit(ZIOutput[[1]]@x)
   PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  
+  #PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
+  #PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
   
   PredList1b[[x]] <- PCount
   
