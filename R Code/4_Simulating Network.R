@@ -50,14 +50,23 @@ for(x in 1:1000){
 }
 
 PredDF1 <- as.data.frame(PredList1)
+names(PredDF1) <- paste("Rep",1:1000)
+PredDF1$Actual <- FinalHostMatrix$Virus
+lapply(1:length(HPD), function(b) FinalHostMatrix)
+
 MeanPredictions <- apply(PredDF1,1, function(a) a %>% mean)
-FinalHostMatrix$PredVirus1 <- MeanPredictions
+ModePredictions <- apply(PredDF1,1, function(a) a %>% median)
+
+FinalHostMatrix$PredVirus1 <- ModePredictions
 
 # Without random effects, same model ####
 
 PredList1b <- list()
 
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
+
+CountXZMatrix <- XZMatrix[1:N,CountColumns[[1]]] #%>% as.matrix 
+ZIXZMatrix <- XZMatrix[(N+1):(2*N),ZIColumns[[1]]] #%>% as.matrix
 
 for(x in 1:1000){
   
@@ -73,11 +82,11 @@ for(x in 1:1000){
   
   Responses <- cbind(ZIOutput, CountOutput)
   
-  PZero <- logit(ZIOutput[[1]]@x)
-  PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  #PZero <- logit(ZIOutput[[1]]@x)
+  #PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
   
-  #PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
-  #PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
+  PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
+  PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
   
   PredList1b[[x]] <- PCount
   
