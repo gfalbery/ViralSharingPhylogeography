@@ -211,14 +211,7 @@ for(i in 1:length(PredList1b)){
 Degdf1b <- sapply(SimGraphs1b, function(a) degree(a)) %>% as.data.frame
 Eigendf1b <- sapply(SimGraphs1b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
-Degdflong1b <- reshape2::melt(t(Degdf1b)) %>% rename(Sp = Var2, Degree = value)
-
-a = 850
-
-ggplot(Degdflong1b[1:a,], aes(Sp, Degree)) + geom_violin(aes(colour = Sp)) +
-  geom_point(data = Hosts[Hosts$Sp%in%Degdflong1b[1:a,"Sp"],], aes(Sp, Degree)) + 
-  facet_wrap(~Sp, scales = "free")
-
+PredDegrees1b <- apply(Degdf1b, 1, mean)
 PredDegrees1b <- apply(Degdf1b, 1, mean)
 
 Hosts$PredDegree1b <- PredDegrees1b[as.character(Hosts$Sp)]
@@ -445,6 +438,7 @@ IM2 <-
     control.predictor = list(A = inla.stack.A(CentStack))
   )
 
-
+INLADICFig(list(IM1, IM2))
+ggField(IM2, WorldMesh)
 
 
