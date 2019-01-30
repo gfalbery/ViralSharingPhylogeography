@@ -351,6 +351,10 @@ Hosts$PredDegree3 <- PredDegrees3[as.character(Hosts$Sp)]
 
 ggplot(Hosts,aes(Degree, PredDegree3)) + geom_point() + geom_smooth()
 
+Hosts$DegreeChange <- with(Hosts, PredDegree3 - Degree)
+
+BarGraph(Hosts,"hOrder","DegreeChange", text = "N")
+
 # Comparing before and after ####
 
 BeforeHPD <- cbind(apply(Degdf1[1:(nrow(Degdf1)/2),],1, function(a) HPDinterval(as.mcmc(a))[1]),
