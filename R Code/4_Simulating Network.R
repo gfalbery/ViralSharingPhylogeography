@@ -253,4 +253,28 @@ Hosts[,c("Eigen1","Eigen1b","Eigen2")] <- cbind(PredEigen1[as.character(Hosts$Sp
                                                 PredEigen1b[as.character(Hosts$Sp)],
                                                 PredEigen2[as.character(Hosts$Sp)])
 
+GGally::ggpairs(Hosts[,c("Eigenvector","Eigen1","Eigen1b","Eigen2")],
+                lower = list(continuous = "smooth"))
+
+
+# Comparing differences ####
+
+BeforeHPD <- cbind(apply(Degdf1[1:(nrow(Degdf1)/2),],1, function(a) HPDinterval(as.mcmc(a))[1]),
+                   apply(Degdf1[1:(nrow(Degdf1)/2),],1, function(a) HPDinterval(as.mcmc(a))[2])) %>% as.data.frame
+
+AfterHPD <- cbind(apply(Degdf1b[1:(nrow(Degdf1b)/2),],1, function(a) HPDinterval(as.mcmc(a))[1]),
+                  apply(Degdf1b[1:(nrow(Degdf1b)/2),],1, function(a) HPDinterval(as.mcmc(a))[2])) %>% as.data.frame
+BeforeHPD$When <- "Before"
+AfterHPD$When <- "After"
+BeforeHPD$Sp <- FHN
+AfterHPD$Sp <- FHN
+HPDComp <- rbind(BeforeHPD, AfterHPD)
+HPDComp2 <- cbind(BeforeHPD, AfterHPD)
+names(HPDComp2) <- paste(names(HPDComp2),rep(1:2,each = 4), sep = ".")
+
+
+
+
+
+
 
