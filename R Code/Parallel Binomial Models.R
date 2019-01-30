@@ -33,7 +33,7 @@ prior.bin2 <- list(R = list(V = diag(1), nu = 0.002, fix = 1))
 
 # Modelling all mammal-mammal pairs ####
 
-mf = 25
+mf = 15
 
 # Trying a Binomial model ####
 

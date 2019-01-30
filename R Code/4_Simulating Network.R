@@ -45,13 +45,15 @@ for(x in 1:1000){
   PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
   PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
   
+  PCount <- ifelse(PCount>0,1,0)
+  
   PredList1[[x]] <- PCount
   
 }
 
 PredDF1 <- as.data.frame(PredList1)
 names(PredDF1) <- paste("Rep",1:1000)
-PredDF1$Actual <- FinalHostMatrix$Virus
+PredDF1$Actual <- FinalHostMatrix$VirusBinary
 lapply(1:length(HPD), function(b) FinalHostMatrix)
 
 MeanPredictions <- apply(PredDF1,1, function(a) a %>% mean)
@@ -87,6 +89,8 @@ for(x in 1:1000){
   
   PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
   PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
+  
+  PCount <- ifelse(PCount>0,1,0)
   
   PredList1b[[x]] <- PCount
   
@@ -127,6 +131,7 @@ for(x in 1:1000){
   
   PZero <- logit(ZIOutput[[1]]@x)
   PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  PCount <- ifelse(PCount>0,1,0)
   
   PredList2[[x]] <- PCount
   
@@ -158,7 +163,7 @@ for(i in 1:length(PredList1)){
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
   
-  SimNets1[[i]] <- AssMat
+  SimNets1[[i]] <- as(AssMat, "dgCMatrix")
   
   SimGraphs1[[i]] <- graph.incidence(AssMat, weighted = TRUE)
   
@@ -285,7 +290,6 @@ HPDComp <- rbind(BeforeHPD, AfterHPD)
 HPDComp2 <- cbind(BeforeHPD, AfterHPD)
 names(HPDComp2) <- paste(names(HPDComp2),rep(1:2,each = 4), sep = ".")
 
-
 # Turning Up Citations ####
 
 i = 1
@@ -317,8 +321,10 @@ for(x in 1:1000){
   
   Responses <- cbind(ZIOutput, CountOutput)
   
-  PZero <- logit(ZIOutput[[1]]@x)
-  PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
+  PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
+  
+  PCount <- ifelse(PCount>0,1,0)
   
   PredList3[[x]] <- PCount
   
@@ -329,7 +335,7 @@ ModePredictions <- apply(PredDF3,1, function(a) a %>% mean)
 
 FinalHostMatrix$PredVirus3 <- ModePredictions
 
-FinalHostMatrix %>% ggplot(aes(Virus, PredVirus3)) + geom_point() + geom_smooth()
+FinalHostMatrix %>% ggplot(aes(VirusBinary, PredVirus3)) + geom_point() + geom_smooth()
 
 # Converting to graphs 
 
