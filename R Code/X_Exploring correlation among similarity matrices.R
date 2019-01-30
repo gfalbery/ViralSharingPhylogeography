@@ -13,10 +13,10 @@ summary(IM1) # Interesting space is more important here ####
 
 Efxplot(list(IM1))
 
-IM1 <- inla(data = HostMatrixdf[-HostThemselves,], # Doesn't fit
-            Virus ~ Space + Phylo,
+IM1 <- inla(data = FinalHostMatrix, # Doesn't fit
+            Virus ~ Space + Phylo2 + Space:Phylo2 + MinCites + DomDom,
             control.compute = list(dic = TRUE),
-            family = "nbinomial")
+            family = "zeroinflatednbinomial1")
 
 IM2 <- inla(data = HostMatrixdf[-HostThemselves,], # Doesn't fit
             Virus ~ Space + Phylo,
@@ -43,11 +43,7 @@ MC3 <- MCMCglmm(data = HostMatrixdf[-HostThemselves,],
                 rcov =~ idh(trait):units, 
                 family = "zipoisson",
                 nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-<<<<<<< HEAD
                 thin = 10*mf, burnin=3000*mf)
-=======
-                thin = 10*mf,burnin=3000*mf)
->>>>>>> 64b3451dddac873ecd003d835e3681e24b6f0f68
 
 arrange_ggplot2(list(
   ggplot(HostMatrixdf[-HostThemselves,], aes(Space, Phylo)) + 

@@ -73,20 +73,22 @@ UpperHosts <- # Removing diagonals and
 
 FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
-# Virus dataset ####
+UpperHosts <- # Removing diagonals and 
+  which(upper.tri(HostAdj[FHN,FHN], diag = T))
 
-#FinalVirusNames <- reduce(list(Viruses$Sp, 
-#                               rownames(VirusRangeAdj1)[which(sapply(GridList[unique(Viruses$Sp)], length)>0)]), 
-#                          intersect)
+HostThemselves <- # Removing diagonals and 
+  which(upper.tri(HostAdj[FHN,FHN], diag = T)&lower.tri(HostAdj[FHN,FHN], diag = T))
 
-#FVN <- FinalVirusNames; length(FVN)#
+FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
+FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
+FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
+FinalHostMatrixNoSpace <- FinalHostMatrix %>% filter(Space>0)
 
-#FViruses <- Viruses[Viruses$Sp%in%FVN,]
-#FViruses <- FViruses[order(FViruses$Sp),]
-#FViruses$Pixels <- diag(VirusRangeOverlap)[FVN]
-#FViruses$ViralRichness <- diag(VirusRangeAdj1)[FVN]
+FinalHostMatrixNoSpace <- droplevels(FinalHostMatrix[FinalHostMatrix$Space>0,])
+FinalHostMatrixNoSpace$Sp <- factor(FinalHostMatrixNoSpace$Sp, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
+FinalHostMatrixNoSpace$Sp2 <- factor(FinalHostMatrixNoSpace$Sp2, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
 
-#VirusLongMatrixdf <- data.frame(Host = c(VirusAdj[FVN, FVN]),
-#                                PropHost = c(VirusAdj2[FVN, FVN]),
-#                                Space = c(VirusRangeAdj1[FVN, FVN]) # Gonna invert this
-#)
+FinalHostMatrix2 <- HostMatrixdf[-UpperHosts,]
+FinalHostMatrix2$Phylo <- FinalHostMatrix2$Phylo2
+FinalHostMatrix2$MinDCites <- log(FinalHostMatrix2$MinDCites + 1)
+FinalHostMatrix2NoSpace <- FinalHostMatrix2 %>% filter(Space>0)

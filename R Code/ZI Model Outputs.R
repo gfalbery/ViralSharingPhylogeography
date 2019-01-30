@@ -2,20 +2,15 @@
 # Summarising parallel models ####
 
 
-mc <- ZI_runs[1:10] %>% lapply(function(a) a$Sol[,1:14])
-mc <- do.call(mcmc.list, mc)
-par(mfrow=c(7,2), mar=c(2,2,1,2), ask = F)
-gelman.plot(mc, auto.layout=F)
-gelman.diag(mc)
-par(mfrow=c(14,2), mar=c(2, 1, 1, 1))
-plot(mc, ask=F, auto.layout=F)
+i = 2
 
-mc <- ZI_runs[1:10+10] %>% lapply(function(a) a$Sol[,1:14])
+mc <- ZI_runs[1:10 + 10*(i-1)] %>% lapply(function(a) a$Sol[,1:14])
+#mc <- ZI_runs[1:10 + 10*(i-1)] %>% lapply(function(a) a$VCV)
 mc <- do.call(mcmc.list, mc)
-par(mfrow=c(7,2), mar=c(2,2,1,2), ask = F)
-gelman.plot(mc, auto.layout=F)
-gelman.diag(mc)
-par(mfrow=c(14,2), mar=c(2, 1, 1, 1))
+#par(mfrow=c(7,2), mar=c(2,2,1,2), ask = F)
+#gelman.plot(mc, auto.layout=F)
+#gelman.diag(mc)
+par(mfrow=c(7,4), mar=c(2, 1, 1, 1))
 plot(mc, ask=F, auto.layout=F)
 
 FullZIModel <- ZI_runs[[1]]
@@ -40,20 +35,20 @@ for(i in 1:4){
     ModelList[[i]]$VCV <- as.mcmc(SampledVCV)
     
   } else {
-  ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows
-  ClusterMCMCv <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$VCV))) %>% bind_rows
-  
-  rows <- sample(1:dim(ClusterMCMC)[1], 1000)
-  
-  SampledSol <- ClusterMCMC[rows,]
-  SampledVCV <- ClusterMCMCv[rows,]
-  
-  ModelList[[i]]$Sol <- as.mcmc(SampledSol)
-  ModelList[[i]]$VCV <- as.mcmc(SampledVCV)
+    ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows
+    ClusterMCMCv <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$VCV))) %>% bind_rows
+    
+    rows <- sample(1:dim(ClusterMCMC)[1], 1000)
+    
+    SampledSol <- ClusterMCMC[rows,]
+    SampledVCV <- ClusterMCMCv[rows,]
+    
+    ModelList[[i]]$Sol <- as.mcmc(SampledSol)
+    ModelList[[i]]$VCV <- as.mcmc(SampledVCV)
   }
 }
 
-Efxplot(ModelList[c(1,2,4)])
+Efxplot(ModelList)
 
 lol1 <- predict(ModelList[[1]])
 

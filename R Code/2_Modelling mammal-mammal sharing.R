@@ -7,7 +7,7 @@ UpperHosts <- # Removing diagonals and
   which(upper.tri(HostAdj[FHN,FHN], diag = T))
 
 FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
-FFinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
+FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
 FinalHostMatrixNoSpace <- FinalHostMatrix %>% filter(Space>0)
 
 # Modelling all mammal-mammal pairs ####
