@@ -3,27 +3,23 @@
 
 library(MCMCglmm); library(tidyverse)
 
-load("ZI_runs.Rdata")
-
-CountColumns <- list(1:7*2-1, 15:662)
-ZIColumns <- list(1:7*2, 663:1310)
-
 i = 1
 
 N = nrow(FinalHostMatrix)
 
 PredList1 <- list()
 
-ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
+#ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
+
+ClusterMCMC <- mc1$Sol
 
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
 logit <- function(a) exp(a)/(1 + exp(a))
 
-XZMatrix <- cbind(ZI_runs[[(i-1)*10+1]]$X, ZI_runs[[(i-1)*10+1]]$Z)
+XZMatrix <- cbind(mc1$X, mc1$Z)
 
-CountXZMatrix <- XZMatrix[1:N,unlist(CountColumns)] #%>% as.matrix 
-ZIXZMatrix <- XZMatrix[(N+1):(2*N),unlist(ZIColumns)] #%>% as.matrix
+Columns <- list(1:ncol(mc1$X),(ncol(mc1$X)+1):ncol(XZMatrix))
 
 for(x in 1:1000){
   
@@ -31,30 +27,37 @@ for(x in 1:1000){
   
   RowSampled <- RowsSampled[x]
   
-  CountFXSample <- ClusterMCMC[RowSampled, unlist(CountColumns)]
-  ZIFXSample <- ClusterMCMC[RowSampled, unlist(ZIColumns)]
+  FXSample <- ClusterMCMC[RowSampled, unlist(Columns)]
   
-  CountOutput <- c(CountFXSample %*% t(CountXZMatrix))
-  ZIOutput <- c(ZIFXSample %*% t(ZIXZMatrix))
+  Output <- c(FXSample %*% t(XZMatrix))
   
-  Responses <- cbind(ZIOutput, CountOutput)
+  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
   
-  PZero <- logit(ZIOutput[[1]]@x)
-  PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
-  
-  PredList1[[x]] <- PCount
+  PredList1[[x]] <- PZero
   
 }
 
 PredDF1 <- as.data.frame(PredList1)
+names(PredDF1) <- paste("Rep",1:1000)
+PredDF1$Actual <- FinalHostMatrix$VirusBinary
+lapply(1:length(HPD), function(b) FinalHostMatrix)
+
 MeanPredictions <- apply(PredDF1,1, function(a) a %>% mean)
-FinalHostMatrix$PredVirus1 <- MeanPredictions
+
+FinalHostMatrix$PredVirus1 <- ModePredictions
 
 # Without random effects, same model ####
 
 PredList1b <- list()
 
+#ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
+ClusterMCMC <- mc1$Sol
+
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
+
+logit <- function(a) exp(a)/(1 + exp(a))
+
+XZMatrix <- mc1$X
 
 for(x in 1:1000){
   
@@ -62,24 +65,24 @@ for(x in 1:1000){
   
   RowSampled <- RowsSampled[x]
   
-  CountFXSample <- ClusterMCMC[RowSampled, CountColumns[[1]]]
-  ZIFXSample <- ClusterMCMC[RowSampled, ZIColumns[[1]]]
+  FXSample <- ClusterMCMC[RowSampled, unlist(Columns)]
   
-  CountOutput <- c(CountFXSample %*% t(CountXZMatrix))
-  ZIOutput <- c(ZIFXSample %*% t(ZIXZMatrix))
+  Output <- c(FXSample %*% t(XZMatrix))
   
-  Responses <- cbind(ZIOutput, CountOutput)
+  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
   
-  PZero <- logit(ZIOutput[[1]]@x)
-  PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
-  
-  PredList1b[[x]] <- PCount
+  PredList1[[x]] <- PZero
   
 }
 
-PredDF1b <- as.data.frame(PredList1b)
-MeanPredictions <- apply(PredDF1b,1, function(a) a %>% mean)
-FinalHostMatrix$PredVirus1b <- MeanPredictions
+PredDF1 <- as.data.frame(PredList1)
+names(PredDF1) <- paste("Rep",1:1000)
+PredDF1$Actual <- FinalHostMatrix$VirusBinary
+lapply(1:length(HPD), function(b) FinalHostMatrix)
+
+MeanPredictions <- apply(PredDF1,1, function(a) a %>% mean)
+
+FinalHostMatrix$PredVirus1 <- ModePredictions
 
 # Trying it without random effects ####
 
@@ -112,6 +115,7 @@ for(x in 1:1000){
   
   PZero <- logit(ZIOutput[[1]]@x)
   PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  PCount <- ifelse(PCount>0,1,0)
   
   PredList2[[x]] <- PCount
   
@@ -143,7 +147,7 @@ for(i in 1:length(PredList1)){
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
   
-  SimNets1[[i]] <- AssMat
+  SimNets1[[i]] <- as(AssMat, "dgCMatrix")
   
   SimGraphs1[[i]] <- graph.incidence(AssMat, weighted = TRUE)
   
@@ -191,14 +195,7 @@ for(i in 1:length(PredList1b)){
 Degdf1b <- sapply(SimGraphs1b, function(a) degree(a)) %>% as.data.frame
 Eigendf1b <- sapply(SimGraphs1b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
-Degdflong1b <- reshape2::melt(t(Degdf1b)) %>% rename(Sp = Var2, Degree = value)
-
-a = 850
-
-ggplot(Degdflong1b[1:a,], aes(Sp, Degree)) + geom_violin(aes(colour = Sp)) +
-  geom_point(data = Hosts[Hosts$Sp%in%Degdflong1b[1:a,"Sp"],], aes(Sp, Degree)) + 
-  facet_wrap(~Sp, scales = "free")
-
+PredDegrees1b <- apply(Degdf1b, 1, mean)
 PredDegrees1b <- apply(Degdf1b, 1, mean)
 
 Hosts$PredDegree1b <- PredDegrees1b[as.character(Hosts$Sp)]
@@ -270,7 +267,6 @@ HPDComp <- rbind(BeforeHPD, AfterHPD)
 HPDComp2 <- cbind(BeforeHPD, AfterHPD)
 names(HPDComp2) <- paste(names(HPDComp2),rep(1:2,each = 4), sep = ".")
 
-
 # Turning Up Citations ####
 
 i = 1
@@ -302,8 +298,10 @@ for(x in 1:1000){
   
   Responses <- cbind(ZIOutput, CountOutput)
   
-  PZero <- logit(ZIOutput[[1]]@x)
-  PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
+  PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
+  
+  PCount <- ifelse(PCount>0,1,0)
   
   PredList3[[x]] <- PCount
   
@@ -314,7 +312,7 @@ ModePredictions <- apply(PredDF3,1, function(a) a %>% mean)
 
 FinalHostMatrix$PredVirus3 <- ModePredictions
 
-FinalHostMatrix %>% ggplot(aes(Virus, PredVirus3)) + geom_point() + geom_smooth()
+FinalHostMatrix %>% ggplot(aes(VirusBinary, PredVirus3)) + geom_point() + geom_smooth()
 
 # Converting to graphs 
 
@@ -350,6 +348,10 @@ PredDegrees3 <- apply(Degdf3, 1, mean)
 Hosts$PredDegree3 <- PredDegrees3[as.character(Hosts$Sp)]
 
 ggplot(Hosts,aes(Degree, PredDegree3)) + geom_point() + geom_smooth()
+
+Hosts$DegreeChange <- with(Hosts, PredDegree3 - Degree)
+
+BarGraph(Hosts,"hOrder","DegreeChange", text = "N")
 
 # Comparing before and after ####
 
@@ -420,6 +422,7 @@ IM2 <-
     control.predictor = list(A = inla.stack.A(CentStack))
   )
 
-
+INLADICFig(list(IM1, IM2))
+ggField(IM2, WorldMesh)
 
 
