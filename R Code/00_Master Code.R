@@ -19,7 +19,7 @@ rm(list = ls())
 
 # Running data setup scripts ####
 
-CodeRoot <- "R Code"
+CodeRoot <- "R Code/0_Data Import"
 
 StartTime <- Sys.time()
 source(paste0(CodeRoot,"/","0a_EHA Data Import.R"))
