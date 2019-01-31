@@ -10,22 +10,6 @@ source("R Code/00_Master Code.R")
 
 library(MCMCglmm); library(ggregplot); library(INLA); library(parallel); library(dplyr)
 
-UpperHosts <- # Removing diagonals and 
-  which(upper.tri(HostAdj[FHN,FHN], diag = T))
-
-HostThemselves <- # Removing diagonals and 
-  which(upper.tri(HostAdj[FHN,FHN], diag = T)&lower.tri(HostAdj[FHN,FHN], diag = T))
-
-FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
-FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
-FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
-FinalHostMatrixNoSpace <- FinalHostMatrix %>% filter(Space>0)
-FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
-
-FinalHostMatrixNoSpace <- droplevels(FinalHostMatrix[FinalHostMatrix$Space>0,])
-FinalHostMatrixNoSpace$Sp <- factor(FinalHostMatrixNoSpace$Sp, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
-FinalHostMatrixNoSpace$Sp2 <- factor(FinalHostMatrixNoSpace$Sp2, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
-
 prior.bin <- list(R = list(V = diag(1), nu = 0.002, fix = 1),
                  G = list(G1 = list(V = diag(2), nu = 2)))
 

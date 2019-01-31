@@ -83,6 +83,7 @@ FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrixNoSpace <- FinalHostMatrix %>% filter(Space>0)
+FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 
 FinalHostMatrixNoSpace <- droplevels(FinalHostMatrix[FinalHostMatrix$Space>0,])
 FinalHostMatrixNoSpace$Sp <- factor(FinalHostMatrixNoSpace$Sp, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
