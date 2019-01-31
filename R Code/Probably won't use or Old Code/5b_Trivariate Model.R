@@ -9,7 +9,11 @@ NARows <-function(df, vars){
   })
 }
 
+Viruscovar <- c("vDNAoRNA","vEnvelope","vVectorYNna","vPubMedCites","HostRangeMean")[1]
+Viruscovar <- c("HostRangeMean")[1]
+
 TestViruses <- Viruses[-which(NARows(Viruses, Viruscovar)),]
+TestViruses <- Viruses[-which(is.na(Viruses$HostRangeMean)),]
 
 TrivPrior1 <- 
   list(R = list(V = diag(3), nu = 0.002, fix = 1))
@@ -23,7 +27,7 @@ TrivPrior2 <-
 
 TrivFormula <- as.formula(paste0("cbind(Human, Domestic, Wildlife)", " ~ - 1 + trait + trait:(", paste(c(Viruscovar), collapse = " + "), ")"))
 
-mf = 10
+mf = 1
 
 TrivMCMC1 <- MCMCglmm(
   TrivFormula,

@@ -21,6 +21,8 @@ FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrixNoSpace <- FinalHostMatrix %>% filter(Space>0)
+FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
+FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 
 FinalHostMatrixNoSpace <- droplevels(FinalHostMatrix[FinalHostMatrix$Space>0,])
 FinalHostMatrixNoSpace$Sp <- factor(FinalHostMatrixNoSpace$Sp, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
@@ -43,7 +45,6 @@ parallel::mclapply(1:20, function(i) {
     saveRDS(MCMCglmm(
       data = FinalHostMatrix,
       Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
-      rcov =~ idh(trait):units, 
       prior = prior.pois,
       random =~ mm(Sp + Sp2),
       family = "poisson",
@@ -56,7 +57,6 @@ parallel::mclapply(1:20, function(i) {
     saveRDS(MCMCglmm(
       data = FinalHostMatrix,
       Virus ~ trait -1 + trait:(Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom),
-      rcov =~ idh(trait):units, 
       prior = prior.pois2,
       #random =~ us(trait):mm(Sp + Sp2),
       family = "poisson",
