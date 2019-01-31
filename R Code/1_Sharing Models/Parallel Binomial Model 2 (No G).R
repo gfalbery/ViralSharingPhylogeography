@@ -22,7 +22,7 @@ parallel::mclapply(1:20, function(i) {
   
   saveRDS(MCMCglmm(
     data = FinalHostMatrix,
-    Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+    VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
     prior = prior.bin2,
     family = "categorical",
     pr = TRUE,

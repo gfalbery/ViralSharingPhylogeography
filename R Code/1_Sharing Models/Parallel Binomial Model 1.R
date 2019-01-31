@@ -11,9 +11,7 @@ source("R Code/00_Master Code.R")
 library(MCMCglmm); library(ggregplot); library(INLA); library(parallel); library(dplyr)
 
 prior.bin <- list(R = list(V = diag(1), nu = 0.002, fix = 1),
-                  G = list(G1 = list(V = diag(2), nu = 2)))
-
-prior.bin2 <- list(R = list(V = diag(1), nu = 0.002, fix = 1))
+                  G = list(G1 = list(V = diag(1), nu = 2)))
 
 # Modelling all mammal-mammal pairs ####
 

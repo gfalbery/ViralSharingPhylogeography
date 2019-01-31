@@ -3,23 +3,27 @@
 
 library(MCMCglmm); library(tidyverse)
 
+load("ZI_runs.Rdata")
+
+CountColumns <- list(1:7*2-1, 15:662)
+ZIColumns <- list(1:7*2, 663:1310)
+
 i = 1
 
 N = nrow(FinalHostMatrix)
 
 PredList1 <- list()
 
-#ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
-
-ClusterMCMC <- mc1$Sol
+ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
 
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
 logit <- function(a) exp(a)/(1 + exp(a))
 
-XZMatrix <- cbind(mc1$X, mc1$Z)
+XZMatrix <- cbind(ZI_runs[[(i-1)*10+1]]$X, ZI_runs[[(i-1)*10+1]]$Z)
 
-Columns <- list(1:ncol(mc1$X),(ncol(mc1$X)+1):ncol(XZMatrix))
+CountXZMatrix <- XZMatrix[1:N,unlist(CountColumns)] #%>% as.matrix 
+ZIXZMatrix <- XZMatrix[(N+1):(2*N),unlist(ZIColumns)] #%>% as.matrix
 
 for(x in 1:1000){
   
@@ -27,13 +31,23 @@ for(x in 1:1000){
   
   RowSampled <- RowsSampled[x]
   
-  FXSample <- ClusterMCMC[RowSampled, unlist(Columns)]
+  CountFXSample <- ClusterMCMC[RowSampled, unlist(CountColumns)]
+  ZIFXSample <- ClusterMCMC[RowSampled, unlist(ZIColumns)]
   
-  Output <- c(FXSample %*% t(XZMatrix))
+  CountOutput <- c(CountFXSample %*% t(CountXZMatrix))
+  ZIOutput <- c(ZIFXSample %*% t(ZIXZMatrix))
   
-  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
+  Responses <- cbind(ZIOutput, CountOutput)
   
-  PredList1[[x]] <- PZero
+  #PZero <- logit(ZIOutput[[1]]@x)
+  #PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  
+  PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
+  PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
+  
+  PCount <- ifelse(PCount>0,1,0)
+  
+  PredList1[[x]] <- PCount
   
 }
 
@@ -43,6 +57,7 @@ PredDF1$Actual <- FinalHostMatrix$VirusBinary
 lapply(1:length(HPD), function(b) FinalHostMatrix)
 
 MeanPredictions <- apply(PredDF1,1, function(a) a %>% mean)
+ModePredictions <- apply(PredDF1,1, function(a) a %>% median)
 
 FinalHostMatrix$PredVirus1 <- ModePredictions
 
@@ -50,14 +65,10 @@ FinalHostMatrix$PredVirus1 <- ModePredictions
 
 PredList1b <- list()
 
-#ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
-ClusterMCMC <- mc1$Sol
-
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
-logit <- function(a) exp(a)/(1 + exp(a))
-
-XZMatrix <- mc1$X
+CountXZMatrix <- XZMatrix[1:N,CountColumns[[1]]] #%>% as.matrix 
+ZIXZMatrix <- XZMatrix[(N+1):(2*N),ZIColumns[[1]]] #%>% as.matrix
 
 for(x in 1:1000){
   
@@ -65,24 +76,29 @@ for(x in 1:1000){
   
   RowSampled <- RowsSampled[x]
   
-  FXSample <- ClusterMCMC[RowSampled, unlist(Columns)]
+  CountFXSample <- ClusterMCMC[RowSampled, CountColumns[[1]]]
+  ZIFXSample <- ClusterMCMC[RowSampled, ZIColumns[[1]]]
   
-  Output <- c(FXSample %*% t(XZMatrix))
+  CountOutput <- c(CountFXSample %*% t(CountXZMatrix))
+  ZIOutput <- c(ZIFXSample %*% t(ZIXZMatrix))
   
-  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
+  Responses <- cbind(ZIOutput, CountOutput)
   
-  PredList1[[x]] <- PZero
+  #PZero <- logit(ZIOutput[[1]]@x)
+  #PCount <- exp(CountOutput[[1]]@x)*(1-PZero)
+  
+  PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
+  PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
+  
+  PCount <- ifelse(PCount>0,1,0)
+  
+  PredList1b[[x]] <- PCount
   
 }
 
-PredDF1 <- as.data.frame(PredList1)
-names(PredDF1) <- paste("Rep",1:1000)
-PredDF1$Actual <- FinalHostMatrix$VirusBinary
-lapply(1:length(HPD), function(b) FinalHostMatrix)
-
-MeanPredictions <- apply(PredDF1,1, function(a) a %>% mean)
-
-FinalHostMatrix$PredVirus1 <- ModePredictions
+PredDF1b <- as.data.frame(PredList1b)
+MeanPredictions <- apply(PredDF1b,1, function(a) a %>% mean)
+FinalHostMatrix$PredVirus1b <- MeanPredictions
 
 # Trying it without random effects ####
 
@@ -107,7 +123,7 @@ for(x in 1:1000){
   
   CountFXSample <- ClusterMCMC[RowSampled, CountColumns[[1]]]
   ZIFXSample <- ClusterMCMC[RowSampled, ZIColumns[[1]]]
-
+  
   CountOutput <- c(CountFXSample %*% t(CountXZMatrix))
   ZIOutput <- c(ZIFXSample %*% t(ZIXZMatrix))
   
