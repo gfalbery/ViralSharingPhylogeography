@@ -3,6 +3,9 @@
 
 library(MCMCglmm); library(tidyverse)
 
+load("Bin Model 1.Rdata")
+load("Bin Model 2.Rdata")
+
 i = 1
 
 N = nrow(FinalHostMatrix)
@@ -33,10 +36,9 @@ for(x in 1:1000){
 PredDF1 <- as.data.frame(PredList1)
 names(PredDF1) <- paste("Rep",1:1000)
 PredDF1$Actual <- FinalHostMatrix$VirusBinary
-lapply(1:length(HPD), function(b) FinalHostMatrix)
-MeanPredictions <- apply(PredDF1,1, function(a) a %>% mean)
+MeanPredictions <- apply(PredDF1[,1:1000],1, function(a) a %>% mean)
 
-FinalHostMatrix$PredVirus1 <- ModePredictions
+FinalHostMatrix$PredVirus1 <- MeanPredictions
 
 # Without random effects, same model ####
 
@@ -60,7 +62,7 @@ for(x in 1:1000){
 PredDF1b <- as.data.frame(PredList1b)
 names(PredDF1b) <- paste("Rep",1:1000)
 
-MeanPredictions <- apply(PredDF1b, 1, function(a) a %>% mean)
+MeanPredictions <- apply(PredDF1b[,1:1000], 1, function(a) a %>% mean)
 
 FinalHostMatrix$PredVirus1b <- MeanPredictions
 
@@ -121,14 +123,6 @@ for(i in 1:length(PredList1)){
 Degdf1 <- sapply(SimGraphs1, function(a) degree(a)) %>% as.data.frame
 Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
-Degdflong1 <- reshape2::melt(t(Degdf1)) %>% rename(Sp = Var2, Degree = value)
-
-a = 850
-
-ggplot(Degdflong1[1:a,], aes(Sp, Degree)) + geom_violin(aes(colour = Sp)) +
-  geom_point(data = Hosts[Hosts$Sp%in%Degdflong1[1:a,"Sp"],], aes(Sp, Degree)) + 
-  facet_wrap(~Sp, scales = "free")
-
 PredDegrees1 <- apply(Degdf1, 1, mean)
 
 Hosts$PredDegree1 <- PredDegrees1[as.character(Hosts$Sp)]
@@ -160,7 +154,6 @@ for(i in 1:length(PredList1b)){
 Degdf1b <- sapply(SimGraphs1b, function(a) degree(a)) %>% as.data.frame
 Eigendf1b <- sapply(SimGraphs1b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
-PredDegrees1b <- apply(Degdf1b, 1, mean)
 PredDegrees1b <- apply(Degdf1b, 1, mean)
 
 Hosts$PredDegree1b <- PredDegrees1b[as.character(Hosts$Sp)]
