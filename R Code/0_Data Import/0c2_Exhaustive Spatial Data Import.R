@@ -1,5 +1,11 @@
 # Creating exhaustive mammal spatial data ####
 
+library(sf); library(fasterize); library(Matrix);library(ggplot2);
+library(ggregplot); library(raster); library(tidyverse); library(igraph); 
+library(maptools)
+
+# Importing/making ranges ####
+
 mammal_shapes <- st_read("~/Albersnet shapefiles/TERRESTRIAL_MAMMALS (new)")
 
 #mammal_shapes <- st_transform(mammal_shapes, 54009) # Mollweide projection 
@@ -16,6 +22,9 @@ mammal_raster_full <- raster(mammal_shapes, res = 50000) # NB units differ from 
 FullMammalRanges <- fasterize(mammal_shapes, mammal_raster_full, by = "binomial")
 save(FullMammalRanges, file = "data/FullMammalRanges.Rdata")
 
+load("~/Albersnet/data/FullMammalRanges.Rdata")
+
+
 # Trying earlier dataset ####
 
 mammal_shapes2 <- st_read("~/Albersnet shapefiles/Mammals_Terrestrial (old)")
@@ -30,6 +39,8 @@ mammal_shapes_red2 <- mammal_shapes2[!mammal_shapes2$binomial%in%names(FullMamma
 FullMammalRanges2 <- fasterize(mammal_shapes_red2, mammal_raster_full2, by = "binomial")
 
 save(FullMammalRanges2, file = "data/FullMammalRanges2.Rdata")
+
+load("~/Albersnet/data/FullMammalRanges2.Rdata")
 
 # Converting these to meaningful values ####
 
@@ -81,7 +92,6 @@ RangeAdj2 <- FullRangeOverlap/(RangeA) # Asymmetrical
 
 # Making polygons for display ####
 
-
 FullPolygons <- lapply(levels(FullValuedf2$variable), function(x) {
   
   if(!x%in%Range0){
@@ -94,7 +104,7 @@ FullPolygons <- lapply(levels(FullValuedf2$variable), function(x) {
   
 }) %>% bind_rows()
 
-HostPolygons2 <- lapply(levels(FullValuedf4$variable), function(x) {
+FullPolygons2 <- lapply(levels(FullValuedf4$variable), function(x) {
   
   if(!x%in%Range0){
     
