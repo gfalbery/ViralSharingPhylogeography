@@ -11,7 +11,7 @@ source("R Code/00_Master Code.R")
 library(MCMCglmm); library(ggregplot); library(INLA); library(parallel); library(dplyr)
 
 prior.bin <- list(R = list(V = diag(1), nu = 0.002, fix = 1),
-                 G = list(G1 = list(V = diag(2), nu = 2)))
+                  G = list(G1 = list(V = diag(2), nu = 2)))
 
 prior.bin2 <- list(R = list(V = diag(1), nu = 0.002, fix = 1))
 
@@ -21,10 +21,12 @@ mf = 15
 
 # Trying a Binomial model ####
 
+BinModelList <- list()
+
 parallel::mclapply(1:20, function(i) {
   if(i <= 10) {
     
-    saveRDS(MCMCglmm(
+    BinModelList[[i]] <- MCMCglmm(
       data = FinalHostMatrix,
       VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
       prior = prior.bin,
@@ -32,17 +34,71 @@ parallel::mclapply(1:20, function(i) {
       family = "categorical",
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-      thin = 10*mf, burnin=8000*mf, trunc = T), file = paste0("Binomial Model ",i, ".Rdata"))
+      thin = 10*mf, burnin=8000*mf, trunc = T)
     
-  } else if (i > 10 & i <= 20) {
+    saveRDS(BinModelList, file = paste0("Model Runs/Binomial Model ",i, ".Rdata"))
     
-    saveRDS(MCMCglmm(
+  } else if (i > 10) {
+    
+    BinModelList[[i]] <- MCMCglmm(
       data = FinalHostMatrix,
       Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
       prior = prior.bin2,
       family = "categorical",
       pr = TRUE,
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-      thin = 10*mf, burnin=8000*mf, trunc = T), file = paste0("Binomial Model ",i, ".Rdata"))
+      thin = 10*mf, burnin=8000*mf, trunc = T)
+    
+    saveRDS(BinModelList[[i]], file = paste0("Model Runs/Binomial Model ",i, ".Rdata"))
   }
 }, mc.cores = 20)
+
+parallel::mclapply(21:40, function(i) {
+  if(i <= 30) {
+    
+    BinModelList[[i]] <- MCMCglmm(
+      data = FinalHostMatrixNoSpace,
+      VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+      prior = prior.bin,
+      random =~ mm(Sp + Sp2),
+      family = "categorical",
+      pr = TRUE,
+      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+      thin = 10*mf, burnin=8000*mf, trunc = T)
+      
+      saveRDS(BinModelList[[i]], file = paste0("Model Runs/Binomial Model ",i, ".Rdata"))
+      
+    
+  } else if (i > 30) {
+    
+    BinModelList[[i]] <- MCMCglmm(
+      data = FinalHostMatrixNoSpace,
+      Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+      prior = prior.bin2,
+      family = "categorical",
+      pr = TRUE,
+      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+      thin = 10*mf, burnin=8000*mf, trunc = T)
+    
+    saveRDS(BinModelList[[i]], file = paste0("Model Runs/Binomial Model ",i, ".Rdata"))
+    
+  }
+}, mc.cores = 20)
+
+
+parallel::mclapply(41:50, function(i) {
+
+    BinModelList[[i]] <- MCMCglmm(
+      data = FinalHostMatrix,
+      VirusBinary ~ MinDCites,
+      prior = prior.bin,
+      random =~ mm(Sp + Sp2),
+      family = "categorical",
+      pr = TRUE,
+      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+      thin = 10*mf, burnin=8000*mf, trunc = T)
+    
+    saveRDS(BinModelList[[i]], file = paste0("Model Runs/Binomial Model ",i, ".Rdata"))
+
+}, mc.cores = 20)
+

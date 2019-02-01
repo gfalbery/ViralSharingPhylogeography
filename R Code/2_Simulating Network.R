@@ -1,7 +1,11 @@
 
 # Generating the network of viruses/hosts
 
+source("R Code/00_Master Code.R")
+
 library(MCMCglmm); library(tidyverse)
+
+logit <- function(a) exp(a)/(1 + exp(a))
 
 load("Bin Model 1.Rdata")
 load("Bin Model 2.Rdata")
@@ -12,13 +16,9 @@ N = nrow(FinalHostMatrix)
 
 PredList1 <- list()
 
-#ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
-
 ClusterMCMC <- mc1$Sol
 
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
-
-logit <- function(a) exp(a)/(1 + exp(a))
 
 XZMatrix <- cbind(mc1$X, mc1$Z)
 
@@ -35,16 +35,12 @@ for(x in 1:1000){
 
 PredDF1 <- as.data.frame(PredList1)
 names(PredDF1) <- paste("Rep",1:1000)
-PredDF1$Actual <- FinalHostMatrix$VirusBinary
-MeanPredictions <- apply(PredDF1[,1:1000],1, function(a) a %>% mean)
-
-FinalHostMatrix$PredVirus1 <- MeanPredictions
+FinalHostMatrix$PredVirus1 <- apply(PredDF1[,1:1000],1, function(a) a %>% mean)
 
 # Without random effects, same model ####
 
 PredList1b <- list()
 
-#ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
 ClusterMCMC <- mc1$Sol
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
@@ -61,10 +57,7 @@ for(x in 1:1000){
 
 PredDF1b <- as.data.frame(PredList1b)
 names(PredDF1b) <- paste("Rep",1:1000)
-
-MeanPredictions <- apply(PredDF1b[,1:1000], 1, function(a) a %>% mean)
-
-FinalHostMatrix$PredVirus1b <- MeanPredictions
+FinalHostMatrix$PredVirus1b <- apply(PredDF1b[,1:1000], 1, function(a) a %>% mean)
 
 # Trying it without random effects ####
 
@@ -72,7 +65,6 @@ i = 2
 
 PredList2 <- list()
 
-#ClusterMCMC <- ZI_runs[1:10 + (i-1)*10] %>% lapply(function(a) as.data.frame(as.matrix(a$Sol))) %>% bind_rows %>% as.matrix
 ClusterMCMC <- mc2$Sol
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
@@ -89,12 +81,7 @@ for(x in 1:1000){
 
 
 PredDF2 <- as.data.frame(PredList2)
-ModePredictions <- apply(PredDF2,1, function(a) a %>% mean)
-
-FinalHostMatrix$PredVirus2 <- ModePredictions
-
-GGally::ggpairs(FinalHostMatrix[,c("Virus","PredVirus1","PredVirus1b","PredVirus2")],
-                lower = list(continuous = "smooth"))
+FinalHostMatrix$PredVirus2 <- apply(PredDF2,1, function(a) a %>% mean)
 
 # Simulating the networks #####
 
@@ -121,10 +108,9 @@ for(i in 1:length(PredList1)){
 }
 
 Degdf1 <- sapply(SimGraphs1, function(a) degree(a)) %>% as.data.frame
-Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) %>% as.data.frame
+#Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees1 <- apply(Degdf1, 1, mean)
-
 Hosts$PredDegree1 <- PredDegrees1[as.character(Hosts$Sp)]
 
 # Simulating the networks #####
@@ -145,14 +131,14 @@ for(i in 1:length(PredList1b)){
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
   
-  SimNets1b[[i]] <- AssMat
+  SimNets1b[[i]] <- as(AssMat, "dgCMatrix")
   
   SimGraphs1b[[i]] <- graph.incidence(AssMat, weighted = TRUE)
   
 }
 
 Degdf1b <- sapply(SimGraphs1b, function(a) degree(a)) %>% as.data.frame
-Eigendf1b <- sapply(SimGraphs1b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
+#Eigendf1b <- sapply(SimGraphs1b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees1b <- apply(Degdf1b, 1, mean)
 
@@ -174,7 +160,7 @@ for(i in 1:length(PredList2)){
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
   
-  SimNets2[[i]] <- AssMat
+  SimNets2[[i]] <- as(AssMat, "dgCMatrix")
   
   SimGraphs2[[i]] <- graph.incidence(AssMat, weighted = TRUE)
   
@@ -191,25 +177,6 @@ PredDegrees2 <- apply(Degdf2, 1, mean)
 
 Hosts$PredDegree2 <- PredDegrees2[as.character(Hosts$Sp)]
 
-ggplot(Hosts, aes(PredDegree1b, PredDegree2)) + geom_point() + geom_smooth()
-
-GGally::ggpairs(Hosts[,c("Degree","PredDegree1","PredDegree1b","PredDegree2")],
-                lower = list(continuous = "smooth"))
-
-apply(Hosts[,c("Degree","PredDegree1","PredDegree1b","PredDegree2")],2,function(a) table(a>0))
-
-PredEigen1 <- apply(Eigendf1,1,mean)
-PredEigen1b <- apply(Eigendf1b,1,mean)
-PredEigen2 <- apply(Eigendf2,1,mean)
-
-Hosts[,c("Eigen1","Eigen1b","Eigen2")] <- cbind(PredEigen1[as.character(Hosts$Sp)],
-                                                PredEigen1b[as.character(Hosts$Sp)],
-                                                PredEigen2[as.character(Hosts$Sp)])
-
-GGally::ggpairs(Hosts[,c("Eigenvector","Eigen1","Eigen1b","Eigen2")],
-                lower = list(continuous = "smooth"))
-
-
 # Comparing differences, identifying which species are increased in the "true" ####
 
 BeforeHPD <- cbind(apply(Degdf1[1:(nrow(Degdf1)/2),],1, function(a) HPDinterval(as.mcmc(a))[1]),
@@ -225,22 +192,19 @@ HPDComp <- rbind(BeforeHPD, AfterHPD)
 HPDComp2 <- cbind(BeforeHPD, AfterHPD)
 names(HPDComp2) <- paste(names(HPDComp2),rep(1:2,each = 4), sep = ".")
 
-# Turning Up Citations ####
-
-i = 1
+# Turning Up Citations with random effects ####
 
 PredList3 <- list()
 
-XZMatrix <- cbind(ZI_runs[[(i-1)*10+1]]$X, ZI_runs[[(i-1)*10+1]]$Z)
+ClusterMCMC <- mc1$Sol
 
-CountXZMatrix <- XZMatrix[1:N,CountColumns[[1]]] %>% as.matrix
-ZIXZMatrix <- XZMatrix[(N+1):(2*N),ZIColumns[[1]]] %>% as.matrix
+RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
-CountXZMatrix[,"traitVirus:MinDCites"] <- max(CountXZMatrix[,"traitVirus:MinDCites"])
-ZIXZMatrix[,"traitzi_Virus:MinDCites"] <- max(ZIXZMatrix[,"traitzi_Virus:MinDCites"])
+XZMatrix <- cbind(mc1$X, mc1$Z)
+#XZMatrix <- mc1$X
 
-CountXZMatrix <- as(CountXZMatrix,"dgCMatrix")
-ZIXZMatrix <- as(ZIXZMatrix,"dgCMatrix")
+XZMatrix[,"MinDCites"] <- max(XZMatrix[,"MinDCites"])
+XZMatrix <- as(XZMatrix,"dgCMatrix")
 
 for(x in 1:1000){
   
@@ -248,29 +212,17 @@ for(x in 1:1000){
   
   RowSampled <- RowsSampled[x]
   
-  CountFXSample <- ClusterMCMC[RowSampled, CountColumns[[1]]]
-  ZIFXSample <- ClusterMCMC[RowSampled, ZIColumns[[1]]]
+  FXSample <- ClusterMCMC[RowSampled, unlist(Columns)]
+  Output <- c(FXSample %*% t(XZMatrix))
   
-  CountOutput <- c(CountFXSample %*% t(CountXZMatrix))
-  ZIOutput <- c(ZIFXSample %*% t(ZIXZMatrix))
+  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
   
-  Responses <- cbind(ZIOutput, CountOutput)
-  
-  PZero <- rbinom(length(ZIOutput[[1]]@x), 1, logit(ZIOutput[[1]]@x))
-  PCount <- rpois(length(ZIOutput[[1]]@x),exp(CountOutput[[1]]@x))*(1-PZero)
-  
-  PCount <- ifelse(PCount>0,1,0)
-  
-  PredList3[[x]] <- PCount
+  PredList3[[x]] <- PZero
   
 }
 
 PredDF3 <- as.data.frame(PredList3)
-ModePredictions <- apply(PredDF3,1, function(a) a %>% mean)
-
-FinalHostMatrix$PredVirus3 <- ModePredictions
-
-FinalHostMatrix %>% ggplot(aes(VirusBinary, PredVirus3)) + geom_point() + geom_smooth()
+FinalHostMatrix$PredVirus3 <- apply(PredDF3,1, function(a) a %>% mean)
 
 # Converting to graphs 
 
@@ -297,15 +249,76 @@ for(i in 1:length(PredList3)){
 }
 
 Degdf3 <- sapply(SimGraphs3, function(a) degree(a)) %>% as.data.frame
-Eigendf3 <- sapply(SimGraphs3, function(a) eigen_centrality(a)$vector) %>% as.data.frame
-
-Degdflong3 <- reshape2::melt(t(Degdf3)) %>% rename(Sp = Var2, Degree = value)
+#Eigendf3 <- sapply(SimGraphs3, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees3 <- apply(Degdf3, 1, mean)
 
 Hosts$PredDegree3 <- PredDegrees3[as.character(Hosts$Sp)]
 
-ggplot(Hosts,aes(Degree, PredDegree3)) + geom_point() + geom_smooth()
+# Turning Up Citations without random effects ####
+
+PredList3b <- list()
+
+ClusterMCMC <- mc1$Sol
+
+RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
+
+#XZMatrix <- cbind(mc1$X, mc1$Z)
+XZMatrix <- mc1$X
+
+XZMatrix[,"MinDCites"] <- max(XZMatrix[,"MinDCites"])
+XZMatrix <- as(XZMatrix,"dgCMatrix")
+
+for(x in 1:1000){
+  
+  if(x%%10==0) print(x)
+  
+  RowSampled <- RowsSampled[x]
+  
+  FXSample <- ClusterMCMC[RowSampled, Columns[[1]]]
+  Output <- c(FXSample %*% t(XZMatrix))
+  
+  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
+  
+  PredList3b[[x]] <- PZero
+  
+}
+
+PredDF3b <- as.data.frame(PredList3b)
+FinalHostMatrix$PredVirus3b <- apply(PredDF3b,1, function(a) a %>% mean)
+
+# Converting to graphs 
+
+SimNets3b <- SimGraphs3b <- list()
+
+for(i in 1:length(PredList3b)){
+  
+  AssMat <- matrix(NA, 
+                   nrow = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)), 
+                   ncol = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+  
+  AssMat[-which(1:length(AssMat)%in%UpperHosts)] <- round(PredList3b[[i]])
+  AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
+  diag(AssMat) <- apply(AssMat,1,function(a) length(a[!is.na(a)&a>0]))
+  dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
+                           union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
+  
+  SimNets3b[[i]] <- as(AssMat, "dgCMatrix")
+  
+  SimGraphs3b[[i]] <- graph.incidence(AssMat, weighted = TRUE)
+  
+  if(i%%10==0) print(i)
+  
+}
+
+Degdf3b <- sapply(SimGraphs3b, function(a) degree(a)) %>% as.data.frame
+#Eigendf3b <- sapply(SimGraphs3b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
+
+PredDegrees3b <- apply(Degdf3b, 1, mean)
+
+Hosts$PredDegree3b <- PredDegrees3b[as.character(Hosts$Sp)]
+
+# Looking at predicted changes in centrality ####
 
 Hosts$DegreeChange <- with(Hosts, PredDegree3 - Degree)
 
@@ -328,8 +341,11 @@ names(HPDComp2) <- paste(names(HPDComp2),rep(1:2,each = 4), sep = ".")
 
 # Doing some checking ####
 
-apply(FinalHostMatrix[,c("Virus","PredVirus1","PredVirus1b","PredVirus2","PredVirus3")], 2, function(a) table(round(a, 2)==0))
-apply(FinalHostMatrix[,c("Virus","PredVirus1","PredVirus1b","PredVirus2","PredVirus3")], 2, function(a) mean(round(a, 2)))
+apply(FinalHostMatrix[,c("VirusBinary","PredVirus1","PredVirus1b","PredVirus2","PredVirus3")], 2, function(a) table(round(a, 2)==0))
+apply(FinalHostMatrix[,c("VirusBinary","PredVirus1","PredVirus1b","PredVirus2","PredVirus3")], 2, function(a) mean(round(a, 2)))
+
+FinalHostMatrix[,c("BinVirus1","BinVirus1b","BinVirus2","BinVirus3")] <- apply(FinalHostMatrix[,c("PredVirus1","PredVirus1b","PredVirus2","PredVirus3")],
+                                                                               2, function(a) cut(a, breaks = c(-1,0:10/10), labels = c(0:10/10)))
 
 # Trying an INLA model on the spatial distribution of degree changes ####
 
