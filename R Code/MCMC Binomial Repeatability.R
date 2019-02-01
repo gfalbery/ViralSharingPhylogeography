@@ -36,6 +36,10 @@ MCBinRep <- function(Model, scale = "original"){
     } 
     
   }
+  
+  colnames(mat) <- c("Component", "Mode", "lHPD", "uHPD")
+  data.frame(mat)
+  
 }
 
 
