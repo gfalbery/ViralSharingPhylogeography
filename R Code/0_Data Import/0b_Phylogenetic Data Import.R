@@ -64,8 +64,12 @@ if(!file.exists("data/intermediate/HP3-ST_PDmatrix.csv")){
 
 if(!file.exists("data/intermediate/FullSTMatrix.csv")){
   
-  STFull <- read.nexus(P("data/ele_1307_sm_sa1.tre"))[[1]]
-  STFullMatrix <- as.data.frame(cophenetic(STFull)) %>% as.matrix
+  library(geiger) 
+  library(ape)
+  library(picante)
+  
+  STFull <- read.nexus("data/ele_1307_sm_sa1.tre")[[1]]
+  FullSTMatrix <- as.data.frame(cophenetic(STFull)) %>% as.matrix
   
 } else{ FullSTMatrix <- as.matrix(read.csv("data/intermediate/FullSTMatrix.csv", header = T)) }
 
