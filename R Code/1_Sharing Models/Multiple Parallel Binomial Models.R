@@ -8,10 +8,10 @@ source("R Code/00_Master Code.R")
 
 # Run parallel
 
-library(MCMCglmm); library(ggregplot); library(INLA); library(parallel); library(dplyr)
+library(MCMCglmm); library(ggregplot); library(INLA); library(parallel); library(tidyverse)
 
 prior.bin <- list(R = list(V = diag(1), nu = 0.002, fix = 1),
-                  G = list(G1 = list(V = diag(2), nu = 2)))
+                  G = list(G1 = list(V = diag(1), nu = 2)))
 
 prior.bin2 <- list(R = list(V = diag(1), nu = 0.002, fix = 1))
 
@@ -23,12 +23,14 @@ mf = 15
 
 BinModelList <- list()
 
+BinModelList[1:10] <- NA
+
 BinModelList <- parallel::mclapply(1:20, function(i) {
   if(i <= 10) {
-    
+  
     MCMCglmm(
       data = FinalHostMatrix,
-      VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+     VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
       prior = prior.bin,
       random =~ mm(Sp + Sp2),
       family = "categorical",
@@ -40,7 +42,7 @@ BinModelList <- parallel::mclapply(1:20, function(i) {
     
     MCMCglmm(
       data = FinalHostMatrix,
-      Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+      VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
       prior = prior.bin2,
       family = "categorical",
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
@@ -67,7 +69,7 @@ BinModelList[21:40] <- parallel::mclapply(21:40, function(i) {
     
     MCMCglmm(
       data = FinalHostMatrixNoSpace,
-      Virus ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+      VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
       prior = prior.bin2,
       family = "categorical",
       nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
