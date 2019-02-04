@@ -5,85 +5,59 @@ source("R Code/00_Master Code.R")
 
 library(MCMCglmm); library(tidyverse)
 
-logit <- function(a) exp(a)/(1 + exp(a))
+invlogit <- function(a) exp(a)/(1 + exp(a))
+logit <- function(a) log(a/(1-a))
 
 load("Bin Model 1.Rdata")
 load("Bin Model 2.Rdata")
 
+# Checking Convergence ####
+
 i = 1
+
+mc <- BinModelList[1:10 + 10*(i-1)] %>% lapply(function(a) a$Sol[,1:14])
+#mc <- ZI_runs[1:10 + 10*(i-1)] %>% lapply(function(a) a$VCV)
+mc <- do.call(mcmc.list, mc)
+#par(mfrow=c(7,2), mar=c(2,2,1,2), ask = F)
+#gelman.plot(mc, auto.layout=F)
+gelman.diag(mc)
+par(mfrow=c(7,4), mar=c(2, 1, 1, 1))
+plot(mc, ask=F, auto.layout=F)
 
 N = nrow(FinalHostMatrix)
 
+# Going from the full model ####
+
 PredList1 <- list()
 
-ClusterMCMC <- mc1$Sol
+ClusterMCMC <- BinModelList[1:10 + 10*(i-1)] %>% 
+  lapply(function(a) as.data.frame(a$Sol)) %>% 
+  bind_rows %>% as.matrix
 
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
-XZMatrix <- cbind(mc1$X, mc1$Z)
+XZMatrix <- cbind(BinModelList[[i*10]]$X, BinModelList[[i*10]]$Z) %>% 
+  as.matrix %>% as("dgCMatrix")
 
-Columns <- list(1:ncol(mc1$X),(ncol(mc1$X)+1):ncol(XZMatrix))
+Columns <- list(1:ncol(BinModelList[[i*10]]$X),(ncol(BinModelList[[i*10]]$X)+1):ncol(XZMatrix))
 
 for(x in 1:1000){
   if(x%%10==0) print(x)
   RowSampled <- RowsSampled[x]
   FXSample <- ClusterMCMC[RowSampled, unlist(Columns)]
+  FXSample <- FXSample# + 0.04
   Output <- c(FXSample %*% t(XZMatrix))
-  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
+  ProbVector <- Output[[1]]@x
+  PZero <- rbinom(length(ProbVector), 1, invlogit(ProbVector))
+  #PZero <- rbinom(length(ProbVector), 1, invlogit(ProbVector)*Prev(FinalHostMatrix$VirusBinary)/mean(invlogit(ProbVector)))
   PredList1[[x]] <- PZero
 }
 
 PredDF1 <- as.data.frame(PredList1)
 names(PredDF1) <- paste("Rep",1:1000)
-FinalHostMatrix$PredVirus1 <- apply(PredDF1[,1:1000],1, function(a) a %>% mean)
+FinalHostMatrix$PredVirus1 <- apply(PredDF1,1, function(a) a %>% mean)
 
-# Without random effects, same model ####
-
-PredList1b <- list()
-
-ClusterMCMC <- mc1$Sol
-RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
-
-XZMatrix <- mc1$X
-
-for(x in 1:1000){
-  if(x%%10==0) print(x)
-  RowSampled <- RowsSampled[x]
-  FXSample <- ClusterMCMC[RowSampled, Columns[[1]]]
-  Output <- c(FXSample %*% t(XZMatrix))
-  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
-  PredList1b[[x]] <- PZero
-}
-
-PredDF1b <- as.data.frame(PredList1b)
-names(PredDF1b) <- paste("Rep",1:1000)
-FinalHostMatrix$PredVirus1b <- apply(PredDF1b[,1:1000], 1, function(a) a %>% mean)
-
-# Trying it without random effects ####
-
-i = 2
-
-PredList2 <- list()
-
-ClusterMCMC <- mc2$Sol
-RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
-
-XZMatrix <- mc2$X
-
-for(x in 1:1000){
-  if(x%%10==0) print(x)
-  RowSampled <- RowsSampled[x]
-  FXSample <- ClusterMCMC[RowSampled, Columns[[1]]]
-  Output <- c(FXSample %*% t(XZMatrix))
-  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
-  PredList2[[x]] <- PZero
-}
-
-
-PredDF2 <- as.data.frame(PredList2)
-FinalHostMatrix$PredVirus2 <- apply(PredDF2,1, function(a) a %>% mean)
-
-# Simulating the networks #####
+# Simulating Networks ####
 
 SimNets1 <- SimGraphs1 <- list()
 
@@ -108,10 +82,34 @@ for(i in 1:length(PredList1)){
 }
 
 Degdf1 <- sapply(SimGraphs1, function(a) degree(a)) %>% as.data.frame
-#Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) %>% as.data.frame
+Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees1 <- apply(Degdf1, 1, mean)
 Hosts$PredDegree1 <- PredDegrees1[as.character(Hosts$Sp)]
+
+# Without random effects, same model ####
+
+PredList1b <- list()
+
+RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
+
+XZMatrix <- BinModelList[[i*10]]$X %>% 
+  as.matrix %>% as("dgCMatrix")
+
+for(x in 1:1000){
+  if(x%%10==0) print(x)
+  RowSampled <- RowsSampled[x]
+  FXSample <- ClusterMCMC[RowSampled, Columns[[1]]]
+  Output <- c(FXSample %*% t(XZMatrix))
+  ProbVector <- Output[[1]]@x
+  PZero <- rbinom(length(ProbVector), 1, invlogit(ProbVector))
+  #PZero <- rbinom(length(ProbVector), 1, invlogit(ProbVector)*Prev(FinalHostMatrix$VirusBinary)/mean(invlogit(ProbVector)))
+  PredList1b[[x]] <- PZero
+}
+
+PredDF1b <- as.data.frame(PredList1b)
+names(PredDF1b) <- paste("Rep",1:1000)
+FinalHostMatrix$PredVirus1b <- apply(PredDF1b[,1:1000], 1, function(a) a %>% mean)
 
 # Simulating the networks #####
 
@@ -125,8 +123,8 @@ for(i in 1:length(PredList1b)){
                    nrow = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)), 
                    ncol = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
   
-  AssMat[-which(1:length(AssMat)%in%UpperHosts)] <- round(PredList1b[[i]])
-  AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
+  AssMat[-which(1:length(AssMat)%in%UpperHosts)] <- round(PredList1b[[i]])# %>% as.matrix %>% as("dgCMatrix")
+  AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))] #%>% as.matrix %>% as("dgCMatrix")
   diag(AssMat) <- apply(AssMat,1,function(a) length(a[!is.na(a)&a>0]))
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
@@ -144,7 +142,31 @@ PredDegrees1b <- apply(Degdf1b, 1, mean)
 
 Hosts$PredDegree1b <- PredDegrees1b[as.character(Hosts$Sp)]
 
-# Trying sans random effect ####
+# Trying it without random effects ####
+
+i = 2
+
+PredList2 <- list()
+
+ClusterMCMC <- mc2$Sol
+RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
+
+XZMatrix <- mc2$X
+
+for(x in 1:1000){
+  if(x%%10==0) print(x)
+  RowSampled <- RowsSampled[x]
+  FXSample <- ClusterMCMC[RowSampled, Columns[[1]]]
+  Output <- c(FXSample %*% t(XZMatrix))
+  PZero <- rbinom(length(Output[[1]]@x), 1, invlogit(Output[[1]]@x))
+  PredList2[[x]] <- PZero
+}
+
+
+PredDF2 <- as.data.frame(PredList2)
+FinalHostMatrix$PredVirus2 <- apply(PredDF2,1, function(a) a %>% mean)
+
+# Simulating the network #####
 
 SimNets2 <- SimGraphs2 <- list()
 
@@ -215,7 +237,7 @@ for(x in 1:1000){
   FXSample <- ClusterMCMC[RowSampled, unlist(Columns)]
   Output <- c(FXSample %*% t(XZMatrix))
   
-  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
+  PZero <- rbinom(length(Output[[1]]@x), 1, invlogit(Output[[1]]@x))
   
   PredList3[[x]] <- PZero
   
@@ -278,7 +300,7 @@ for(x in 1:1000){
   FXSample <- ClusterMCMC[RowSampled, Columns[[1]]]
   Output <- c(FXSample %*% t(XZMatrix))
   
-  PZero <- rbinom(length(Output[[1]]@x), 1, logit(Output[[1]]@x))
+  PZero <- rbinom(length(Output[[1]]@x), 1, invlogit(Output[[1]]@x))
   
   PredList3b[[x]] <- PZero
   

@@ -1,5 +1,7 @@
 # Parallel binary models ####
 
+#nice -n 10 Rscript "R Code/1_Sharing Models/Multiple Parallel Binomial Models.R" # This is the terminal run code
+
 # Run source code
 
 rm(list = ls())
@@ -27,16 +29,16 @@ BinModelList[1:10] <- NA
 
 BinModelList <- parallel::mclapply(1:20, function(i) {
   if(i <= 10) {
-  
-    MCMCglmm(
-      data = FinalHostMatrix,
-     VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
-      prior = prior.bin,
-      random =~ mm(Sp + Sp2),
-      family = "categorical",
-      pr = TRUE,
-      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
-      thin = 10*mf, burnin=8000*mf, trunc = T) %>% return
+#  
+#    MCMCglmm(
+#      data = FinalHostMatrix,
+#     VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+#      prior = prior.bin,
+#      random =~ mm(Sp + Sp2),
+#      family = "categorical",
+#      pr = TRUE,
+#      nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+#      thin = 10*mf, burnin=8000*mf, trunc = T) %>% return
     
   } else if (i > 10) {
     
@@ -50,7 +52,7 @@ BinModelList <- parallel::mclapply(1:20, function(i) {
   }
 }, mc.cores = 20)
 
-save(BinModelList, file = "Parallel_Binomials.Rdata")
+save(BinModelList, file = "Parallel_Binomialsb.Rdata")
 
 BinModelList[21:40] <- parallel::mclapply(21:40, function(i) {
   if(i <= 30) {
