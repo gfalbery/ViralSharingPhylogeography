@@ -62,16 +62,14 @@ if(!file.exists("data/intermediate/HP3-ST_PDmatrix.csv")){
 
 # Adding in all mammal supertree ####
 
-#if(!file.exists("data/intermediate/FullSTMatrix.csv")){
-#  
-#  library(geiger) 
-#  library(ape)
-#  library(picante)
-#  
-#  STFull <- read.nexus("data/ele_1307_sm_sa1.tre")[[1]]
-#  FullSTMatrix <- as.data.frame(cophenetic(STFull)) %>% as.matrix
-#  
-#} else{ FullSTMatrix <- as.matrix(read.csv("data/intermediate/FullSTMatrix.csv", header = T)) }
+if(!file.exists("data/intermediate/FullSTMatrix.csv")){
+  
+  library(geiger);library(ape);library(picante);library(dplyr)
+  
+  STFull <- read.nexus("data/ele_1307_sm_sa1.tre")[[1]]
+  FullSTMatrix <- as.data.frame(cophenetic(STFull)) %>% as.matrix
+  
+} else{ FullSTMatrix <- as.matrix(read.csv("data/intermediate/FullSTMatrix.csv", header = T)) }
 
 PVRMass <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/intermediate/PVR_cytb_hostmass.csv") %>% data.frame
 PVRMass <- PVRMass[order(PVRMass$hHostNameFinal),] %>% rename(Host = hHostNameFinal, PVRMass = PVRcytb_resid)

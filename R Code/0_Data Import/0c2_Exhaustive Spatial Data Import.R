@@ -84,11 +84,14 @@ for(x in levels(FullRangedf$Host)){
   
 }
 
-RangeA = matrix(rep(diag(FullRangeOverlap), nrow(FullRangeOverlap)), nrow(FullRangeOverlap))
-RangeB = matrix(rep(diag(FullRangeOverlap), each = nrow(FullRangeOverlap)), nrow(FullRangeOverlap))
+FullRangeA = matrix(rep(diag(FullRangeOverlap), nrow(FullRangeOverlap)), nrow(FullRangeOverlap))
+FullRangeB = matrix(rep(diag(FullRangeOverlap), each = nrow(FullRangeOverlap)), nrow(FullRangeOverlap))
 
-RangeAdj1 <- FullRangeOverlap/(RangeA + RangeB - FullRangeOverlap) # Weighted evenly
-RangeAdj2 <- FullRangeOverlap/(RangeA) # Asymmetrical
+FullRangeAdj1 <- FullRangeOverlap/(FullRangeA + FullRangeB - FullRangeOverlap) # Weighted evenly
+FullRangeAdj2 <- FullRangeOverlap/(FullRangeA) # Asymmetrical
+
+#save(FullRangeOverlap, file = "data/FullRangeOverlap.Rdata")
+save(FullRangeAdj1, file = "data/FullRangeOverlap.Rdata")
 
 # Making polygons for display ####
 

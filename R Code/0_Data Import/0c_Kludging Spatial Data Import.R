@@ -252,3 +252,8 @@ VirusRangeB = matrix(rep(diag(VirusRangeOverlap), each = nrow(VirusRangeOverlap)
 
 VirusRangeAdj1 <- VirusRangeOverlap/(VirusRangeA + VirusRangeB - VirusRangeOverlap) # Weighted evenly
 VirusRangeAdj2 <- VirusRangeOverlap/(VirusRangeA) # Asymmetrical
+
+#load("~/Albersnet/data/FullMammalRanges.Rdata")
+#load("~/Albersnet/data/FullMammalRanges2.Rdata")
+load("~/Albersnet/data/FullPolygons.Rdata")
+load("~/Albersnet/data/FullRangeOverlap.Rdata")

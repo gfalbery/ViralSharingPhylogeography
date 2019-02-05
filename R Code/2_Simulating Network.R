@@ -11,7 +11,7 @@ logit <- function(a) log(a/(1-a))
 load("Bin Model 1.Rdata")
 load("Bin Model 2.Rdata")
 load("~/Albersnet/Parallel_Binomials.Rdata")
-BinModelList[11:20] <- load("~/Albersnet/Parallel_Binomialsb.Rdata")
+load("~/Albersnet/Parallel_Binomialsb.Rdata")
 
 # Checking Convergence ####
 
@@ -165,10 +165,13 @@ i = 2
 
 PredList2 <- list()
 
-ClusterMCMC <- mc2$Sol
+ClusterMCMC <- BinModelList[1:10 + 10*(i-1)] %>% 
+  lapply(function(a) as.data.frame(a$Sol)) %>% 
+  bind_rows %>% as.matrix
+
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
-XZMatrix <- mc2$X
+XZMatrix <- BinModelList[[1 + 10*(i-1)]]$X
 
 for(x in 1:1000){
   if(x%%10==0) print(x)
@@ -273,6 +276,10 @@ for(x in 1:1000){
 PredDF3 <- as.data.frame(PredList3)
 FinalHostMatrix$PredVirus3 <- apply(PredDF3,1, function(a) a %>% mean)
 
+FinalHostMatrix$PredVirus3Q <- cut(FinalHostMatrix$PredVirus3,
+                                   breaks = c(-1:10/10),
+                                   labels = c(0:10/10))
+
 # Converting to graphs 
 
 SimNets3 <- SimGraphs3 <- list()
@@ -338,6 +345,10 @@ for(x in 1:1000){
 
 PredDF3b <- as.data.frame(PredList3b)
 FinalHostMatrix$PredVirus3b <- apply(PredDF3b,1, function(a) a %>% mean)
+
+FinalHostMatrix$PredVirus3bQ <- cut(FinalHostMatrix$PredVirus3b,
+                                   breaks = c(-1:10/10),
+                                   labels = c(0:10/10))
 
 # Converting to graphs 
 

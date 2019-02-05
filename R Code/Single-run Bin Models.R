@@ -13,14 +13,14 @@ prior.bin2 <- list(R = list(V = diag(1), nu = 0.002, fix = 1))
 
 # Modelling all mammal-mammal pairs ####
 
-mf = 10
+mf = 1
 
 # Trying a Binomial model ####
 
 mc1 <- MCMCglmm(
   data = FinalHostMatrix,
-  VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
-  random =~ mm(Sp + Sp2),
+  VirusBinary ~ 1,#Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+  random =~ mm(hDiseaseZACites + hDiseaseZACites.Sp2)*mm(Sp + Sp2),
   prior = prior.bin,
   family = "categorical",
   pr = TRUE,

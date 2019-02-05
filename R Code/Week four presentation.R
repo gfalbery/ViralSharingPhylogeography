@@ -2,6 +2,17 @@
 
 library(ggplot2); library(igraph); library(ggregplot)
 
+Prev <- function (y, round = F) {
+  
+  if(round == T) round((length(y[y > 0])/length(y)) * 100) else{
+    length(y[y > 0])/length(y)
+  } 
+}
+
+# Overall output ####
+
+Efxplot(BinModelList)
+
 # Checking convergence ####
 
 i=1
@@ -31,9 +42,20 @@ df1b <- with(FinalHostMatrix, tapply(VirusBinary, PredVirus1bQ, function(a) tabl
 df2 <- with(FinalHostMatrix, tapply(VirusBinary, PredVirus2Q, function(a) table(a)/sum(table(a)))) %>%
   bind_rows()
 
-dflong <- rbind(reshape2::melt(df1), reshape2::melt(df1b), reshape2::melt(df2))
+df3 <- with(FinalHostMatrix, tapply(VirusBinary, PredVirus3Q, function(a) table(a)/sum(table(a)))) %>%
+  bind_rows()
+
+df3b <- with(FinalHostMatrix, tapply(VirusBinary, PredVirus3bQ, function(a) table(a)/sum(table(a)))) %>%
+  bind_rows()
+
+dflong <- rbind(reshape2::melt(df1), 
+                reshape2::melt(df1b), 
+                reshape2::melt(df2),
+                reshape2::melt(df3),
+                reshape2::melt(df3b))
+
 dflong$Var2 <- rep(0:1)
-dflong$Var3 <- rep(c("1","1b","2"), each = nrow(df1))
+dflong$Var3 <- rep(c("1","1b","2","3","3b"), each = nrow(df1))
 
 ggplot(dflong, aes(variable, value, fill = as.factor(Var2))) + 
   geom_col(position = "stack") + 
@@ -101,13 +123,15 @@ ggplot(Hosts, aes(kader:::cuberoot(Eigenvector), kader:::cuberoot(PredEigen3b)))
 ggplot(Hosts, aes(kader:::cuberoot(Eigenvector), kader:::cuberoot(PredEigen3))) + geom_point() + geom_smooth() +
   labs(x = "Observed Eigenvector", y = "Predicted Eigenvector") +
   coord_fixed() +
-  ggtitle("Full Model, no random effect, max citations") + facet_wrap(~hOrder, ncol = 8) +
+  #ggtitle("Full Model, no random effect, max citations") + 
+  facet_wrap(~hOrder, ncol = 8) +
   lims(y = c(0, 1))
 
 ggplot(Hosts, aes(kader:::cuberoot(Eigenvector), kader:::cuberoot(PredEigen3b))) + geom_point() + geom_smooth() +
   labs(x = "Observed Eigenvector", y = "Predicted Eigenvector") +
   coord_fixed() +
-  ggtitle("Full Model, no random effect, max citations") + facet_wrap(~hOrder, ncol = 8) +
+  #ggtitle("Full Model, no random effect, max citations") + 
+  facet_wrap(~hOrder, ncol = 8) +
   lims(y = c(0, 1))
 
 # Getting network-level stats
@@ -129,19 +153,48 @@ Betweenness2 = sapply(SimGraphs2, function(a) mean(betweenness(a)))
 Betweenness3 = sapply(SimGraphs3, function(a) mean(betweenness(a)))
 Betweenness3b = sapply(SimGraphs3b, function(a) mean(betweenness(a)))
 
+Prev1 = apply(PredDF1, 2, Prev)
+Prev1b = apply(PredDF1b, 2, Prev)
+Prev2 = apply(PredDF2, 2, Prev)
+Prev3 = apply(PredDF3, 2, Prev)
+Prev3b = apply(PredDF3b, 2, Prev)
+
+Closeness1 = sapply(SimGraphs1, function(a) mean(closeness(a)))
+Closeness1b = sapply(SimGraphs1b, function(a) mean(closeness(a)))
+Closeness2 = sapply(SimGraphs2, function(a) mean(closeness(a)))
+Closeness3 = sapply(SimGraphs3, function(a) mean(closeness(a)))
+Closeness3b = sapply(SimGraphs3b, function(a) mean(closeness(a)))
+
+
 NetworkCompdf <- data.frame(
   Degree = unlist(Degrees),
-  Components = unlist(Components)
-  #Between = c(Betweenness1,Betweenness1b,Betweenness2,Betweenness3,Betweenness3b)
+  Components = unlist(Components),
+  Prevalence = c(Prev1, Prev1b, Prev2, Prev3, Prev3b),
+  Between = c(Betweenness1,Betweenness1b,Betweenness2,Betweenness3,Betweenness3b)
 ) %>% mutate(Model = rep(c("1","1b","2", "3", "3b"), each = 1000))
 
+ggplot(NetworkCompdf, aes(Prevalence)) + 
+  geom_histogram(aes(fill = Model), alpha = 0.6) + 
+  facet_wrap(~Model) +
+  geom_vline(aes(xintercept = Prev(FinalHostMatrix$VirusBinary)), lty = 2) +
+  labs(x = "Proportion Links")
+
 ggplot(NetworkCompdf, aes(Degree)) + 
-  geom_density(aes(colour = Model)) + 
-  geom_vline(aes(xintercept = mean(Hosts$Degree)))
+  geom_histogram(aes(fill = Model), alpha = 0.6) + 
+  facet_wrap(~Model) +
+  labs(x = "Mean Degree") +
+  geom_vline(aes(xintercept = mean(Hosts$Degree)), lty = 2)
 
 ggplot(NetworkCompdf, aes(Components)) + 
-  geom_density(aes(colour = Model)) + 
-  geom_vline(aes(xintercept = components(Hostgraph)$no))
+  geom_histogram(aes(fill = Model), alpha = 0.6) + 
+  facet_wrap(~Model) +
+  geom_vline(aes(xintercept = components(Hostgraph)$no), lty = 2)
+
+ggplot(NetworkCompdf, aes(Between)) + 
+  geom_histogram(aes(fill = Model), alpha = 0.6) + 
+  facet_wrap(~Model) +
+  geom_vline(aes(xintercept = mean(betweenness(Hostgraph))), lty = 2) + 
+  lims(x = c(0, 2000))
 
 
 
