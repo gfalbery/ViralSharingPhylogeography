@@ -1,7 +1,5 @@
 
-# STAN Model ####
-
-source("R Code/00_Master Code.R")
+# STAN Model Output ####
 
 library(rstan); library(tidyverse); library(reskew)
 
@@ -49,6 +47,7 @@ sum(levels(d$Sp) == levels(species.traits$sp)) == n_species
 sum(levels(d$Sp2) == levels(species.traits$sp)) == n_species
 
 # Generate Stan data
+
 stan.data <- list(
   
   N = nrow(d),
@@ -59,11 +58,9 @@ stan.data <- list(
   
   phylo = d$Phylo2,
   
-  space_phylo = d$Space*d$Phylo2,
+  domdom = d$DomDom,
   
-  #domdom = d$DomDom,
-  
-  d_cites_s = species.traits$d_cites,
+  d_cites_s = species.traits$d_cites_standardized,
   
   domestic = species.traits$domestic,
   
@@ -73,6 +70,7 @@ stan.data <- list(
   
   N_species = stan_factor_count(d$Sp2)
 )
+
 assert_that(stan.data$N_species == n_species)
 
 # Check to make sure the Stan factor variables are consistent across the
@@ -86,15 +84,15 @@ stan.data$species1[649] # Should be same as stan.data$species2[1]
 
 # Set Stan model parameters
 
-iter <- 2500
-warmup <- 1500
-chains <- 8
-cores <- 8
+iter <- 2000
+warmup <- 1000
+chains <- 4
+cores <- 2
 adapt_delta <- 0.99
 stepsize <- 0.5
 
 binom.ranef2.fit.model <- 
-  stan(file = "Albersnet.stan",
+  stan(file = "stan/model_code/albers.binom.ranef2.stan",
        data = stan.data,
        iter = iter, warmup = warmup,
        chains = chains, cores = cores, 
@@ -109,13 +107,7 @@ saveRDS(binom.ranef2.fit.model,
 
 traceplot(binom.ranef2.fit.model)
 traceplot(binom.ranef2.fit.model,
-          pars = c("mu_alpha", 
-                   "beta_d_cites_s", 
-                   "beta_domestic", 
-                   "beta_space",
-                   "beta_phylo",
-                   "beta_inter",
-                   "sigma"))
+          pars = c("mu_alpha", "beta_d_cites_s", "beta_domestic", "sigma"))
 
 p <- process_stanfit(binom.ranef2.fit.model, n.pars.to.trim = 3)
 

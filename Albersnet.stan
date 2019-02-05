@@ -17,11 +17,14 @@ data {
   
   // main effects
   
+<<<<<<< HEAD
   real<lower = 0> space[N];
   
   real<lower = 0> phylo[N];
   
   real<lower = 0> space_phylo[N];
+=======
+>>>>>>> cad80240d1896d4a6ecb76a0d17a74815a1d3f19
   
   // variables related to varying effects
   
@@ -43,11 +46,14 @@ data {
     
     real mu_alpha;
     
+<<<<<<< HEAD
     real beta_space; 
     
     real beta_phylo; 
     
     real beta_inter; 
+=======
+>>>>>>> cad80240d1896d4a6ecb76a0d17a74815a1d3f19
     
     // parameters related to varying effects
     
@@ -87,9 +93,13 @@ data {
       
       alpha[i] = 
         
+<<<<<<< HEAD
         mu_alpha + 
         beta_space*space[i] + beta_phylo*phylo[i] + beta_inter*space_phylo[i] + 
         alpha_species[species1[i]] + alpha_species[species2[i]];
+=======
+        mu_alpha + alpha_species[species1[i]] + alpha_species[species2[i]];
+>>>>>>> cad80240d1896d4a6ecb76a0d17a74815a1d3f19
     }
   }
 
@@ -103,11 +113,14 @@ data {
     
     mu_alpha ~ normal(0, 5);
     
+<<<<<<< HEAD
     beta_space ~ normal(0, 5); 
     
     beta_phylo ~ normal(0, 5); 
     
     beta_inter ~ normal(0, 5); 
+=======
+>>>>>>> cad80240d1896d4a6ecb76a0d17a74815a1d3f19
     
     
     // priors for varying effects
