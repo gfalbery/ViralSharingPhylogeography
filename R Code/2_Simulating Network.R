@@ -10,6 +10,8 @@ logit <- function(a) log(a/(1-a))
 
 load("Bin Model 1.Rdata")
 load("Bin Model 2.Rdata")
+load("~/Albersnet/Parallel_Binomials.Rdata")
+BinModelList[11:20] <- load("~/Albersnet/Parallel_Binomialsb.Rdata")
 
 # Checking Convergence ####
 
@@ -57,6 +59,10 @@ PredDF1 <- as.data.frame(PredList1)
 names(PredDF1) <- paste("Rep",1:1000)
 FinalHostMatrix$PredVirus1 <- apply(PredDF1,1, function(a) a %>% mean)
 
+FinalHostMatrix$PredVirus1Q <- cut(FinalHostMatrix$PredVirus1,
+                                   breaks = c(-1:10/10),
+                                   labels = c(0:10/10))
+
 # Simulating Networks ####
 
 SimNets1 <- SimGraphs1 <- list()
@@ -85,9 +91,14 @@ Degdf1 <- sapply(SimGraphs1, function(a) degree(a)) %>% as.data.frame
 Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees1 <- apply(Degdf1, 1, mean)
+PredEigen1 <- apply(Eigendf1, 1, mean)
+
 Hosts$PredDegree1 <- PredDegrees1[as.character(Hosts$Sp)]
+Hosts$PredEigen1 <- PredEigen1[as.character(Hosts$Sp)]
 
 # Without random effects, same model ####
+
+i = 1
 
 PredList1b <- list()
 
@@ -136,11 +147,17 @@ for(i in 1:length(PredList1b)){
 }
 
 Degdf1b <- sapply(SimGraphs1b, function(a) degree(a)) %>% as.data.frame
-#Eigendf1b <- sapply(SimGraphs1b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
+Eigendf1b <- sapply(SimGraphs1b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees1b <- apply(Degdf1b, 1, mean)
+PredEigen1b <- apply(Eigendf1b, 1, mean)
 
 Hosts$PredDegree1b <- PredDegrees1b[as.character(Hosts$Sp)]
+Hosts$PredEigen1b <- PredEigen1b[as.character(Hosts$Sp)]
+
+FinalHostMatrix$PredVirus1bQ <- cut(FinalHostMatrix$PredVirus1b,
+                                   breaks = c(-1:10/10),
+                                   labels = c(0:10/10))
 
 # Trying it without random effects ####
 
@@ -165,6 +182,10 @@ for(x in 1:1000){
 
 PredDF2 <- as.data.frame(PredList2)
 FinalHostMatrix$PredVirus2 <- apply(PredDF2,1, function(a) a %>% mean)
+
+FinalHostMatrix$PredVirus2Q <- cut(FinalHostMatrix$PredVirus2,
+                                   breaks = c(-1:10/10),
+                                   labels = c(0:10/10))
 
 # Simulating the network #####
 
@@ -191,13 +212,13 @@ for(i in 1:length(PredList2)){
 }
 
 Degdf2 <- sapply(SimGraphs2, function(a) degree(a)) %>% as.data.frame
-Eigendf2 <- sapply(SimGraphs2[1:729], function(a) eigen_centrality(a)$vector) %>% as.data.frame
-
-Degdflong2 <- reshape2::melt(t(Degdf2)) %>% rename(Sp = Var2, Degree = value)
+Eigendf2 <- sapply(SimGraphs2, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees2 <- apply(Degdf2, 1, mean)
+PredEigen2 <- apply(Eigendf2, 1, mean)
 
 Hosts$PredDegree2 <- PredDegrees2[as.character(Hosts$Sp)]
+Hosts$PredEigen2 <- PredEigen2[as.character(Hosts$Sp)]
 
 # Comparing differences, identifying which species are increased in the "true" ####
 
@@ -216,14 +237,20 @@ names(HPDComp2) <- paste(names(HPDComp2),rep(1:2,each = 4), sep = ".")
 
 # Turning Up Citations with random effects ####
 
+i = 1
+
 PredList3 <- list()
 
-ClusterMCMC <- mc1$Sol
+ClusterMCMC <- BinModelList[1:10 + 10*(i-1)] %>% 
+  lapply(function(a) as.data.frame(a$Sol)) %>% 
+  bind_rows %>% as.matrix
 
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
-XZMatrix <- cbind(mc1$X, mc1$Z)
-#XZMatrix <- mc1$X
+XZMatrix <- cbind(BinModelList[[i*10]]$X, BinModelList[[i*10]]$Z) %>% 
+  as.matrix %>% as("dgCMatrix")
+
+Columns <- list(1:ncol(BinModelList[[i*10]]$X),(ncol(BinModelList[[i*10]]$X)+1):ncol(XZMatrix))
 
 XZMatrix[,"MinDCites"] <- max(XZMatrix[,"MinDCites"])
 XZMatrix <- as(XZMatrix,"dgCMatrix")
@@ -271,22 +298,25 @@ for(i in 1:length(PredList3)){
 }
 
 Degdf3 <- sapply(SimGraphs3, function(a) degree(a)) %>% as.data.frame
-#Eigendf3 <- sapply(SimGraphs3, function(a) eigen_centrality(a)$vector) %>% as.data.frame
+Eigendf3 <- sapply(SimGraphs3, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees3 <- apply(Degdf3, 1, mean)
+PredEigen3 <- apply(Eigendf3, 1, mean)
 
 Hosts$PredDegree3 <- PredDegrees3[as.character(Hosts$Sp)]
+Hosts$PredEigen3 <- PredEigen3[as.character(Hosts$Sp)]
 
 # Turning Up Citations without random effects ####
 
 PredList3b <- list()
 
-ClusterMCMC <- mc1$Sol
+ClusterMCMC <- BinModelList[1:10 + 10*(i-1)] %>% 
+  lapply(function(a) as.data.frame(a$Sol)) %>% 
+  bind_rows %>% as.matrix
 
 RowsSampled <- sample(1:nrow(ClusterMCMC), 1000, replace = F)
 
-#XZMatrix <- cbind(mc1$X, mc1$Z)
-XZMatrix <- mc1$X
+XZMatrix <- BinModelList[[10*i]]$X
 
 XZMatrix[,"MinDCites"] <- max(XZMatrix[,"MinDCites"])
 XZMatrix <- as(XZMatrix,"dgCMatrix")
@@ -334,11 +364,13 @@ for(i in 1:length(PredList3b)){
 }
 
 Degdf3b <- sapply(SimGraphs3b, function(a) degree(a)) %>% as.data.frame
-#Eigendf3b <- sapply(SimGraphs3b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
+Eigendf3b <- sapply(SimGraphs3b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
 
 PredDegrees3b <- apply(Degdf3b, 1, mean)
+PredEigen3b <- apply(Eigendf3b, 1, mean)
 
 Hosts$PredDegree3b <- PredDegrees3b[as.character(Hosts$Sp)]
+Hosts$PredEigen3b <- PredEigen3b[as.character(Hosts$Sp)]
 
 # Looking at predicted changes in centrality ####
 

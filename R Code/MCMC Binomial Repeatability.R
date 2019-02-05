@@ -15,7 +15,7 @@ MCBinRep <- function(Model, scale = "original"){
     for (j in 1:dim(Model$VCV)[2]) {
       Va <- Model$VCV[, j]
       Ve <- rowSums(Model$VCV)
-      Repeatability1 <- ((Va*P^2)/(1 + exp(Beta0))^2)/(((Va + Ve)*P^2)/((1 + exp(Beta0))^2 + P*(1 - P)))
+      Repeatability1 <- ((Va*P^2)/(1 + exp(Beta0))^2)/(((Ve)*P^2)/((1 + exp(Beta0))^2 + P*(1 - P)))
       
       mat[j, ] <- c(colnames(Model$VCV)[j], round(posterior.mode(Repeatability1), 
                                                   digits = 2), 
@@ -28,7 +28,7 @@ MCBinRep <- function(Model, scale = "original"){
     for (j in 1:dim(Model$VCV)[2]) {
       Va <- Model$VCV[, j]
       Ve <- rowSums(Model$VCV)
-      Repeatability1 <- (Va)/(Va + Ve + (pi^2/3))
+      Repeatability1 <- (Va)/(Ve + (pi^2/3))
       mat[j, ] <- c(colnames(Model$VCV)[j], round(posterior.mode(Repeatability1), 
                                                   digits = 2), 
                     round(HPDinterval(Repeatability1)[1], digits = 2), 

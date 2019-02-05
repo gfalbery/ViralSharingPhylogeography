@@ -23,9 +23,7 @@ mf = 15
 
 # Trying a Binomial model ####
 
-BinModelList <- list()
-
-BinModelList[1:10] <- NA
+BinModelList <- BinModelList2 <- BinModelList3 <- list()
 
 BinModelList <- parallel::mclapply(1:20, function(i) {
   if(i <= 10) {
@@ -54,7 +52,7 @@ BinModelList <- parallel::mclapply(1:20, function(i) {
 
 save(BinModelList, file = "Parallel_Binomialsb.Rdata")
 
-BinModelList[21:40] <- parallel::mclapply(21:40, function(i) {
+BinModelList2 <- parallel::mclapply(21:40, function(i) {
   if(i <= 30) {
     
     MCMCglmm(
@@ -80,9 +78,9 @@ BinModelList[21:40] <- parallel::mclapply(21:40, function(i) {
   }
 }, mc.cores = 20)
 
-save(BinModelList[21:40], file = "Parallel_Binomials2.Rdata")
+save(BinModelList2, file = "Parallel_Binomials2.Rdata")
 
-BinModelList[41:50] <- parallel::mclapply(41:50, function(i) {
+BinModelList3 <- parallel::mclapply(41:50, function(i) {
   
   MCMCglmm(
     data = FinalHostMatrix,
@@ -96,4 +94,4 @@ BinModelList[41:50] <- parallel::mclapply(41:50, function(i) {
   
 }, mc.cores = 10)
 
-save(BinModelList[41:50], file = "Parallel_Binomials3.Rdata")
+save(BinModelList3, file = "Parallel_Binomials3.Rdata")

@@ -38,6 +38,15 @@ mc2 <- MCMCglmm(
   nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
   thin = 10*mf, burnin=3000*mf, trunc = T)
 
+mc2b <- MCMCglmm(
+  data = FinalHostMatrix,
+  VirusBinary ~ Space + Phylo2 + Space:Phylo2 + MinDCites + DomDom,
+  prior = prior.bin2,
+  family = "categorical",
+  #pr = TRUE,
+  nitt = 13000*mf, # REMEMBER YOU'VE DONE THIS
+  thin = 10*mf, burnin=3000*mf, trunc = F)
+
 save(mc2, file = "Bin Model 2.Rdata")
 
 
