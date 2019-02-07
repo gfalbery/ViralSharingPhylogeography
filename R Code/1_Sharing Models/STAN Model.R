@@ -22,7 +22,7 @@ sum(complete.cases(d)) == nrow(d)
 
 species.traits <- 
   data.frame(sp = c(d$Sp, d$Sp2),
-             d_cites = log(c(d$hDiseaseZACites, d$hDiseaseZACites.Sp2)+1),
+             d_cites = c(log(d$hDiseaseZACites+1),log(d$hDiseaseZACites.Sp2+1)),
              domestic = c(d$hDom, d$hDom.Sp2)) %>%
   arrange(sp) %>%
   distinct() %>%

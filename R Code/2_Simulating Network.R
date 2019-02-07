@@ -50,7 +50,7 @@ for(x in 1:1000){
   FXSample <- FXSample# + 0.04
   Output <- c(FXSample %*% t(XZMatrix))
   ProbVector <- Output[[1]]@x
-  PZero <- rbinom(length(ProbVector), 1, invlogit(ProbVector))
+  PZero <- rbinom(length(ProbVector), 1, logit(ProbVector))
   #PZero <- rbinom(length(ProbVector), 1, invlogit(ProbVector)*Prev(FinalHostMatrix$VirusBinary)/mean(invlogit(ProbVector)))
   PredList1[[x]] <- PZero
 }
