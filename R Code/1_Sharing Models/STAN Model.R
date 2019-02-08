@@ -1,7 +1,7 @@
 
 # STAN Model ####
 
-# nice -n 10 Rscript "STAN Model.R" # This is the terminal run code
+# nice -n 10 Rscript "R Code/1_Sharing Models/STAN Model.R" # This is the terminal run code
 
 source("R Code/00_Master Code.R")
 
@@ -27,7 +27,6 @@ species.traits <-
   arrange(sp) %>%
   distinct() %>%
   mutate(sp = as.factor(sp),
-         #d_cites_standardized = scale(d_cites)[ ,1],
          domestic = ifelse(domestic == "domestic", 1, 0))
 
 # Get Sp and Sp2 in "d" on the same factor levels
@@ -40,16 +39,6 @@ d$Sp2 <- factor(as.character(d$Sp2),
                 levels = union(d$Sp, d$Sp2)
 )
 
-summary(as.integer(d$Sp))
-summary(as.integer(d$Sp2))
-
-# Do the factors in Sp and Sp2 match with what's in species.traits?
-
-n_species <- length(levels(d$Sp))
-
-sum(levels(d$Sp) == levels(species.traits$sp)) == n_species
-sum(levels(d$Sp2) == levels(species.traits$sp)) == n_species
-
 # Generate Stan data
 stan.data <- list(
   
@@ -57,44 +46,33 @@ stan.data <- list(
   
   virus_shared = d$VirusBinary,
   
-  space = d$Space,
+  space_s = c(scale(d$Space)),
   
-  phylo = d$Phylo2,
-  
-  space_phylo = d$Space*d$Phylo2,
+  phylo_s = c(scale(d$Phylo2)),
   
   #domdom = d$DomDom,
   
-  d_cites_s = species.traits$d_cites,
+  d_cites_s = c(scale(species.traits$d_cites)),
   
   domestic = species.traits$domestic,
   
   species1 = to_stan_factor(d$Sp),
-  
   species2 = to_stan_factor(d$Sp2),
   
   N_species = stan_factor_count(d$Sp2)
-)
-
-# Check to make sure the Stan factor variables are consistent across the
-# two species columns
-d$Sp2[1]
-d$Sp[649] # Same as d$Sp2[1]
-
-stan.data$species2[1]
-stan.data$species1[649] # Should be same as stan.data$species2[1]
+) %>% plyr::mutate(space_phylo_s = c(scale(d$Space*d$Phylo2)))
 
 # Set Stan model parameters
 
-iter <- 2500
-warmup <- 1500
+iter <- 1500
+warmup <- 500
 chains <- 8
 cores <- 8
 adapt_delta <- 0.99
 stepsize <- 0.5
 
-binom.model <- 
-  stan(file = "Albersnet.stan",
+BinModel_Scaled <- 
+  stan(file = "R Code/1_Sharing Models/Albersnet.stan",
        data = stan.data,
        iter = iter, warmup = warmup,
        chains = chains, cores = cores, 
@@ -103,6 +81,6 @@ binom.model <-
        )
   )
 
-saveRDS(binom.model, 
-        file = "Bin Model.rds")
+saveRDS(BinModel_Scaled, 
+        file = "BinModel_Scaled.rds")
 

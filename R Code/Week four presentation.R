@@ -136,7 +136,7 @@ ggplot(Hosts, aes(kader:::cuberoot(Eigenvector), kader:::cuberoot(PredEigen3b)))
 
 # Getting network-level stats
 
-SimGraphList <- list(SimGraphs1, SimGraphs1b, SimGraphs2, SimGraphs3, SimGraphs3b)
+SimGraphList <- list(SimGraphs1, SimGraphs1b)# , SimGraphs2, SimGraphs3, SimGraphs3b)
 
 Components <- lapply(SimGraphList, function(a) sapply(a, function(b) components(b)$no))
 Degrees <- lapply(SimGraphList, function(a) sapply(a, function(b) mean(degree(b))))
@@ -164,7 +164,6 @@ Closeness1b = sapply(SimGraphs1b, function(a) mean(closeness(a)))
 Closeness2 = sapply(SimGraphs2, function(a) mean(closeness(a)))
 Closeness3 = sapply(SimGraphs3, function(a) mean(closeness(a)))
 Closeness3b = sapply(SimGraphs3b, function(a) mean(closeness(a)))
-
 
 NetworkCompdf <- data.frame(
   Degree = unlist(Degrees),

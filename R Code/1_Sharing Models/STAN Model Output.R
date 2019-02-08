@@ -24,11 +24,14 @@ traceplot(BinModel,
 p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
 #p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
 
+MCMCSol <- p$df#[rep(501:1000, 8)+rep(0:7*1000, each = 500),]
+
 N = nrow(d)
 
 d$Space_Phylo <- d$Space*d$Phylo2
 
-d <- d %>% mutate(DCites = log(hDiseaseZACites + 1), DCites.Sp2 = log(hDiseaseZACites.Sp2 + 1))
+d <- d %>% mutate(DCites = (log(hDiseaseZACites + 1)),#-mean(species.traits$d_cites))/sd(species.traits$d_cites), 
+                  DCites.Sp2 = (log(hDiseaseZACites.Sp2 + 1)))#-mean(species.traits$d_cites))/sd(species.traits$d_cites))
 
 # Simulating with specific random effects ####
 
@@ -48,15 +51,15 @@ ZBetas2 <- colnames(p$df)[which(colnames(p$df)=="alpha_species[1]"):
 
 PredList1 <- list()
 
-RowsSampled <- sample(1:nrow(p$df), 1000, replace = F)
+RowsSampled <- sample(1:nrow(MCMCSol), 1000, replace = F)
 
 for(x in 1:length(RowsSampled)){ # to do something non-specific
   
   if(x %% 10 == 0) print(x)
   
-  XFX <- p$df[RowsSampled[x], XBetas] %>% unlist
+  XFX <- MCMCSol[RowsSampled[x], XBetas] %>% unlist
   
-  ZFX <- p$df[RowsSampled[x], ZBetas2] %>% unlist
+  ZFX <- MCMCSol[RowsSampled[x], ZBetas2] %>% unlist
   
   XPredictions <- XFX %*% t(XMatrix)
   
@@ -117,11 +120,10 @@ for(x in 1:length(RowsSampled)){ # to do something non-specific
   
   ZPredictions2a <- rnorm(n = N, mean = ZPredictionsa@x, sd = p$df[RowsSampled[x], "sigma"])
   ZPredictions2b <- rnorm(n = N, mean = ZPredictionsb@x, sd = p$df[RowsSampled[x], "sigma"])
-  ZPredictions2c <- rnorm(n = N, mean = (ZPredictionsa@x + ZPredictionsb@x), sd = p$df[RowsSampled[x], "sigma"])
+  #ZPredictions2c <- rnorm(n = N, mean = (ZPredictionsa@x + ZPredictionsb@x), sd = p$df[RowsSampled[x], "sigma"])
   
-  Predictions <- XPredictions@x + ZPredictionsa + ZPredictionsb
   Predictions <- XPredictions@x + ZPredictions2a + ZPredictions2b
-  Predictions2 <- XPredictions@x + ZPredictions2c
+  #Predictions2 <- XPredictions@x + ZPredictions2c
   
   BinPred <- rbinom(n = N,
                     prob = logistic(Predictions),
@@ -172,12 +174,12 @@ for(i in 1:length(PredList1)){
   
   SimNets1[[i]] <- as(AssMat, "dgCMatrix")
   
-  SimGraphs1[[i]] <- graph.incidence(AssMat, weighted = TRUE)
+  SimGraphs1[[i]] <- graph.adjacency(AssMat, mode = "undirected", diag = F)
   
 }
 
-Degdf1 <- sapply(SimGraphs1, function(a) degree(a)) %>% as.data.frame
-Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) %>% as.data.frame
+Degdf1 <- sapply(SimGraphs1, function(a) degree(a))# %>% as.data.frame
+Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) #%>% as.data.frame
 
 PredDegrees1 <- apply(Degdf1, 1, mean)
 PredEigen1 <- apply(Eigendf1, 1, mean)
@@ -199,13 +201,13 @@ for(i in 1:length(PredList1b)){
   
   AssMat[-which(1:length(AssMat)%in%UpperHosts)] <- round(PredList1b[[i]])# %>% as.matrix %>% as("dgCMatrix")
   AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))] #%>% as.matrix %>% as("dgCMatrix")
-  diag(AssMat) <- apply(AssMat,1,function(a) length(a[!is.na(a)&a>0]))
+  diag(AssMat) <- 0
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
   
   SimNets1b[[i]] <- as(AssMat, "dgCMatrix")
   
-  SimGraphs1b[[i]] <- graph.incidence(AssMat, weighted = TRUE)
+  SimGraphs1b[[i]] <- graph.adjacency(AssMat, mode = "undirected")
   
 }
 
@@ -222,84 +224,36 @@ ggplot(Hosts, aes(Degree, PredDegree1b)) + geom_point() + geom_smooth()
 
 # Packge together species-level varying effect estimates
 
-species.means.df <- data.frame(
-  species_mean = species.means,
-  species_level = 1:length(species.means)
-)
-
-species.traits.mod <- species.traits %>%
-  mutate(sp = as.integer(sp))
-
-# Create a predictions data frame
-
-preds <- data.frame(
-  sp = d$Sp,
-  sp_level = as.integer(d$Sp),
-  sp2 = d$Sp2,
-  sp2_level = as.integer(d$Sp2),
-  # Mean overall intercept fit from the model
-  mu_alpha = rep(mean(p$df$mu_alpha), nrow(d))
-) %>%
-  left_join(., species.means.df, by = c("sp_level" = "species_level")) %>%
-  left_join(., species.means.df, by = c("sp2_level" = "species_level")) %>%
-  left_join(., species.traits.mod, by = c("sp_level" = "sp")) %>%
-  left_join(., species.traits.mod, by = c("sp2_level" = "sp")) %>%
-  rename(
-    # Mean species-level varying effects fit from the model
-    fit_alpha_sp1 = species_mean.x,
-    fit_alpha_sp2 = species_mean.y,
-    # Species trait data
-    domestic_sp1 = domestic.x,
-    domestic_sp2 = domestic.y,
-    d_cites_standardized_sp1 = d_cites_standardized.x,
-    d_cites_standardized_sp2 = d_cites_standardized.y
-  ) %>%
-  mutate(
-    # Manually calculate linear term that feeds into the varying effect
-    # for each species. Note: will not match the fitted values, since the
-    # fitted values are also subject to residual variation
-    linear_term_alpha_sp1 =
-      (domestic_sp1 * mean(p$df$beta_domestic) + 
-         d_cites_standardized_sp1 * mean(p$df$beta_d_cites_s)),
-    linear_term_alpha_sp2 =
-      (domestic_sp2 * mean(p$df$beta_domestic) + 
-         d_cites_standardized_sp2 * mean(p$df$beta_d_cites_s)),
-    # Generate predicted varying effect values for species just like ours
-    # (including the residual variation)
-    pred_alpha_sp1 = rnorm(linear_term_alpha_sp1, sd = p$df$sigma),
-    pred_alpha_sp2 = rnorm(linear_term_alpha_sp2, sd = p$df$sigma)
-  )
-
-# Generate predictions
-
-# Predictions using mean fitted varying effect values from the model
-preds$pred <- 
-  rbinom(nrow(preds), 
-         prob = logistic(preds$mu_alpha + preds$fit_alpha_sp1 + preds$fit_alpha_sp2), 
-         size = 1
-  )
-
-# Predictions using manually calculated linear terms for our species
-# (not subject to residual variation)
-preds$pred2 <-
-  rbinom(nrow(preds),
-         prob = logistic(preds$mu_alpha + preds$linear_term_alpha_sp1 + preds$linear_term_alpha_sp2),
-         size = 1
-  )
-
-# Predictions using manually calculated linear terms for our species
-# (and the influence of residual variation)
-preds$pred3 <-
-  rbinom(nrow(preds),
-         prob = logistic(preds$mu_alpha + preds$pred_alpha_sp1 + preds$pred_alpha_sp2),
-         size = 1
-  )
 
 
-# How many viral sharing links are observed?
+# Getting network-level stats
 
-sum(d$VirusBinary)/nrow(d)
+SimGraphList <- list(SimGraphs1, SimGraphs1b)# , SimGraphs2, SimGraphs3, SimGraphs3b)
 
-sum(preds$pred)/nrow(preds)
-sum(preds$pred2)/nrow(preds)
-sum(preds$pred3)/nrow(preds)
+Components <- lapply(SimGraphList, function(a) sapply(a, function(b) components(b)$no))
+Degrees <- lapply(SimGraphList, function(a) sapply(a, function(b) mean(degree(b))))
+
+Cluster1 = sapply(SimGraphs1, function(a) transitivity(a)) # all zero, don't bother
+Cluster1b = sapply(SimGraphs1b, function(a) transitivity(a))
+Cluster2 = sapply(SimGraphs2, function(a) transitivity(a))
+Cluster3 = sapply(SimGraphs3, function(a) transitivity(a))
+Cluster3b = sapply(SimGraphs3b, function(a) transitivity(a))
+
+Betweenness1 = sapply(SimGraphs1, function(a) mean(betweenness(a)))
+Betweenness1b = sapply(SimGraphs1b, function(a) mean(betweenness(a)))
+Betweenness2 = sapply(SimGraphs2, function(a) mean(betweenness(a)))
+Betweenness3 = sapply(SimGraphs3, function(a) mean(betweenness(a)))
+Betweenness3b = sapply(SimGraphs3b, function(a) mean(betweenness(a)))
+
+Prev1 = apply(PredDF1, 2, Prev)
+Prev1b = apply(PredDF1b, 2, Prev)
+Prev2 = apply(PredDF2, 2, Prev)
+Prev3 = apply(PredDF3, 2, Prev)
+Prev3b = apply(PredDF3b, 2, Prev)
+
+Closeness1 = sapply(SimGraphs1, function(a) mean(closeness(a)))
+Closeness1b = sapply(SimGraphs1b, function(a) mean(closeness(a)))
+Closeness2 = sapply(SimGraphs2, function(a) mean(closeness(a)))
+Closeness3 = sapply(SimGraphs3, function(a) mean(closeness(a)))
+Closeness3b = sapply(SimGraphs3b, function(a) mean(closeness(a)))
+

@@ -1,6 +1,5 @@
 
-# Single-run Binomial STAN Model ####
-
+// Single-run Binomial STAN Model ////
 
 data {
   
@@ -17,11 +16,11 @@ data {
   
   // main effects
   
-  real<lower = 0> space[N];
+  real space_s[N];
   
-  real<lower = 0> phylo[N];
+  real phylo_s[N];
   
-  real<lower = 0> space_phylo[N];
+  real space_phylo_s[N];
 
   // variables related to varying effects
   
@@ -30,6 +29,7 @@ data {
   int<lower=1, upper=N_species> species2[N];
   
   real d_cites_s[N_species];
+  
   int<lower=0> domestic[N_species];
 }
 
@@ -88,7 +88,7 @@ data {
       alpha[i] = 
         
         mu_alpha + 
-        beta_space*space[i] + beta_phylo*phylo[i] + beta_inter*space_phylo[i] + 
+        beta_space*space_s[i] + beta_phylo*phylo_s[i] + beta_inter*space_phylo_s[i] + 
         alpha_species[species1[i]] + alpha_species[species2[i]];
 
     }
