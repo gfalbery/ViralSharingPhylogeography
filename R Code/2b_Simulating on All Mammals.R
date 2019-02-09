@@ -26,7 +26,6 @@ AllMammaldf <- AllMammalMatrix[-UpperMammals,]
 
 AllPredList <- list()
 
-
 MX1 = model.matrix( ~ Space + Phylo + Space:Phylo, data = AllMammaldf) %>%
   as.matrix %>% as("dgCMatrix")
 
@@ -58,7 +57,7 @@ for(x in 1:length(RowsSampled)){
 
 }
 
-AllPredDF <- as.data.frame(AllPredList)
+AllPredDF <- as.data.frame(AllPredList) %>% as.matrix %>% unname %>% as("dgCMatrix")
 AllMammaldf$PredVirus <- apply(AllPredDF,1, function(a) a %>% mean)
 
 AllMammaldf$PredVirusQ <- cut(AllMammaldf$PredVirus,
@@ -89,6 +88,34 @@ for(i in 1:length(AllPredList)){
   
 }
 
+Sgs <- parallel::mclapply(1:10, function(i){
+  
+  AssMat <- matrix(NA, 
+                   nrow = length(union(AllMammaldf$Sp,AllMammaldf$Sp2)), 
+                   ncol = length(union(AllMammaldf$Sp,AllMammaldf$Sp2)))
+  
+  AssMat[-which(1:length(AssMat)%in%UpperMammals)] <- round(AllPredList[[i]])
+  AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
+  diag(AssMat) <- 0
+  dimnames(AssMat) <- list(union(AllMammaldf$Sp,AllMammaldf$Sp2),
+                           union(AllMammaldf$Sp,AllMammaldf$Sp2))
+  
+  list(
+  
+  as(AssMat, "dgCMatrix"),
+  
+  graph.adjacency(AssMat, mode = "undirected", diag = F)
+  
+  ) %>% return
+  #if(i%%10==0) print(i)
+  
+}, mc.cores = 10)
+
+AllSims <- map(Sgs, function(a) a[[1]])
+AllSimgs <- map(Sgs, function(a) a[[2]])
+
+AllPrev = apply(AllPredDF, 2, Prev)
+
 AllDegdf <- sapply(AllSimGraphs, function(a) degree(a)) #%>% as.data.frame
 AllEigendf <- sapply(AllSimGraphs, function(a) eigen_centrality(a)$vector)# %>% as.data.frame
 
@@ -96,23 +123,12 @@ AllPredDegrees <- apply(AllDegdf, 1, mean)
 AllPredEigen <- apply(AllEigendf, 1, mean)
 
 Components <- sapply(AllSimGraphs, function(b) components(b)$no)
-
 Cluster = sapply(AllSimGraphs, function(a) transitivity(a)) # all zero, don't bother
 
-Betweenness1 = sapply(SimGraphs1, function(a) mean(betweenness(a)))
-Betweenness1b = sapply(SimGraphs1b, function(a) mean(betweenness(a)))
-Betweenness2 = sapply(SimGraphs2, function(a) mean(betweenness(a)))
-Betweenness3 = sapply(SimGraphs3, function(a) mean(betweenness(a)))
-Betweenness3b = sapply(SimGraphs3b, function(a) mean(betweenness(a)))
+Betweenness1 = sapply(AllSimGraphs, function(a) mean(betweenness(a)))
 
-AllPrev = apply(AllPredDF, 2, Prev)
-Prev1b = apply(PredDF1b, 2, Prev)
-Prev2 = apply(PredDF2, 2, Prev)
-Prev3 = apply(PredDF3, 2, Prev)
-Prev3b = apply(PredDF3b, 2, Prev)
+AllCloseness = sapply(AllSimGraphs, function(a) mean(closeness(a)))
 
-Closeness1 = sapply(SimGraphs1, function(a) mean(closeness(a)))
-Closeness1b = sapply(SimGraphs1b, function(a) mean(closeness(a)))
-Closeness2 = sapply(SimGraphs2, function(a) mean(closeness(a)))
-Closeness3 = sapply(SimGraphs3, function(a) mean(closeness(a)))
-Closeness3b = sapply(SimGraphs3b, function(a) mean(closeness(a)))
+
+Hosts[,"AllPredDegree"] <- AllPredDegrees[as.character(Hosts$Sp)]
+

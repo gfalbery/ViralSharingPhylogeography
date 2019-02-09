@@ -24,6 +24,8 @@ traceplot(BinModel,
 p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
 #p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
 
+d = FinalHostMatrix
+
 MCMCSol <- p$df#[rep(501:1000, 8)+rep(0:7*1000, each = 500),]
 
 N = nrow(d)
@@ -45,7 +47,7 @@ ZMatrixb <- MZ1 + MZ2 %>% as.matrix %>% as("dgCMatrix")
 XBetas <- c("mu_alpha","beta_space","beta_phylo","beta_inter")
 
 ZBetas2 <- colnames(p$df)[which(colnames(p$df)=="alpha_species[1]"):
-                   which(colnames(p$df)=="alpha_species[649]")]
+                            which(colnames(p$df)=="alpha_species[649]")]
 
 # Doing the simulating #####
 
@@ -101,7 +103,7 @@ ZBetas <- c("beta_d_cites_s","beta_domestic")
 
 # Doing the simulating #####
 
-PredList1b <- PredList1c <- list()
+PredList1b <- list()
 
 RowsSampled <- sample(1:nrow(p$df), 1000, replace = F)
 
@@ -131,12 +133,6 @@ for(x in 1:length(RowsSampled)){ # to do something non-specific
   
   PredList1b[[x]] <- BinPred
   
-  BinPred2 <- rbinom(n = N,
-                    prob = logistic(Predictions2),
-                    size  = 1)
-  
-  PredList1c[[x]] <- BinPred2
-  
 }
 
 PredDF1b <- data.frame(PredList1b)
@@ -144,15 +140,11 @@ PredDF1b <- data.frame(PredList1b)
 sapply(PredList1b, Prev) %>% mean
 sapply(PredList1b, Prev) %>% qplot
 
-sapply(PredList1c, Prev) %>% mean
-sapply(PredList1c, Prev) %>% qplot
-
-
 d$PredVirus1b <- apply(PredDF1b, 1, mean)
 
 d$PredVirus1bQ <- cut(d$PredVirus1b,
-                     breaks = c(-1:10/10),
-                     labels = c(0:10/10))
+                      breaks = c(-1:10/10),
+                      labels = c(0:10/10))
 
 # Simulating using the random effect ####
 
@@ -222,10 +214,6 @@ Hosts$PredEigen1b <- PredEigen1b[as.character(Hosts$Sp)]
 
 ggplot(Hosts, aes(Degree, PredDegree1b)) + geom_point() + geom_smooth()
 
-# Packge together species-level varying effect estimates
-
-
-
 # Getting network-level stats
 
 SimGraphList <- list(SimGraphs1, SimGraphs1b)# , SimGraphs2, SimGraphs3, SimGraphs3b)
@@ -235,25 +223,13 @@ Degrees <- lapply(SimGraphList, function(a) sapply(a, function(b) mean(degree(b)
 
 Cluster1 = sapply(SimGraphs1, function(a) transitivity(a)) # all zero, don't bother
 Cluster1b = sapply(SimGraphs1b, function(a) transitivity(a))
-Cluster2 = sapply(SimGraphs2, function(a) transitivity(a))
-Cluster3 = sapply(SimGraphs3, function(a) transitivity(a))
-Cluster3b = sapply(SimGraphs3b, function(a) transitivity(a))
 
 Betweenness1 = sapply(SimGraphs1, function(a) mean(betweenness(a)))
 Betweenness1b = sapply(SimGraphs1b, function(a) mean(betweenness(a)))
-Betweenness2 = sapply(SimGraphs2, function(a) mean(betweenness(a)))
-Betweenness3 = sapply(SimGraphs3, function(a) mean(betweenness(a)))
-Betweenness3b = sapply(SimGraphs3b, function(a) mean(betweenness(a)))
 
 Prev1 = apply(PredDF1, 2, Prev)
 Prev1b = apply(PredDF1b, 2, Prev)
-Prev2 = apply(PredDF2, 2, Prev)
-Prev3 = apply(PredDF3, 2, Prev)
-Prev3b = apply(PredDF3b, 2, Prev)
 
 Closeness1 = sapply(SimGraphs1, function(a) mean(closeness(a)))
 Closeness1b = sapply(SimGraphs1b, function(a) mean(closeness(a)))
-Closeness2 = sapply(SimGraphs2, function(a) mean(closeness(a)))
-Closeness3 = sapply(SimGraphs3, function(a) mean(closeness(a)))
-Closeness3b = sapply(SimGraphs3b, function(a) mean(closeness(a)))
 
