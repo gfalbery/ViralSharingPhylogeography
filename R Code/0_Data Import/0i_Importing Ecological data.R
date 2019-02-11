@@ -4,8 +4,11 @@
 EltonTraits <- read.delim("data/MamFuncDat.txt")
 EltonTraits$Scientific <- EltonTraits$Scientific %>% str_replace(" ","_")
 
-Panth1 <- read.delim("data/panTHERIA_1-0_WR05_Aug2008.txt")
-Panth2 <- read.delim("data/panTHERIA_1-0_WR93_Aug2008.txt")
+Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt")
+Panth2 <- read.delim("data/PanTHERIA_1-0_WR93_Aug2008.txt")
+
+Panth1$MSW05_Binomial <- 
+  Panth1$MSW05_Binomial %>% str_replace(" ", "_")
 
 EcoDistVars <- c(
   "X5.1_AdultBodyMass_g", 

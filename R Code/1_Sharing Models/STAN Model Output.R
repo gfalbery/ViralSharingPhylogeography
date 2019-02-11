@@ -12,17 +12,11 @@ Prev <- function(x){
 logistic <- function(a) exp(a)/(1 + exp(a))
 logit <- function(a) log(a/(1-a))
 
-traceplot(BinModel,
-          pars = c("mu_alpha", 
-                   "beta_d_cites_s", 
-                   "beta_domestic", 
-                   "beta_space",
-                   "beta_phylo",
-                   "beta_inter",
-                   "sigma"))
-
-p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
-#p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
+if(file.exists("~/Albersnet/Bin Model Output.Rdata")) load("~/Albersnet/Bin Model Output.Rdata") else{
+  
+  p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
+  
+}
 
 d = FinalHostMatrix
 
@@ -55,7 +49,7 @@ PredList1 <- list()
 
 RowsSampled <- sample(1:nrow(MCMCSol), 1000, replace = F)
 
-for(x in 1:length(RowsSampled)){ # to do something non-specific
+PredList1 <- parallel::mclapply(1:length(RowsSampled), function(x){
   
   if(x %% 10 == 0) print(x)
   
@@ -73,9 +67,9 @@ for(x in 1:length(RowsSampled)){ # to do something non-specific
                     prob = logistic(Predictions@x),
                     size  = 1)
   
-  PredList1[[x]] <- BinPred
+  BinPred
   
-}
+}, mc.cores = 10)
 
 PredDF1 <- data.frame(PredList1)
 
@@ -107,9 +101,7 @@ PredList1b <- list()
 
 RowsSampled <- sample(1:nrow(p$df), 1000, replace = F)
 
-for(x in 1:length(RowsSampled)){ # to do something non-specific
-  
-  if(x %% 10 == 0) print(x)
+PredList1b <- parallel::mclapply(1:length(RowsSampled), function(x){ # to do something non-specific
   
   XFX <- p$df[RowsSampled[x], XBetas] %>% unlist
   
@@ -131,9 +123,9 @@ for(x in 1:length(RowsSampled)){ # to do something non-specific
                     prob = logistic(Predictions),
                     size  = 1)
   
-  PredList1b[[x]] <- BinPred
+  BinPred
   
-}
+}, mc.cores = 10)
 
 PredDF1b <- data.frame(PredList1b)
 
@@ -148,9 +140,7 @@ d$PredVirus1bQ <- cut(d$PredVirus1b,
 
 # Simulating using the random effect ####
 
-SimNets1 <- SimGraphs1 <- list()
-
-for(i in 1:length(PredList1)){
+SimNets1 <- mclapply(1:length(PredList1), function(i){
   
   if(i%%10==0) print(i)
   
@@ -164,11 +154,15 @@ for(i in 1:length(PredList1)){
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
   
-  SimNets1[[i]] <- as(AssMat, "dgCMatrix")
+  as(AssMat, "dgCMatrix")
   
-  SimGraphs1[[i]] <- graph.adjacency(AssMat, mode = "undirected", diag = F)
+}, mc.cores = 10)
+
+SimGraphs1 <- mclapply(1:length(PredList1), function(i){
   
-}
+  graph.adjacency(SimNets1[[i]], mode = "undirected", diag = F)
+  
+}, mc.cores = 10)
 
 Degdf1 <- sapply(SimGraphs1, function(a) degree(a))# %>% as.data.frame
 Eigendf1 <- sapply(SimGraphs1, function(a) eigen_centrality(a)$vector) #%>% as.data.frame
@@ -181,11 +175,8 @@ Hosts$PredEigen1 <- PredEigen1[as.character(Hosts$Sp)]
 
 # Simulating without the random effect ####
 
-SimNets1b <- SimGraphs1b <- list()
-
-for(i in 1:length(PredList1b)){
+SimNets1b <- mclapply(1:length(PredList1b), function(i){
   
-  if(i%%10==0) print(i)
   
   AssMat <- matrix(NA, 
                    nrow = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)), 
@@ -197,11 +188,15 @@ for(i in 1:length(PredList1b)){
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
   
-  SimNets1b[[i]] <- as(AssMat, "dgCMatrix")
+  as(AssMat, "dgCMatrix")
   
-  SimGraphs1b[[i]] <- graph.adjacency(AssMat, mode = "undirected")
+}, mc.cores = 10)
+
+SimGraphs1b <- mclapply(1:length(PredList1b), function(i){
   
-}
+  graph.adjacency(SimNets1b[[i]], mode = "undirected")
+  
+}, mc.cores = 10)
 
 Degdf1b <- sapply(SimGraphs1b, function(a) degree(a)) %>% as.data.frame
 Eigendf1b <- sapply(SimGraphs1b, function(a) eigen_centrality(a)$vector) %>% as.data.frame
@@ -219,17 +214,20 @@ ggplot(Hosts, aes(Degree, PredDegree1b)) + geom_point() + geom_smooth()
 SimGraphList <- list(SimGraphs1, SimGraphs1b)# , SimGraphs2, SimGraphs3, SimGraphs3b)
 
 Components <- lapply(SimGraphList, function(a) sapply(a, function(b) components(b)$no))
+ComponentSizes <- lapply(SimGraphList, function(a) sapply(a, function(b) components(b)$no))
+lapply(SimGraphs1b[which(Components[[2]]==2)], function(a) which(components(a)$membership==2))
+
 Degrees <- lapply(SimGraphList, function(a) sapply(a, function(b) mean(degree(b))))
 
 Cluster1 = sapply(SimGraphs1, function(a) transitivity(a)) # all zero, don't bother
 Cluster1b = sapply(SimGraphs1b, function(a) transitivity(a))
 
-Betweenness1 = sapply(SimGraphs1, function(a) mean(betweenness(a)))
-Betweenness1b = sapply(SimGraphs1b, function(a) mean(betweenness(a)))
+Betweenness1 = sapply(SimGraphs1, function(a) betweenness(a))
+Betweenness1b = sapply(SimGraphs1b, function(a) betweenness(a))
 
-Prev1 = apply(PredDF1, 2, Prev)
-Prev1b = apply(PredDF1b, 2, Prev)
+Prev1 = sapply(PredList1, Prev)
+Prev1b = sapply(PredList1b, Prev)
 
-Closeness1 = sapply(SimGraphs1, function(a) mean(closeness(a)))
-Closeness1b = sapply(SimGraphs1b, function(a) mean(closeness(a)))
+Closeness1 = sapply(SimGraphs1, function(a) closeness(a))
+Closeness1b = sapply(SimGraphs1b, function(a) closeness(a))
 
