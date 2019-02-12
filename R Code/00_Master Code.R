@@ -2,6 +2,8 @@
 
 library(dplyr)
 
+setwd("/home/gfalbery/Albersnet")
+
 rm(list = ls())
 #file.remove(LargeFiles)
 

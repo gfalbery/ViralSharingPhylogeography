@@ -125,3 +125,4 @@ data {
     
     virus_shared ~ bernoulli_logit(alpha);
   }
+
