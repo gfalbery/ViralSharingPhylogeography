@@ -1,5 +1,7 @@
 # Trying different viral sharing models using DNA and RNA viruses ####
 
+library(igraph); library(tidyverse)
+
 RNAViruses <- Viruses %>% filter(vDNAoRNA == "RNA") %>% select(Sp) %>% unlist
 DNAViruses <- Viruses %>% filter(vDNAoRNA == "DNA") %>% select(Sp) %>% unlist
 
@@ -32,33 +34,20 @@ rownames(DNAHostdf) <- with(DNAHostdf, paste(Sp, Sp2))
 FinalHostMatrix[,"RNA"] <- RNAHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "RNA"]
 FinalHostMatrix[,"DNA"] <- DNAHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "DNA"]
 
-list(
-  ggplot(FinalHostMatrix, aes(Space, RNA)) + geom_point() + 
-    geom_smooth(method = lm) + 
-    geom_smooth(aes(y = DNA), method = lm, colour = "red"),
-  
-  ggplot(FinalHostMatrix, aes(Phylo2, RNA)) + 
-    geom_point() + 
-    geom_smooth(method = lm) + 
-    geom_smooth(aes(y = DNA), method = lm, colour = "red")
-) %>% arrange_ggplot2(ncol = 2)
-
 RNADNAComp <- gather(FinalHostMatrix, key = "Virus.Type", value = "VirLink", RNA, DNA)
 
 list(
   ggplot(RNADNAComp, aes(Space, VirLink, colour = Virus.Type)) + 
-    geom_point(alpha = 0.2) + 
-    geom_smooth(method = lm, fill = NA) +
+    geom_point(alpha = 0.2) + coord_fixed() +
+    geom_smooth(method = lm, fill = NA) + 
     stat_smooth(method = lm, geom = "ribbon", fill = NA, lty = 2) +
-    theme(legend.position = "top") +
-    scale_colour_manual(values = AlberColours[1:2]),
+    theme(legend.position = "top"),
   
   ggplot(RNADNAComp, aes(Phylo2, VirLink, colour = Virus.Type)) + 
-    geom_point(alpha = 0.2) + 
+    geom_point(alpha = 0.2) + coord_fixed() +
     geom_smooth(method = lm, fill = NA) +
     stat_smooth(method = lm, geom = "ribbon", fill = NA, lty = 2) +
-    theme(legend.position = "top") +
-    scale_colour_manual(values = AlberColours[1:2])
+    theme(legend.position = "top")
 ) %>% arrange_ggplot2(ncol = 2)
 
 
