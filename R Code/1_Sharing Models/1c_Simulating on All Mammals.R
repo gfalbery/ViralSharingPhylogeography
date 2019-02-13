@@ -138,7 +138,6 @@ hOrderList <- mclapply(1:length(AllSimGs), function(i){
                                                              Panth1$hOrder == x))
 })
 
-
 #for(x in levels(Panth1$hOrder)){
 #  hOrderList[[x]] <- induced_subgraph(AllSimGs[[1]], 
 #                                      Panth1$hOrder == x)
