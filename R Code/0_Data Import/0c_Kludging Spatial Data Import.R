@@ -257,3 +257,5 @@ VirusRangeAdj2 <- VirusRangeOverlap/(VirusRangeA) # Asymmetrical
 #load("~/Albersnet/data/FullMammalRanges2.Rdata")
 load("~/Albersnet/data/FullPolygons.Rdata")
 load("~/Albersnet/data/FullRangeOverlap.Rdata")
+
+detach(package:raster)

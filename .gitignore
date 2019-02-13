@@ -3,4 +3,9 @@
 .RData
 .Ruserdata
 .RDataTmp
-Bin model.rds
+Bin Model.rds
+DNABinModel.rds
+RNABinModel.rds
+BinModel_Scaled.rds
+core
+

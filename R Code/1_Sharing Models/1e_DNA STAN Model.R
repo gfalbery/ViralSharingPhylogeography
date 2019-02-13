@@ -3,9 +3,10 @@
 
 # STAN Model ####
 
-# nice -n 10 Rscript "R Code/1_Sharing Models/1d_RNA STAN Model.R" # This is the terminal run code
+# Rscript "R Code/1_Sharing Models/1e_DNA STAN Model.R" # This is the terminal run code
 
 source("R Code/00_Master Code.R")
+source("R Code/1_Sharing Models/1d_Separating RNA and DNA.R")
 
 library(rstan); library(tidyverse); library(reskew)
 
@@ -14,7 +15,7 @@ library(rstan); library(tidyverse); library(reskew)
 
 # Import data
 
-f <- FinalHostMatrix %>% filter(!is.na(RNA))
+f <- FinalHostMatrix %>% filter(!is.na(DNA))
 
 # Generate species-level trait data
 
