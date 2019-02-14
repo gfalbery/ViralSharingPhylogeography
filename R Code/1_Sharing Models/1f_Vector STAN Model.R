@@ -3,7 +3,7 @@
 
 # STAN Model ####
 
-# Rscript "R Code/1_Sharing Models/1e_DNA STAN Model.R" # This is the terminal run code
+# Rscript "R Code/1_Sharing Models/1f_Vector STAN Model.R" # This is the terminal run code
 
 source("R Code/00_Master Code.R")
 source("R Code/0_Data Import/0j_Separating RNA and DNA.R")
@@ -15,14 +15,14 @@ library(rstan); library(tidyverse); library(reskew)
 
 # Import data
 
-f <- FinalHostMatrix %>% filter(!is.na(DNA))
+g <- FinalHostMatrix %>% filter(!is.na(Vector))
 
 # Generate species-level trait data
 
 species.traits <- 
-  data.frame(sp = c(f$Sp, f$Sp2),
-             d_cites = c(log(f$hDiseaseZACites+1),log(f$hDiseaseZACites.Sp2+1)),
-             domestic = c(f$hDom, f$hDom.Sp2)) %>%
+  data.frame(sp = c(g$Sp, g$Sp2),
+             d_cites = c(log(g$hDiseaseZACites+1),log(g$hDiseaseZACites.Sp2+1)),
+             domestic = c(g$hDom, g$hDom.Sp2)) %>%
   arrange(sp) %>%
   distinct() %>%
   mutate(sp = as.factor(sp),
@@ -30,24 +30,24 @@ species.traits <-
 
 # Get Sp and Sp2 in "d" on the same factor levels
 
-f$Sp <- factor(as.character(f$Sp),
-               levels = union(f$Sp, f$Sp2)
+g$Sp <- factor(as.character(g$Sp),
+               levels = union(g$Sp, g$Sp2)
 )
 
-f$Sp2 <- factor(as.character(f$Sp2),
-                levels = union(f$Sp, f$Sp2)
+g$Sp2 <- factor(as.character(g$Sp2),
+                levels = union(g$Sp, g$Sp2)
 )
 
 # Generate Stan data
 stan.data <- list(
   
-  N = nrow(f),
+  N = nrow(g),
   
-  DNAvirus_shared = f$DNA,
+  DNAvirus_shared = g$Vector,
   
-  space_s = c(scale(f$Space)),
+  space_s = c(scale(g$Space)),
   
-  phylo_s = c(scale(f$Phylo2)),
+  phylo_s = c(scale(g$Phylo2)),
   
   #domdom = d$DomDom,
   
@@ -55,11 +55,11 @@ stan.data <- list(
   
   domestic = species.traits$domestic,
   
-  species1 = to_stan_factor(f$Sp),
-  species2 = to_stan_factor(f$Sp2),
+  species1 = to_stan_factor(g$Sp),
+  species2 = to_stan_factor(g$Sp2),
   
-  N_species = stan_factor_count(f$Sp2)
-) %>% plyr::mutate(space_phylo_s = c(scale(f$Space*f$Phylo2)))
+  N_species = stan_factor_count(g$Sp2)
+) %>% plyr::mutate(space_phylo_s = c(scale(g$Space*g$Phylo2)))
 
 # Set Stan model parameters
 
@@ -70,7 +70,7 @@ cores <- 8
 adapt_delta <- 0.99
 stepsize <- 0.5
 
-DNABinModel <- 
+VectorBinModel <- 
   stan(file = "R Code/1_Sharing Models/DNABinModel.stan",
        data = stan.data,
        iter = iter, warmup = warmup,
@@ -80,6 +80,6 @@ DNABinModel <-
        )
   )
 
-saveRDS(DNABinModel, 
-        file = "DNABinModel.rds")
+saveRDS(VectorBinModel, 
+        file = "VectorBinModel.rds")
 

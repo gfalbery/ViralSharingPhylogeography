@@ -8,4 +8,6 @@ DNABinModel.rds
 RNABinModel.rds
 BinModel_Scaled.rds
 core
+VectorBinModel.rds
+NVectorBinModel.rds
 

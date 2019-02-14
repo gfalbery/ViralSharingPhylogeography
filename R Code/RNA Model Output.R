@@ -10,11 +10,21 @@ if(file.exists("~/Albersnet/RNAModelOutput.Rdata")) load("~/Albersnet/RNAModelOu
   save(q, file = "~/Albersnet/RNAModelOutput.Rdata")
 }
 
-UpperRNA <- which(upper.tri(matrix(NA, ncol = nlevels(e$Sp), nrow = nlevels(e$Sp2))))
-
 MCMCSol <- q$df#[rep(501:1000, 8)+rep(0:7*1000, each = 500),]
 
+e <- FinalHostMatrix %>% filter(!is.na(RNA))
+
+e$Sp <- factor(as.character(e$Sp),
+               levels = union(e$Sp, e$Sp2)
+)
+
+e$Sp2 <- factor(as.character(e$Sp2),
+                levels = union(e$Sp, e$Sp2)
+)
+
 N = nrow(e)
+
+UpperRNA <- which(upper.tri(matrix(NA, ncol = nlevels(e$Sp), nrow = nlevels(e$Sp2)), diag = T))
 
 e$Space_Phylo <- scale(e$Space*e$Phylo2)
 
@@ -136,7 +146,7 @@ RNASimNets1 <- mclapply(1:length(RNAPredList1), function(i){
   AssMat[-which(1:length(AssMat)%in%UpperRNA)] <- round(RNAPredList1[[i]])
   AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
   diag(AssMat) <- apply(AssMat,1,function(a) length(a[!is.na(a)&a>0]))
-  dimnames(AssMat) <- list(union(e$Sp2),
+  dimnames(AssMat) <- list(union(e$Sp,e$Sp2),
                            union(e$Sp,e$Sp2))
   
   as(AssMat, "dgCMatrix")

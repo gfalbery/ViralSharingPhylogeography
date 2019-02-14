@@ -29,8 +29,9 @@ for(a in 1:5){#length(names(VirusAssocs))){
       FocalNet <- AllSims[[x]] %>% as.matrix
       
       pHosts2 <- intersect(pHosts, rownames(FocalNet))
+      pHosts3 <- setdiff(colnames(FocalNet), pHosts2)
       
-      Estimates <- FocalNet[pHosts2,]
+      Estimates <- FocalNet[pHosts2,pHosts3]
       
       if(is.null(dim(Estimates))) Estimates <- rbind(Estimates, Estimates)/2
       
@@ -69,7 +70,68 @@ PredHostPolygons[[1]] %>% #filter(ResCount>0.9) %>%
   geom_polygon(aes(fill = Host, alpha = ResCount)) +
   coord_fixed() + ggtitle(names(PredHostPolygons)[1]) #facet_wrap(~Host)
 
+# Doing this to validate rather than predict ####
+
+HostPrediction <- list()
+
+a
+
+for(a in a:25){#length(names(VirusAssocs))){
+  
+  print(names(VirusAssocs)[a])
+  
+  pHosts <- VirusAssocs[[a]]
+  
+  pHosts <- intersect(pHosts, AllMammals)
+  
+  if(length(pHosts)>0){
+    
+    EstList <- parallel::mclapply(1:length(AllSims), function(x){
+      
+      FocalNet <- AllSims[[x]] %>% as.matrix
+      
+      pHosts2 <- intersect(pHosts, rownames(FocalNet))
+      
+      ValidEst <- list()
+      
+      for(b in pHosts2){
+        
+        pHosts4 <- setdiff(pHosts2, b)
+        
+        Estimates <- FocalNet[pHosts4, ]
+        
+        if(is.null(dim(Estimates))) Estimates <- rbind(Estimates, Estimates)/2
+        
+        
+        Ests <- data.frame(Sp = names(sort(colSums(Estimates))),
+                           Count = sort(colSums(Estimates))/nrow(Estimates),
+                           Iteration = x) %>%
+          mutate(Focal = ifelse(Sp==b, 1, 0))
+        
+        rownames(Ests) <- Ests$Sp
+        
+        ValidEst[[b]] <- Ests
+        
+      }
+      
+      ValidEst
+      
+    }, mc.cores = 20)
+    
+    HostPrediction[[names(VirusAssocs)[a]]] <- EstList
+    
+  } else HostPrediction[[names(VirusAssocs)[a]]] <- NA
+}
 
 
+Valid1 <- map(EstList, "Chlorocebus_aethiops") %>% bind_rows()
 
+BarGraph(Valid1, "Sp","Count", "Focal", order = T) + geom_point(aes(colour = Focal, size = Focal))
 
+Valid2 <- map(EstList, VirusAssocs[[2]][2]) %>% bind_rows()
+
+BarGraph(Valid2, "Sp","Count", "Focal", order = T) + geom_point(aes(colour = Focal, size = Focal))
+
+Validation <- lapply(HostPrediction, function(a) bind_rows(map(a, 1)))
+
+a = HostPredi

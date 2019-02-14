@@ -10,13 +10,25 @@ if(file.exists("~/Albersnet/DNAModelOutput.Rdata")) load("~/Albersnet/DNAModelOu
   save(r, file = "~/Albersnet/DNAModelOutput.Rdata")
 }
 
+f <- FinalHostMatrix %>% filter(!is.na(DNA))
+
+f$Sp <- factor(as.character(f$Sp),
+               levels = union(f$Sp, f$Sp2)
+)
+
+f$Sp2 <- factor(as.character(f$Sp2),
+                levels = union(f$Sp, f$Sp2)
+)
+
 UpperDNA <- which(upper.tri(matrix(NA, ncol = nlevels(f$Sp), nrow = nlevels(f$Sp2))))
 
 MCMCSol <- r$df#[rep(501:1000, 8)+rep(0:7*1000, each = 500),]
 
 N = nrow(f)
 
-f$Space_Phylo <- f$Space*f$Phylo2
+f$Space_Phylo <- scale(f$Space*f$Phylo2)
+f$Space <- scale(f$Space)
+f$Space_Phylo <- scale(f$Phylo2)
 
 f <- f %>% mutate(DCites = (log(hDiseaseZACites + 1)),#-mean(species.traits$d_cites))/sd(species.traits$d_cites), 
                   DCites.Sp2 = (log(hDiseaseZACites.Sp2 + 1)))#-mean(species.traits$d_cites))/sd(species.traits$d_cites))
@@ -33,7 +45,7 @@ ZMatrixb <- MZ1 + MZ2 %>% as.matrix %>% as("dgCMatrix")
 XBetas <- c("mu_alpha","beta_space","beta_phylo","beta_inter")
 
 ZBetas2 <- colnames(r$df)[which(colnames(r$df)=="alpha_species[1]"):
-                            which(colnames(r$df)=="alpha_species[649]")]
+                            which(colnames(r$df)=="alpha_species[164]")]
 
 # Doing the DNASimulating #####
 
@@ -133,7 +145,7 @@ DNASimNets1 <- mclapply(1:length(DNAPredList1), function(i){
   AssMat[-which(1:length(AssMat)%in%UpperDNA)] <- round(DNAPredList1[[i]])
   AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
   diag(AssMat) <- apply(AssMat,1,function(a) length(a[!is.na(a)&a>0]))
-  dimnames(AssMat) <- list(union(f$Sp2),
+  dimnames(AssMat) <- list(union(f$Sp,f$Sp2),
                            union(f$Sp,f$Sp2))
   
   as(AssMat, "dgCMatrix")
