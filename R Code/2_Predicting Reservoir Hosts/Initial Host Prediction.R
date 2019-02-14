@@ -74,9 +74,9 @@ PredHostPolygons[[1]] %>% #filter(ResCount>0.9) %>%
 
 HostPrediction <- list()
 
-a
+a = 25
 
-for(a in a:25){#length(names(VirusAssocs))){
+for(a in a:length(names(VirusAssocs))){
   
   print(names(VirusAssocs)[a])
   
@@ -98,10 +98,11 @@ for(a in a:25){#length(names(VirusAssocs))){
         
         pHosts4 <- setdiff(pHosts2, b)
         
-        Estimates <- FocalNet[pHosts4, ]
+        pHosts3 <- setdiff(colnames(FocalNet), pHosts4)
+        
+        Estimates <- FocalNet[pHosts4, pHosts3]
         
         if(is.null(dim(Estimates))) Estimates <- rbind(Estimates, Estimates)/2
-        
         
         Ests <- data.frame(Sp = names(sort(colSums(Estimates))),
                            Count = sort(colSums(Estimates))/nrow(Estimates),
@@ -123,15 +124,39 @@ for(a in a:25){#length(names(VirusAssocs))){
   } else HostPrediction[[names(VirusAssocs)[a]]] <- NA
 }
 
+# Trying it out ####
 
-Valid1 <- map(EstList, "Chlorocebus_aethiops") %>% bind_rows()
+Valid <- HostPrediction %>% lapply(function(a){
+  
+  if(!is.null(names(a[[1]]))){
+    
+    b = map(names(a[[1]]), function(b) map(a, b) %>% bind_rows) %>% bind_rows
+    
+    c = b %>% group_by(Sp, Focal) %>% dplyr::summarise(Count = mean(Count)) %>% slice(order(Count, decreasing = T)) %>%
+      mutate(Focal = factor(Focal))
+    
+  } else c = NA
+  
+  return(c)
+})
 
-BarGraph(Valid1, "Sp","Count", "Focal", order = T) + geom_point(aes(colour = Focal, size = Focal))
+save(Valid, file = "ModelValidation.Rdata")
 
-Valid2 <- map(EstList, VirusAssocs[[2]][2]) %>% bind_rows()
+ValidSummary <- data.frame(
+  
+  NHosts = sapply(VirusAssocs[1:length(HostPrediction)], length)
+  
+  
+)
 
-BarGraph(Valid2, "Sp","Count", "Focal", order = T) + geom_point(aes(colour = Focal, size = Focal))
+KeepPredictions <- (1:length(Valid))[-which(sapply(Valid, function(a) any(is.na(a))))]
 
-Validation <- lapply(HostPrediction, function(a) bind_rows(map(a, 1)))
+KeepPredictions %>% 
+  lapply(function(a) ggplot(Valid[[a]], aes(Focal, Count, colour = Focal)) + 
+           ggforce::geom_sina() + theme(legend.position = "none") +
+           ggtitle(names(VirusAssocs)[[a]])) %>% 
+  arrange_ggplot2(ncol = 5)
 
-a = HostPredi
+
+
+
