@@ -25,17 +25,17 @@ names(Synonyms2) <- Synonyms$Sp
 "Bos_frontalis" %in% rownames(FullSTMatrix)
 "Bos_grunniens"%in% rownames(FullSTMatrix)
 AbsentHosts[5] # Absent
-AbsentHosts[6] # Absent (but domestic goat == wild?)
+"Capra_hircus" %in% rownames(FullSTMatrix)      # Domestic goat !!!
 "Hexaprotodon_liberiensis" %in% rownames(FullSTMatrix)
 "Equus_burchellii" %in% rownames(FullSTMatrix)
 "Oryzomys_alfaroi"  %in% rownames(FullSTMatrix)
 "Oryzomys_laticeps" %in% rownames(FullSTMatrix)
 "Oryzomys_megacephalus" %in% rownames(FullSTMatrix)
 "Callithrix_argentata" %in% rownames(FullSTMatrix)
-AbsentHosts[13] # New species distinguished oop # "Miniopterus_schreibersii"%in% rownames(FullSTMatrix)
+"Miniopterus_schreibersii"%in% rownames(FullSTMatrix) # New species discovered; keep this one!
 "Myotis_ricketti" %in% rownames(FullSTMatrix)
 "Oryzomys_albigularis" %in% rownames(FullSTMatrix)
-AbsentHosts[16] # Absent (but domestic sheep??) "Ovis_aries" %in% rownames(FullSTMatrix)
+"Ovis_aries" %in% rownames(FullSTMatrix) # Sheep!
 "Piliocolobus_badius"%in%rownames(FullSTMatrix)
 "Piliocolobus_rufomitratus" %in%rownames(FullSTMatrix)
 "Lycalopex_gymnocercus"  %in%rownames(FullSTMatrix)
@@ -47,21 +47,21 @@ AbsentHosts[16] # Absent (but domestic sheep??) "Ovis_aries" %in% rownames(FullS
 
 NameReplace <- c(
   "Micaelamys_namaquensis",
-  AbsentHosts[2],
+  "Akodon_paranaensis",
   "Bos_frontalis",
   "Bos_grunniens",
-  AbsentHosts[5], # Absent
-  AbsentHosts[6], # Absent (but domestic goat == wild?)
+  "Bubalus_arnee", # Absent
+  "Capra_hircus",
   "Hexaprotodon_liberiensis",
   "Equus_burchellii",
   "Oryzomys_alfaroi" ,
   "Oryzomys_laticeps",
   "Oryzomys_megacephalus",
   "Callithrix_argentata",
-  AbsentHosts[13], # New species distinguished oop # "Miniopterus_schreibersii"%in% rownames(FullSTMatrix)
+  "Miniopterus_schreibersii",
   "Myotis_ricketti",
   "Oryzomys_albigularis",
-  AbsentHosts[16], # Absent (but domestic sheep??) "Ovis_aries" %in% rownames(FullSTMatrix)
+  "Ovis_aries",
   "Piliocolobus_badius",
   "Piliocolobus_rufomitratus" ,
   "Lycalopex_gymnocercus" ,

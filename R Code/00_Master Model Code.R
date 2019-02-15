@@ -13,7 +13,6 @@ StartTime <- Sys.time()
 #source(paste0(CodeRoot2,"/","1a_STAN Model.R"))
 source(paste0(CodeRoot2,"/","1b_STAN Simulating.R"))
 source(paste0(CodeRoot2,"/","1c_Simulating on All Mammals.R"))
-source(paste0(CodeRoot2,"/","1d_Separating RNA and DNA.R"))
 
 EndTime <- Sys.time()
 

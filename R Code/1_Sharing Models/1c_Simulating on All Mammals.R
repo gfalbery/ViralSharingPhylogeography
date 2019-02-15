@@ -3,6 +3,12 @@
 
 library(MCMCglmm); library(tidyverse); library(Matrix); library(parallel)
 
+if(file.exists("~/Albersnet/Bin Model Output.Rdata")) load("~/Albersnet/Bin Model Output.Rdata") else{
+  
+  p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
+  
+}
+
 invlogit <- function(a) exp(a)/(1 + exp(a))
 logit <- function(a) log(a/(1-a))
 

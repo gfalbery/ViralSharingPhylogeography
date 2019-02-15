@@ -94,3 +94,39 @@ FinalHostMatrix2 <- HostMatrixdf[-UpperHosts,]
 FinalHostMatrix2$Phylo <- FinalHostMatrix2$Phylo2
 FinalHostMatrix2$MinDCites <- log(FinalHostMatrix2$MinDCites + 1)
 FinalHostMatrix2NoSpace <- FinalHostMatrix2 %>% filter(Space>0)
+
+# Replacing absent names in the full ST matrix ####
+
+AbsentHosts <- FHN[which(!FHN%in%AllMammals)]
+
+NameReplace <- c(
+  "Micaelamys_namaquensis",
+  "Akodon_paranaensis",
+  "Bos_frontalis",
+  "Bos_grunniens",
+  "Bubalus_arnee", # Absent
+  "Capra_hircus",
+  "Hexaprotodon_liberiensis",
+  "Equus_burchellii",
+  "Oryzomys_alfaroi" ,
+  "Oryzomys_laticeps",
+  "Oryzomys_megacephalus",
+  "Callithrix_argentata",
+  "Miniopterus_schreibersii",
+  "Myotis_ricketti",
+  "Oryzomys_albigularis",
+  "Ovis_aries",
+  "Piliocolobus_badius",
+  "Piliocolobus_rufomitratus" ,
+  "Lycalopex_gymnocercus" ,
+  "Rhinolophus_hildebrandtii",
+  "Oryzomys_angouya",
+  "Mops_condylurus",
+  "Chaerephon_plicatus",
+  "Chaerephon_pumilus",
+  "Taurotragus_oryx")
+
+names(NameReplace) <- AbsentHosts
+
+rownames(FullSTMatrix) <- colnames(FullSTMatrix) <- sapply(rownames(FullSTMatrix), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
+
