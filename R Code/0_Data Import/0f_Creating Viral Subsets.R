@@ -1,4 +1,6 @@
-# Trying different viral sharing models using DNA and RNA viruses ####
+# Creating viral subsets to elaborate on sharing patterns ####
+
+# DNA and RNA viruses ####
 
 library(igraph); library(tidyverse); library(ggregplot)
 
@@ -34,25 +36,7 @@ rownames(DNAHostdf) <- with(DNAHostdf, paste(Sp, Sp2))
 FinalHostMatrix[,"RNA"] <- RNAHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "RNA"]
 FinalHostMatrix[,"DNA"] <- DNAHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "DNA"]
 
-RNADNAComp <- gather(FinalHostMatrix, key = "Virus.Type", value = "VirLink", RNA, DNA)
-#
-#list(
-#  ggplot(RNADNAComp, aes(Space, VirLink, colour = Virus.Type)) + 
-#    geom_point(alpha = 0.2) + coord_fixed() +
-#    geom_smooth(method = lm, fill = NA) + 
-#    stat_smooth(method = lm, geom = "ribbon", fill = NA, lty = 2) +
-#    theme(legend.position = "top"),
-#  
-#  ggplot(RNADNAComp, aes(Phylo2, VirLink, colour = Virus.Type)) + 
-#    geom_point(alpha = 0.2) + coord_fixed() +
-#    geom_smooth(method = lm, fill = NA) +
-#    stat_smooth(method = lm, geom = "ribbon", fill = NA, lty = 2) +
-#    theme(legend.position = "top")
-#) %>% arrange_ggplot2(ncol = 2)
-
-# Trying different viral sharing models using DNA and RNA viruses ####
-
-library(igraph); library(tidyverse)
+# Vector-Borne ####
 
 VectorViruses <- Viruses %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "Y") %>% select(Sp) %>% unlist
 MVector <- M[VectorViruses,]
@@ -70,6 +54,8 @@ rownames(VectorHostdf) <- with(VectorHostdf, paste(Sp, Sp2))
 
 FinalHostMatrix[,"Vector"] <- VectorHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "Vector"]
 
+# Non-Vector-Borne ####
+
 NVectorViruses <- Viruses %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "N") %>% select(Sp) %>% unlist
 MNVector <- M[NVectorViruses,]
 MNVector <- MNVector[,which(colSums(MNVector)>0)]
@@ -84,46 +70,6 @@ NVectorHostdf <- NVectorHostAdj %>% reshape2::melt() %>%
 rownames(NVectorHostdf) <- with(NVectorHostdf, paste(Sp, Sp2))
 
 FinalHostMatrix[,"NVector"] <- NVectorHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "NVector"]
-
-VectorComp <- gather(FinalHostMatrix, key = "Virus.Type", value = "VirLink", Vector, NVector)
-
-
-list(
-  ggplot(VectorComp, aes(Space, VirLink, colour = Virus.Type)) + 
-    geom_point(alpha = 0.2) + coord_fixed() +
-    geom_smooth(method = lm, fill = NA) + 
-    stat_smooth(method = lm, geom = "ribbon", fill = NA, lty = 2) +
-    theme(legend.position = "top"),
-  
-  ggplot(VectorComp, aes(Phylo2, VirLink, colour =  Virus.Type)) + 
-    geom_point(alpha = 0.2) + coord_fixed() +
-    geom_smooth(method = lm, fill = NA) +
-    stat_smooth(method = lm, geom = "ribbon", fill = NA, lty = 2) +
-    theme(legend.position = "top")
-  
-) %>% arrange_ggplot2(ncol = 2)
-
-# Lumping sharing DNA-borne viruses in #####
-
-df3 <- rbind(RNADNAComp[RNADNAComp$Virus.Type=="DNA",c("Space","Phylo2","Virus.Type","VirLink")],
-             VectorComp[,c("Space","Phylo2","Virus.Type","VirLink")])
-
-list(
-  ggplot(df3, aes(Space, VirLink, colour = Virus.Type)) + 
-    geom_point(alpha = 0.2) + coord_fixed() +
-    geom_smooth(method = lm, fill = NA) + 
-    stat_smooth(method = lm, geom = "ribbon", fill = NA, lty = 2) +
-    theme(legend.position = "top"),
-  
-  ggplot(df3, aes(Phylo2, VirLink, colour =  Virus.Type)) + 
-    geom_point(alpha = 0.2) + coord_fixed() +
-    geom_smooth(method = lm, fill = NA) +
-    stat_smooth(method = lm, geom = "ribbon", fill = NA, lty = 2) +
-    theme(legend.position = "top")
-  
-) %>% arrange_ggplot2(ncol = 2)
-
-
 
 
 

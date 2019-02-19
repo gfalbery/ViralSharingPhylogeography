@@ -10,4 +10,8 @@ BinModel_Scaled.rds
 core
 VectorBinModel.rds
 NVectorBinModel.rds
-
+AllSims.Rdata
+AllPredDegree.Rdata
+DNAGAM.rds
+SubModelGenData.Rdata
+SubModels.Rdata

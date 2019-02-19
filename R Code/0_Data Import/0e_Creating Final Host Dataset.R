@@ -95,8 +95,14 @@ FinalHostMatrix2$Phylo <- FinalHostMatrix2$Phylo2
 FinalHostMatrix2$MinDCites <- log(FinalHostMatrix2$MinDCites + 1)
 FinalHostMatrix2NoSpace <- FinalHostMatrix2 %>% filter(Space>0)
 
+# Establishing all mammal data ####
+
+
+
 # Replacing absent names in the full ST matrix ####
 
+AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
+AllMammals <- AllMammals[order(AllMammals)]
 AbsentHosts <- FHN[which(!FHN%in%AllMammals)]
 
 NameReplace <- c(

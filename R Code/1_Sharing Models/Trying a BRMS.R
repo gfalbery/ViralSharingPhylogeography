@@ -1,7 +1,6 @@
 
 # Fitting STAN Model in BRMS
 
-
 source("R Code/00_Master Code.R")
 source("R Code/0_Data Import/0j_Separating RNA and DNA.R")
 
@@ -59,16 +58,67 @@ m2 <- brm(DNA ~ space_s + phylo_s + space_phylo_s +
           adapt_delta = 0.95)
 
 
-m3 <- lmer(DNA ~ space_s + phylo_s + space_phylo_s + 
-             (1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
-           data = f)
+m3 <- brm(DNA ~ s(space_s) + s(phylo_s) + t2(space_s,phylo_s) + 
+            (1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
+          data = f, 
+          family = bernoulli(), 
+          cores = 8, 
+          seed = 17,
+          iter = 1000, 
+          warmup = 250, 
+          thin = 10, 
+          refresh = 0,
+          adapt_delta = 0.95)
 
-# for GAM
-m2 <- brm(bf(accel ~ s(times)),
-          data = mcycle, family = gaussian(), cores = 4, seed = 17,
-          iter = 4000, warmup = 1000, thin = 10, refresh = 0,
-          control = list(adapt_delta = 0.99))
+m3.2 <- brm(DNA ~ t2(space_s,phylo_s), #+ 
+            #(1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
+            data = f, 
+            family = bernoulli(), 
+            cores = 8, 
+            seed = 17,
+            iter = 1000, 
+            warmup = 250, 
+            thin = 10, 
+            refresh = 0)
 
+m3.3 <- brm(DNA ~ t2(space_s,phylo_s) + 
+              (1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
+            data = f, 
+            family = bernoulli(), 
+            cores = 8, 
+            seed = 17,
+            iter = 1000, 
+            warmup = 250, 
+            thin = 10, 
+            refresh = 0)
 
+saveRDS(m3.3, file = "DNAGAM.rds")
 
+VectorGAM <- brm(Vector ~ t2(space_s,phylo_s) + 
+                   (1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
+                 data = FinalHostMatrix %>% filter(!is.na(Vector)), 
+                 family = bernoulli(), 
+                 cores = 8, 
+                 seed = 17,
+                 iter = 1000, 
+                 warmup = 250, 
+                 thin = 10, 
+                 refresh = 0)
+
+saveRDS(VectorGAM, file = "VectorGAM.rds")
+
+NVectorGAM <- brm(NVector ~ t2(space_s,phylo_s) + 
+                    (1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
+                  data = FinalHostMatrix %>% filter(!is.na(NVector)), 
+                  family = bernoulli(), 
+                  cores = 8, 
+                  seed = 17,
+                  iter = 1000, 
+                  warmup = 250, 
+                  thin = 10, 
+                  refresh = 0)
+
+saveRDS(NVectorGAM, file = "NVectorGAM.rds")
+
+plot(marginal_smooths(m3.3), ask = FALSE)
 
