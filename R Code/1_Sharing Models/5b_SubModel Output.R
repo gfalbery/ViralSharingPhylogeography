@@ -3,10 +3,11 @@
 
 library(MCMCglmm)
 
-RNABinModel <- readRDS("~/Albersnet/RNABinModel.rds")
-DNABinModel <- readRDS("~/Albersnet/DNABinModel.rds")
-VectorBinModel <- readRDS("~/Albersnet/VectorBinModel.rds")
-NVectorBinModel <- readRDS("~/Albersnet/NVectorBinModel.rds")
+BinModel <- readRDS("~/Albersnet/Model Files/RNABinModel.rds")
+RNABinModel <- readRDS("~/Albersnet/Model Files/RNABinModel.rds")
+DNABinModel <- readRDS("~/Albersnet/Model Files/DNABinModel.rds")
+VectorBinModel <- readRDS("~/Albersnet/Model Files/VectorBinModel.rds")
+NVectorBinModel <- readRDS("~/Albersnet/Model Files/NVectorBinModel.rds")
 
 list(
   stan_plot(RNABinModel, XBetas[2:4]),
@@ -15,18 +16,19 @@ list(
   stan_plot(NVectorBinModel, XBetas[2:4])
 ) %>% arrange_ggplot2
 
-
-load("~/Albersnet/Bin Model Output.Rdata")
-load("~/Albersnet/NVectorModelOutput.Rdata")
-load("~/Albersnet/VectorModelOutput.Rdata")
-load("~/Albersnet/DNAModelOutput.Rdata")
+load("~/Albersnet/Output Files/Bin Model Output.Rdata")
+load("~/Albersnet/Output Files/RNAModelOutput.Rdata")
+load("~/Albersnet/Output Files/NVectorModelOutput.Rdata")
+load("~/Albersnet/Output Files/VectorModelOutput.Rdata")
+load("~/Albersnet/Output Files/DNAModelOutput.Rdata")
 
 SubModels <- list(Full = p,
+                  RNA = q,
                   Vector = s,
                   NVector = t,
                   DNA = r)
 
-save(SubModels, file = "SubModels.Rdata")
+save(SubModels, file = "Output Files/SubModels.Rdata")
 
 SolList <- map(SubModels, "df")
 
@@ -46,10 +48,13 @@ Estimates <- lapply(SolList, function(a){
 
 Estdf <- Estimates %>% bind_rows()
 
-Models <- c("Full", "Vector", "NVector", "DNA")
+Models <- c("Full", "RNA", "Vector", "NVector", "DNA")
 
-Estdf$Model <- rep(Models, sapply(Estimates, nrow))
+Estdf$Model <- factor(rep(Models, sapply(Estimates, nrow)), levels = Models)
 Estdf$Var <- SolList %>% lapply(colnames) %>% unlist
+
+XBetas <- c("mu_alpha","beta_space","beta_phylo","beta_inter")
+ZBetas <- c("beta_d_cites_s","beta_domestic")
 
 ggplot(Estdf, aes(x = Var, y = Estimate, 
                   colour = Model)) + 
@@ -60,8 +65,7 @@ ggplot(Estdf, aes(x = Var, y = Estimate,
                 size = 0.3, width = 0) + 
   geom_hline(aes(yintercept = 0), lty = 2) + 
   labs(x = NULL) + coord_flip() + 
-  scale_x_discrete(limits = c(XBetas,ZBetas))
-
+  scale_x_discrete(limits = c(XBetas, ZBetas))
 
 STANfx <- function(which = 1, var){
   
