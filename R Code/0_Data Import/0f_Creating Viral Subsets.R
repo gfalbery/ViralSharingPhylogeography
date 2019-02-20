@@ -33,8 +33,11 @@ DNAHostdf <- DNAHostAdj %>% reshape2::melt() %>%
 rownames(RNAHostdf) <- with(RNAHostdf, paste(Sp, Sp2))
 rownames(DNAHostdf) <- with(DNAHostdf, paste(Sp, Sp2))
 
-FinalHostMatrix[,"RNA"] <- RNAHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "RNA"]
-FinalHostMatrix[,"DNA"] <- DNAHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "DNA"]
+FinalHostMatrix <- FinalHostMatrix %>% left_join(RNAHostdf,
+                                                 by = c("Sp","Sp2"), all.x = T)
+
+FinalHostMatrix <- FinalHostMatrix %>% left_join(DNAHostdf,
+                                                 by = c("Sp","Sp2"), all.x = T)
 
 # Vector-Borne ####
 
@@ -52,8 +55,6 @@ VectorHostdf <- VectorHostAdj %>% reshape2::melt() %>%
 
 rownames(VectorHostdf) <- with(VectorHostdf, paste(Sp, Sp2))
 
-FinalHostMatrix[,"Vector"] <- VectorHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "Vector"]
-
 # Non-Vector-Borne ####
 
 NVectorViruses <- Viruses %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "N") %>% select(Sp) %>% unlist
@@ -69,8 +70,11 @@ NVectorHostdf <- NVectorHostAdj %>% reshape2::melt() %>%
 
 rownames(NVectorHostdf) <- with(NVectorHostdf, paste(Sp, Sp2))
 
-FinalHostMatrix[,"NVector"] <- NVectorHostdf[with(FinalHostMatrix, paste(Sp,Sp2)), "NVector"]
+FinalHostMatrix <- FinalHostMatrix %>% left_join(VectorHostdf,
+                                                 by = c("Sp","Sp2"), all.x = T)
 
+FinalHostMatrix <- FinalHostMatrix %>% left_join(NVectorHostdf,
+                                                 by = c("Sp","Sp2"), all.x = T)
 
 
 
