@@ -86,18 +86,7 @@ FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 
-FinalHostMatrixNoSpace <- FinalHostMatrix %>% filter(Space>0) %>% droplevels
-FinalHostMatrixNoSpace$Sp <- factor(FinalHostMatrixNoSpace$Sp, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
-FinalHostMatrixNoSpace$Sp2 <- factor(FinalHostMatrixNoSpace$Sp2, levels = union(FinalHostMatrixNoSpace$Sp,FinalHostMatrixNoSpace$Sp2))
-
-FinalHostMatrix2 <- HostMatrixdf[-UpperHosts,]
-FinalHostMatrix2$Phylo <- FinalHostMatrix2$Phylo2
-FinalHostMatrix2$MinDCites <- log(FinalHostMatrix2$MinDCites + 1)
-FinalHostMatrix2NoSpace <- FinalHostMatrix2 %>% filter(Space>0)
-
 # Establishing all mammal data ####
-
-
 
 # Replacing absent names in the full ST matrix ####
 

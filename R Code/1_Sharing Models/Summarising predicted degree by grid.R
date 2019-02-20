@@ -37,6 +37,10 @@ for(x in 0:400){
 
 FullRangedf$AllPredDegree[(10000*(x-1)):nrow(FullRangedf)] <- AllPredDegrees[as.character(FullRangedf$Host)[1+(10000*(x-1)):nrow(FullRangedf)]]
 
+AllDF <- data.frame(Host = names(AllPredDegrees), AllPredDegree = AllPredDegrees)
+
+FullRangedf <- FullRangedf %>% left_join()
+
 OutDegrees <- Panth1$OutDegree
 names(OutDegrees) <- Panth1$Sp
 

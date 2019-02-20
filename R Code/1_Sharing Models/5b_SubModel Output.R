@@ -3,10 +3,11 @@
 
 library(MCMCglmm)
 
-RNABinModel <- readRDS("~/Albersnet/RNABinModel.rds")
-DNABinModel <- readRDS("~/Albersnet/DNABinModel.rds")
-VectorBinModel <- readRDS("~/Albersnet/VectorBinModel.rds")
-NVectorBinModel <- readRDS("~/Albersnet/NVectorBinModel.rds")
+BinModel <- readRDS("~/Albersnet/Model Files/RNABinModel.rds")
+RNABinModel <- readRDS("~/Albersnet/Model Files/RNABinModel.rds")
+DNABinModel <- readRDS("~/Albersnet/Model Files/DNABinModel.rds")
+VectorBinModel <- readRDS("~/Albersnet/Model Files/VectorBinModel.rds")
+NVectorBinModel <- readRDS("~/Albersnet/Model Files/NVectorBinModel.rds")
 
 list(
   stan_plot(RNABinModel, XBetas[2:4]),
@@ -16,12 +17,14 @@ list(
 ) %>% arrange_ggplot2
 
 
-load("~/Albersnet/Bin Model Output.Rdata")
-load("~/Albersnet/NVectorModelOutput.Rdata")
-load("~/Albersnet/VectorModelOutput.Rdata")
-load("~/Albersnet/DNAModelOutput.Rdata")
+load("~/Albersnet/Output Files/Bin Model Output.Rdata")
+load("~/Albersnet/Output Files/RNAModelOutput.Rdata")
+load("~/Albersnet/Output Files/NVectorModelOutput.Rdata")
+load("~/Albersnet/Output Files/VectorModelOutput.Rdata")
+load("~/Albersnet/Output Files/DNAModelOutput.Rdata")
 
 SubModels <- list(Full = p,
+                  RNA = q,
                   Vector = s,
                   NVector = t,
                   DNA = r)

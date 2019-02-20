@@ -30,6 +30,8 @@ FullRangedf$AllPredDegree <- AllPredDegrees[as.character(FullRangedf$Host)]
 
 head(FullRangedf)
 
+with(FullRangedf, )
+
 
 # Making shapefile ####
 
@@ -51,23 +53,21 @@ FullPolygons %>% group_by(Host, group) #%>% unlist()
 
 # trying the sf I already have ####
 
+mammal_shapes$binomial = str_replace(mammal_shapes$binomial, " ", "_")
+mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
 mammal_shapes$AllPredDegree <- AllPredDegrees[mammal_shapes$binomial]
 
 mammal_raster_full <- raster(mammal_shapes, res = 50000) # NB units differ from Mercator!
 
-DegreeRanges <- fasterize(mammal_shapes, mammal_raster_full, field = "AllPredDegree", fun = "sum")
-
-
-
-DegreeRanges <- fasterize(mammal_shapes, mammal_raster_full, by = "AllPredDegree")
-
-FullMammalRanges <- fasterize(mammal_shapes, mammal_raster_full, by = "binomial", 
-                              field = "AllPredDegree")
+DegreeRanges <- fasterize(mammal_shapes,
+                          mammal_raster_full, 
+                          by = "binomial", 
+                          field = "AllPredDegree")
 
 DegreeRanges2 <- raster::stackApply(DegreeRanges, 3646, fun = "mean", na.rm = T)
-DegreeRanges2 <- raster::calc(DegreeRanges, 3646, fun = "mean", na.rm = T)
 
-plot(DegreeRanges2)
+DegreeRanges2 <- raster::calc(DegreeRanges, fun = "mean")
+DegreeRanges2 <- raster::calc(DegreeRanges@data@values, fun = "mean")
 
 
 # 3. Use Noam's fasterize package to collapse polygons into a raster

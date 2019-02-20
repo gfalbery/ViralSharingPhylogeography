@@ -256,6 +256,11 @@ VirusRangeAdj2 <- VirusRangeOverlap/(VirusRangeA) # Asymmetrical
 #load("~/Albersnet/data/FullMammalRanges.Rdata")
 #load("~/Albersnet/data/FullMammalRanges2.Rdata")
 load("~/Albersnet/data/FullPolygons.Rdata")
-load("~/Albersnet/data/FullRangeOverlap.Rdata")
+
+CodeRoot <- "R Code/0_Data Import"
+
+if(file.exists("~/Albersnet/data/FullRangeOverlap.Rdata")) load("~/Albersnet/data/FullRangeOverlap.Rdata") else{
+  source(paste0(CodeRoot,"/","0c2_Exhaustive Spatial Data Import.R"))
+}
 
 detach(package:raster)

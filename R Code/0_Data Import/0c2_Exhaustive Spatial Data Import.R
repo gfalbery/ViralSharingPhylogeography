@@ -6,41 +6,44 @@ library(maptools)
 
 # Importing/making ranges ####
 
-mammal_shapes <- st_read("~/Albersnet shapefiles/TERRESTRIAL_MAMMALS (new)")
-
-#mammal_shapes <- st_transform(mammal_shapes, 54009) # Mollweide projection 
-mammal_shapes <- st_transform(mammal_shapes, 
-                              "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection 
-
-# Mollweide projection = +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs
-# This projection retains grid size as much as possible, but at the expense of shape
-
-mammal_shapes$binomial = str_replace(mammal_shapes$binomial, " ", "_")
-mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
-mammal_raster_full <- raster(mammal_shapes, res = 50000) # NB units differ from Mercator!
-
-FullMammalRanges <- fasterize(mammal_shapes, mammal_raster_full, by = "binomial")
-save(FullMammalRanges, file = "data/FullMammalRanges.Rdata")
-
-load("~/Albersnet/data/FullMammalRanges.Rdata")
-
+if(file.exists("data/FullMammalRanges.Rdata")) load("data/FullMammalRanges.Rdata") else{
+  
+  mammal_shapes <- st_read("~/Albersnet shapefiles/TERRESTRIAL_MAMMALS (new)")
+  
+  #mammal_shapes <- st_transform(mammal_shapes, 54009) # Mollweide projection 
+  mammal_shapes <- st_transform(mammal_shapes, 
+                                "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection 
+  
+  # Mollweide projection = +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs
+  # This projection retains grid size as much as possible, but at the expense of shape
+  
+  mammal_shapes$binomial = str_replace(mammal_shapes$binomial, " ", "_")
+  mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
+  mammal_raster_full <- raster(mammal_shapes, res = 50000) # NB units differ from Mercator!
+  
+  FullMammalRanges <- fasterize(mammal_shapes, mammal_raster_full, by = "binomial")
+  save(FullMammalRanges, file = "data/FullMammalRanges.Rdata")
+  
+}
 
 # Trying earlier dataset ####
 
-mammal_shapes2 <- st_read("~/Albersnet shapefiles/Mammals_Terrestrial (old)")
-mammal_shapes2 <- st_transform(mammal_shapes2, "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection
-
-mammal_shapes2$binomial = str_replace(mammal_shapes2$BINOMIAL, " ", "_")
-mammal_shapes2 <- mammal_shapes2[order(mammal_shapes2$binomial),]
-mammal_shapes_red2 <- mammal_shapes2[!mammal_shapes2$binomial%in%names(FullMammalRanges),]
-
-#mammal_raster_full2 <- raster(mammal_shapes2, res = 50000) # NB units differ from Mercator!
-
-FullMammalRanges2 <- fasterize(mammal_shapes_red2, mammal_raster_full2, by = "binomial")
-
-save(FullMammalRanges2, file = "data/FullMammalRanges2.Rdata")
-
-load("~/Albersnet/data/FullMammalRanges2.Rdata")
+if(file.exists("data/FullMammalRanges2.Rdata")) load("data/FullMammalRanges2.Rdata") else{
+  
+  mammal_shapes2 <- st_read("~/Albersnet shapefiles/Mammals_Terrestrial (old)")
+  mammal_shapes2 <- st_transform(mammal_shapes2, "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection
+  
+  mammal_shapes2$binomial = str_replace(mammal_shapes2$BINOMIAL, " ", "_")
+  mammal_shapes2 <- mammal_shapes2[order(mammal_shapes2$binomial),]
+  mammal_shapes_red2 <- mammal_shapes2[!mammal_shapes2$binomial%in%names(FullMammalRanges),]
+  
+  #mammal_raster_full2 <- raster(mammal_shapes2, res = 50000) # NB units differ from Mercator!
+  
+  FullMammalRanges2 <- fasterize(mammal_shapes_red2, mammal_raster_full2, by = "binomial")
+  
+  save(FullMammalRanges2, file = "data/FullMammalRanges2.Rdata")
+  
+}
 
 # Converting these to meaningful values ####
 
@@ -64,7 +67,8 @@ Range0 <- levels(FullRangedf$Host)[which(table(FullRangedf$Host)==0)] # Hosts th
 FullRangedf <- droplevels(FullRangedf) 
 FullRangedf <- FullRangedf[order(FullRangedf$Host),]
 
-# Using igraph to project it
+# Could use igraph to project it into bipartite host-grid matrix
+# Or could do this bullshit
 
 FullRangeOverlap <- matrix(0, nrow = nlevels(FullRangedf$Host), ncol = nlevels(FullRangedf$Host))
 dimnames(FullRangeOverlap) <- list(levels(FullRangedf$Host),levels(FullRangedf$Host))
@@ -90,7 +94,6 @@ FullRangeB = matrix(rep(diag(FullRangeOverlap), each = nrow(FullRangeOverlap)), 
 FullRangeAdj1 <- FullRangeOverlap/(FullRangeA + FullRangeB - FullRangeOverlap) # Weighted evenly
 FullRangeAdj2 <- FullRangeOverlap/(FullRangeA) # Asymmetrical
 
-#save(FullRangeOverlap, file = "data/FullRangeOverlap.Rdata")
 save(FullRangeAdj1, file = "data/FullRangeOverlap.Rdata")
 
 # Making polygons for display ####
