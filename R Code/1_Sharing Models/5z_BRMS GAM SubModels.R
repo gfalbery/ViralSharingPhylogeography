@@ -32,7 +32,7 @@ for(r in 1:length(SubResps[1:3])){
   
   SubDataList[[r]]$Sharing <- SubDataList[[r]][,SubResps[r]]
   
-  SubDataList[[r]]$space_s <- scale(SubDataList[[r]]$Space) %>% c
+  SubDataList[[r]]$space <- SubDataList[[r]]$Space %>% c
   SubDataList[[r]]$phylo_s <- scale(SubDataList[[r]]$Phylo2) %>% c
   SubDataList[[r]]$d_cites_s <- scale(log(SubDataList[[r]]$hDiseaseZACites+1)) %>% c
   SubDataList[[r]]$d_cites_s2 <- scale(log(SubDataList[[r]]$hDiseaseZACites.Sp2+1)) %>% c
@@ -40,7 +40,7 @@ for(r in 1:length(SubResps[1:3])){
   SubDataList[[r]]$domestic <- ifelse(SubDataList[[r]]$hDom=="domestic",1,0)
   SubDataList[[r]]$domestic.Sp2 <- ifelse(SubDataList[[r]]$hDom.Sp2=="domestic",1,0)
   
-  SubModel <- brm(Sharing ~ t2(space_s, phylo_s) + 
+  SubModel <- brm(Sharing ~ t2(space, phylo_s) + 
                 (1 + mmc(domestic, domestic.Sp2) + mmc(d_cites_s, d_cites_s2) | mm(Sp, Sp2)),
                 data = SubDataList[[r]], 
                 family = bernoulli(), 

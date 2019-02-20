@@ -1,7 +1,7 @@
 
 # Doing this to validate rather than predict ####
 
-library(tidyverse); library(parallel); library(ggregplot)
+library(tidyverse); library(parallel); library(ggregplot); library(ape)
 
 source("R Code/00_Master Code.R")
 load("AllSims.Rdata")
@@ -117,7 +117,7 @@ FocalRank <- function(x){
   
 }
 
-load("ModelValidation.Rdata")
+load("Output Files/ModelValidation.Rdata")
 
 KeepPredictions <- (1:length(Valid))[-which(sapply(Valid, function(a) any(is.na(a))))]
 
@@ -148,6 +148,8 @@ ggplot(Viruses, aes(HostRangeMax, log(PredictionSuccess+1))) + geom_text(aes(lab
 ggplot(Viruses, aes(HostRangeMin, log(PredictionSuccess+1))) + geom_text(aes(label = Sp)) + geom_smooth()
 
 PredHostPlot <- function(virus, threshold = 10, focal = c(1,0), facet = FALSE){
+  
+  require(ggtree)
   
   Df <- Valid[[virus]] %>% mutate(Focal = as.numeric(as.character(Focal)))
   Df$Include <- ifelse(Df$Focal%in%focal, 1, 0)
