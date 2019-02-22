@@ -6,6 +6,10 @@ library(tidyverse); library(parallel); library(ggregplot); library(ape)
 source("R Code/00_Master Code.R")
 load("AllSims.Rdata")
 
+if(file.exists("Output Files/ModelValidation.Rdata")) load("Output Files/ModelValidation.Rdata")
+
+if(length(Valid)<510){
+
 AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
 AllMammals <- AllMammals[order(AllMammals)]
 
@@ -13,7 +17,7 @@ HostValidation <- list()
 
 print("Start Validating!")
 
-a = length(Valid)
+a = length(Valid)+1
 
 for(a in a:(length(VirusAssocs))){
   
@@ -83,24 +87,7 @@ for(a in a:(length(VirusAssocs))){
     
   }
 }
-
-# Trying it out ####
-
-Valid <- HostValidation %>% lapply(function(a){
-  
-  if(!is.null(names(a[[1]]))){
-    
-    b = map(names(a[[1]]), function(b) map(a, b) %>% bind_rows) %>% bind_rows
-    
-    c = b %>% group_by(Sp, Focal) %>% dplyr::summarise(Count = mean(Count)) %>% slice(order(Count, decreasing = T)) %>%
-      mutate(Focal = factor(Focal))
-    
-  } else c = NA
-  
-  return(c)
-})
-
-#save(Valid, file = "ModelValidation.Rdata")
+}
 
 KeepPredictions %>% 
   lapply(function(a) ggplot(Valid[[a]], aes(Focal, Count, colour = Focal)) + 
@@ -136,16 +123,6 @@ ValidSummary <- data.frame(
 rownames(ValidSummary) <- ValidSummary$Virus
 
 Viruses[,"PredictionSuccess"] <- ValidSummary[as.character(Viruses$Sp), "MeanRank"]
-
-ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))
-
-qplot(log10(ValidSummary$MeanRank))
-
-table(cut(ValidSummary$MeanRank, breaks = (10^(0:4))-1, labels = c("<10", "<100", "<1000", ">1000")))
-
-ggplot(Viruses, aes(HostRangeMean, log(PredictionSuccess+1))) + geom_text(aes(label = Sp)) + geom_smooth()
-ggplot(Viruses, aes(HostRangeMax, log(PredictionSuccess+1))) + geom_text(aes(label = Sp)) + geom_smooth()
-ggplot(Viruses, aes(HostRangeMin, log(PredictionSuccess+1))) + geom_text(aes(label = Sp)) + geom_smooth()
 
 PredHostPlot <- function(virus, threshold = 10, focal = c(1,0), facet = FALSE){
   
@@ -198,9 +175,9 @@ PredHostPlot <- function(virus, threshold = 10, focal = c(1,0), facet = FALSE){
   if(facet == FALSE){
     
     ggplot(PredHostPolygons, aes(long, lat, group = paste(Host, group))) + 
-      geom_path(data = WorldMap, inherit.aes = F, aes(long, lat, group = group), colour = "black") +
-      geom_polygon(aes(fill = Host, alpha = max(Rank)-Rank)) +
-      labs(alpha = "Inverse Rank", 
+      geom_polygon(data = WorldMap, inherit.aes = F, aes(long, lat, group = group), fill = "white", colour = "black") +
+      geom_polygon(fill = NA, aes(colour = Host)) + # alpha = max(Rank)-Rank)) +
+      labs(#alpha = "Inverse Rank", 
            title = paste(ifelse(length(focal)==2, "All", ifelse(focal==1, "Known", "Predicted")), VirusName, "Hosts")) +
       coord_fixed() +
       #theme(legend.position = "none") +
@@ -215,9 +192,9 @@ PredHostPlot <- function(virus, threshold = 10, focal = c(1,0), facet = FALSE){
   }else{
     
     ggplot(PredHostPolygons, aes(long, lat, group = paste(Host, group))) + 
-      geom_path(data = WorldMap, inherit.aes = F, aes(long, lat, group = group), colour = "black") +
-      geom_polygon(aes(fill = Host, alpha = max(Rank)-Rank)) +
-      labs(alpha = "Inverse Rank", 
+      geom_polygon(data = WorldMap, inherit.aes = F, aes(long, lat, group = group), fill = "white", colour = "black") +
+      geom_polygon(fill = NA, aes(colour = Host)) + # alpha = max(Rank)-Rank)) +
+      labs(#alpha = "Inverse Rank", 
            title = paste(ifelse(length(focal)==2, "All", ifelse(focal==1, "Known", "Predicted")), VirusName, "Hosts")) +
       coord_fixed() +
       #theme(legend.position = "none") +

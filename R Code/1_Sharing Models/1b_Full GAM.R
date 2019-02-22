@@ -39,11 +39,12 @@ f <- f %>% mutate(
 
 # Code for BRMS ####
 
-BinGAM <- brm(VirusBinary ~ t2(space_s,phylo_s) + 
+BinGAM <- brm(VirusBinary ~ t2(space_s,phylo_s) + s(DietSim) +
               (1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
             data = f, 
             family = bernoulli(), 
             cores = 10,
+            chains = 10,
             iter = 1500, 
             warmup = 500, 
             thin = 10, 

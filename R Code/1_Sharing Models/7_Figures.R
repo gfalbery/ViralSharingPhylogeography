@@ -22,4 +22,13 @@
 # 6.	Panel of maps: Illustrative maps of host ranges for mammal species from host predictions (currently unidentified) for specific viruses, e.g. CCHFV; Nipah virus; Ebola; etc. (supplement will list out probability of being a host for all viruses)
 
 PredHostPlot("Crimean-congo_haemorrhagic_fever_virus", focal = c(1,0), facet = T)
-PredHostPlot("Andes_virus", focal = 0)
+
+list(PredHostPlot("Andes_virus", focal = 0), PredHostPlot("Andes_virus", focal = 1)) %>% 
+  arrange_ggplot2
+
+
+
+
+# Supplementary? #####
+
+ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))

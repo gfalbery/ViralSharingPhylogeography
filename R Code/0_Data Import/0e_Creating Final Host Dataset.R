@@ -86,6 +86,16 @@ FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 
+
+FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
+  mutate(DietSim = 1 - DietSim)
+
+FinalHostMatrix <- FinalHostMatrix %>% merge(EltonTraits[,c("Scientific","Carnivore")], by.x = "Sp", by.y = "Scientific")
+FinalHostMatrix <- FinalHostMatrix %>% merge(EltonTraits[,c("Scientific","Carnivore")], by.x = "Sp2", by.y = "Scientific",
+                                             suffixes = c("",".Sp2"))
+
+FinalHostMatrix$Eaten <- ifelse(FinalHostMatrix$Carnivore==FinalHostMatrix$Carnivore.Sp2,0,1)
+
 # Establishing all mammal data ####
 
 # Replacing absent names in the full ST matrix ####
@@ -124,4 +134,6 @@ NameReplace <- c(
 names(NameReplace) <- AbsentHosts
 
 rownames(FullSTMatrix) <- colnames(FullSTMatrix) <- sapply(rownames(FullSTMatrix), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
+
+rownames(VD) <- colnames(VD) <- sapply(rownames(VD), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
 

@@ -2,6 +2,8 @@
 
 # DNA and RNA viruses ####
 
+SubResps <- c("RNA", "DNA", "Vector","NVector")
+
 library(igraph); library(tidyverse); library(ggregplot)
 
 RNAViruses <- Viruses %>% filter(vDNAoRNA == "RNA") %>% select(Sp) %>% unlist
@@ -76,5 +78,14 @@ FinalHostMatrix <- FinalHostMatrix %>% left_join(VectorHostdf,
 FinalHostMatrix <- FinalHostMatrix %>% left_join(NVectorHostdf,
                                                  by = c("Sp","Sp2"), all.x = T)
 
+
+SlopeTime <- gather(FinalHostMatrix, key = "Group", value = "Shared", paste0(SubResps)) %>%
+  filter(!is.na(Shared))
+
+#ggplot(SlopeTime, aes(DietSim, Shared, colour = Group, lty = as.factor(Eaten))) + 
+#  facet_wrap(~Group) + 
+#  geom_point() + 
+#  theme(legend.position = "none") +
+#  geom_smooth()
 
 

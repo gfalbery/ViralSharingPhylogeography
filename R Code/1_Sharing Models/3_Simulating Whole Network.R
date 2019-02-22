@@ -3,15 +3,6 @@
 
 library(MCMCglmm); library(tidyverse); library(Matrix); library(parallel)
 
-if(file.exists("~/Albersnet/Bin Model Output.Rdata")) load("~/Albersnet/Bin Model Output.Rdata") else{
-  
-  p <- process_stanfit(BinModel, n.pars.to.trim = 3) # Takes a WHILE
-  
-}
-
-invlogit <- function(a) exp(a)/(1 + exp(a))
-logit <- function(a) log(a/(1-a))
-
 tFullSTMatrix <- 1 - (FullSTMatrix - min(FullSTMatrix))/max(FullSTMatrix)
 
 AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
@@ -21,50 +12,35 @@ AllMammalMatrix <- data.frame(
   Sp = as.character(rep(AllMammals,each = length(AllMammals))),
   Sp2 = as.character(rep(AllMammals,length(AllMammals))),
   Space = c(FullRangeAdj1[AllMammals,AllMammals]),
-  Phylo = c(tFullSTMatrix[AllMammals,AllMammals])
+  Phylo2 = scale(c(tFullSTMatrix[AllMammals,AllMammals])),
+  DietSim = c(tFullSTMatrix[AllMammals,AllMammals])
 )
 
 UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals,AllMammals], diag = T))
 
 AllMammaldf <- AllMammalMatrix[-UpperMammals,]
 
-# Trying it without random effects ####
+AllPredList <- list()
 
-MX1 = model.matrix( ~ Space + Phylo + Space:Phylo, data = AllMammaldf) %>%
-  as.matrix %>% as("dgCMatrix")
+Predictions <- predict(BAMList[[1]], newdata = AllMammaldf)
 
 N = nrow(AllMammaldf)
 
-ClusterMCMC <- p$df
-
-RowsSampled <- sample(1:nrow(ClusterMCMC), 100, replace = F)
-
-XBetas <- c("mu_alpha","beta_space","beta_phylo","beta_inter")
-
-AllPredList <- mclapply(1:length(RowsSampled), function(x){
+AllPredList <- parallel::mclapply(1:100, function(x){ # to do something non-specific
   
-  RowSampled <- RowsSampled[x]
+  BinPred <- rbinom(n = N,
+                    prob = logistic(Predictions),
+                    size  = 1)
   
-  XFX <- p$df[RowSampled, XBetas] %>% unlist
-  XPredictions <- c(XFX %*% t(MX1))
-  
-  ZPredictions2a <- rnorm(n = N, mean = mean(d$DCites)*p$df[RowSampled,"beta_d_cites_s"], sd = p$df[RowsSampled[x], "sigma"])
-  ZPredictions2b <- rnorm(n = N, mean = mean(d$DCites)*p$df[RowSampled,"beta_d_cites_s"], sd = p$df[RowsSampled[x], "sigma"])
-  
-  Predictions <- XPredictions[[1]]@x + ZPredictions2a + ZPredictions2b
-  
-  PZero <- rbinom(n = N, size = 1, prob = logistic(Predictions))
-  
-  PZero
+  BinPred
   
 }, mc.cores = 10)
 
-AllPredDF <- as.data.frame(AllPredList)
-AllMammaldf$PredVirus <- apply(AllPredDF,1, function(a) a %>% mean)
-
-AllMammaldf$PredVirusQ <- cut(AllMammaldf$PredVirus,
-                              breaks = c(-1:10/10),
-                              labels = c(0:10/10))
+PredDF1 <- data.frame(AllPredList)
+AllMammaldf$PredVirus1 <- apply(PredDF1, 1, mean)
+AllMammaldf$PredVirus1Q <- cut(AllMammaldf$PredVirus1,
+                               breaks = c(-1:10/10),
+                               labels = c(0:10/10))
 
 # Simulating the network #####
 
@@ -74,7 +50,7 @@ AllSims <- parallel::mclapply(1:length(AllPredList), function(i){
                    nrow = length(union(AllMammaldf$Sp,AllMammaldf$Sp2)), 
                    ncol = length(union(AllMammaldf$Sp,AllMammaldf$Sp2)))
   
-  AssMat[-which(1:length(AssMat)%in%UpperMammals)] <- round(AllPredList[[i]])
+  AssMat[lower.tri(AssMat)] <- round(AllPredList[[i]])
   AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
   diag(AssMat) <- 0
   dimnames(AssMat) <- list(union(AllMammaldf$Sp,AllMammaldf$Sp2),
