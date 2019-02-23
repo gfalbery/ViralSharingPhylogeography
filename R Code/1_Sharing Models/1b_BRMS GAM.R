@@ -1,6 +1,7 @@
 
 # Fitting STAN Model in BRMS
 # Rscript "R Code/1_Sharing Models/1b_Full GAM.R"
+# Rscript "R Code/1_Sharing Models/1b_Full GAM.R" >> my_log.txt
 
 source("R Code/00_Master Code.R")
 
@@ -39,6 +40,8 @@ f <- f %>% mutate(
 
 # Code for BRMS ####
 
+sink(stdout())
+
 BinGAM <- brm(VirusBinary ~ t2(space_s,phylo_s) + s(DietSim) +
               (1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
             data = f, 
@@ -46,10 +49,13 @@ BinGAM <- brm(VirusBinary ~ t2(space_s,phylo_s) + s(DietSim) +
             cores = 10,
             chains = 10,
             iter = 1500, 
-            warmup = 500, 
+            warmup = 500,
             thin = 10, 
-            refresh = 0)
+            refresh = 0,
+            save_ranef = TRUE)
 
-saveRDS(BinGAM, file = "BinGAM.rds")
+sink()
+
+save(BinGAM, file = "Model Files/BinGAM.Rdata")
 
 

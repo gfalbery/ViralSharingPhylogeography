@@ -83,7 +83,7 @@ for(a in a:length(VirusAssocs)){
       return(c)
     })
     
-    save(GAMValid, file = "Output Files/GAMValidation.rds")
+    save(GAMValid, file = "Output Files/GAMValidation.Rdata")
     
   }
 }
@@ -105,17 +105,10 @@ GAMValid <- GAMValidation %>% lapply(function(a){
 
 save(GAMValid, file = "Output Files/GAMValidation.Rdata")
 
-KeepPredictions %>% 
-  lapply(function(a) ggplot(GAMValid[[a]], aes(Focal, Count, colour = Focal)) + 
-           ggforce::geom_sina() + theme(legend.position = "none") +
-           ggtitle(names(GAMValid)[[a]])) %>% 
-  arrange_ggplot2(ncol = 3)
+load("Output Files/GAMValidation.Rdata")
+load("Output Files/ModelValidation.Rdata")
 
-KeepPredictions %>% 
-  lapply(function(a) ggplot(Valid[[a]], aes(Focal, Count, colour = Focal)) + 
-           ggforce::geom_sina() + theme(legend.position = "none") +
-           ggtitle(names(Valid)[[a]])) %>% 
-  arrange_ggplot2(ncol = 3)
+KeepPredictions <- (1:length(GAMValid))[-which(sapply(GAMValid, function(a) any(is.na(a))))]
 
 FocalRank <- function(x){
   
@@ -125,10 +118,6 @@ FocalRank <- function(x){
   (length(z$Count) + 2) - sapply(y$Count, function(a) rank(c(a,z$Count))[1])
   
 }
-
-load("Output Files/GAMValidation.Rdata")
-
-KeepPredictions <- (1:length(GAMValid))[-which(sapply(GAMValid, function(a) any(is.na(a))))]
 
 GAMValidSummary <- data.frame(
   
@@ -141,6 +130,37 @@ GAMValidSummary <- data.frame(
   MeanRank = sapply(GAMValid[KeepPredictions], function(a) mean(FocalRank(a)))
   
 ) %>% slice(order(MeanRank))
+
+
+ValidSummary <- data.frame(
+  
+  Virus = names(Valid)[KeepPredictions],
+  
+  NHosts = map(Valid[KeepPredictions], "Focal") %>% sapply(function(a) which(a=="1") %>% length),
+  
+  No = KeepPredictions,
+  
+  MeanRank = sapply(Valid[KeepPredictions], function(a) mean(FocalRank(a)))
+  
+) #%>% slice(order(MeanRank))
+
+
+CompSummary <- merge(GAMValidSummary, ValidSummary[,c("Virus","MeanRank")], by = "Virus", suffixes = c(".GAM",".GLM"), all.x = T)
+
+CompSummary %>% ggplot(aes(MeanRank.GAM, MeanRank.GLM)) + geom_point() + geom_smooth() + geom_abline() + coord_fixed()
+
+
+KeepPredictions %>% 
+  lapply(function(a) ggplot(GAMValid[[a]], aes(Focal, Count, colour = Focal)) + 
+           ggforce::geom_sina() + theme(legend.position = "none") +
+           ggtitle(names(GAMValid)[[a]])) %>% 
+  arrange_ggplot2(ncol = 3)
+
+KeepPredictions %>% 
+  lapply(function(a) ggplot(Valid[[a]], aes(Focal, Count, colour = Focal)) + 
+           ggforce::geom_sina() + theme(legend.position = "none") +
+           ggtitle(names(Valid)[[a]])) %>% 
+  arrange_ggplot2(ncol = 3)
 
 rownames(GAMValidSummary) <- GAMValidSummary$Virus
 
@@ -249,19 +269,3 @@ pdf("HostBoth.pdf", width = 14, height = 12)
 lapply(Viruses$Sp[KeepPredictions], function(a) PredHostPlot(a, focal = c(0,1), facet = TRUE)) %>% return
 
 dev.off()
-
-GAMValid <- readRDS("GAMValidation.rds")
-
-load("Output Files/ModelValidation.Rdata")
-
-ValidSummary <- data.frame(
-  
-  Virus = names(Valid)[KeepPredictions],
-  
-  NHosts = map(Valid[KeepPredictions], "Focal") %>% sapply(function(a) which(a=="1") %>% length),
-  
-  No = KeepPredictions,
-  
-  MeanRank = sapply(Valid[KeepPredictions], function(a) mean(FocalRank(a)))
-  
-) %>% slice(order(MeanRank))
