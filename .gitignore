@@ -15,3 +15,5 @@ AllPredDegree.Rdata
 DNAGAM.rds
 SubModelGenData.Rdata
 SubModels.Rdata
+GAMValidation.Rdata
+AllSimsGAM.Rdata

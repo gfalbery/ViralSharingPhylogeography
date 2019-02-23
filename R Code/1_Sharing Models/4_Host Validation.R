@@ -4,90 +4,98 @@
 library(tidyverse); library(parallel); library(ggregplot); library(ape)
 
 source("R Code/00_Master Code.R")
-load("AllSims.Rdata")
+load("AllSimsGAM.Rdata")
 
-if(file.exists("Output Files/ModelValidation.Rdata")) load("Output Files/ModelValidation.Rdata")
+if(file.exists("Output Files/GAMValidation.Rdata")) load("Output Files/GAMValidation.Rdata")
 
-if(length(Valid)<510){
-
-AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
-AllMammals <- AllMammals[order(AllMammals)]
-
-HostValidation <- list()
-
-print("Start Validating!")
-
-a = length(Valid)+1
-
-for(a in a:(length(VirusAssocs))){
+if(length(GAMValid)<510){
   
-  print(names(VirusAssocs)[a])
+  AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
+  AllMammals <- AllMammals[order(AllMammals)]
   
-  pHosts <- VirusAssocs[[a]]
+  GAMValidation <- list()
   
-  pHosts <- intersect(pHosts, AllMammals)
+  print("Start Validating!")
   
-  if(length(pHosts)>0){
-    
-    EstList <- parallel::mclapply(1:length(AllSims), function(x){
-      
-      FocalNet <- AllSims[[x]] %>% as.matrix
-      
-      pHosts2 <- intersect(pHosts, rownames(FocalNet))
-      
-      ValidEst <- list()
-      
-      for(b in pHosts2){
-        
-        pHosts4 <- setdiff(pHosts2, b)
-        
-        pHosts3 <- setdiff(colnames(FocalNet), pHosts4)
-        
-        Estimates <- FocalNet[pHosts4, pHosts3]
-        
-        if(is.null(dim(Estimates))) Estimates <- rbind(Estimates, Estimates)/2
-        
-        Ests <- data.frame(Sp = names(sort(colSums(Estimates))),
-                           Count = sort(colSums(Estimates))/nrow(Estimates),
-                           Iteration = x) %>%
-          mutate(Focal = ifelse(Sp==b, 1, 0))
-        
-        rownames(Ests) <- Ests$Sp
-        
-        ValidEst[[b]] <- Ests
-        
-      }
-      
-      ValidEst
-      
-    }, mc.cores = 40)
-    
-    HostValidation[[names(VirusAssocs)[a]]] <- EstList
-    
-  } else HostValidation[[names(VirusAssocs)[a]]] <- NA
+  a = length(Valid)+1
   
-  if(a %% 10 == 0){
+  a = 1
+  
+  for(a in a:25){#(length(VirusAssocs))){
     
-    Valid <- HostValidation %>% lapply(function(a){
+    print(names(VirusAssocs)[a])
+    
+    pHosts <- VirusAssocs[[a]]
+    
+    pHosts <- intersect(pHosts, AllMammals)
+    
+    if(length(pHosts)>0){
       
-      if(!is.null(names(a[[1]]))){
+      EstList <- parallel::mclapply(1:length(AllSims), function(x){
         
-        b = map(names(a[[1]]), function(b) map(a, b) %>% bind_rows) %>% bind_rows
+        FocalNet <- AllSims[[x]] %>% as.matrix
         
-        c = b %>% group_by(Sp, Focal) %>% dplyr::summarise(Count = mean(Count)) %>% 
-          slice(order(Count, decreasing = T)) %>%
-          mutate(Focal = factor(Focal))
+        pHosts2 <- intersect(pHosts, rownames(FocalNet))
         
-      } else c = NA
+        ValidEst <- list()
+        
+        for(b in pHosts2){
+          
+          pHosts4 <- setdiff(pHosts2, b)
+          
+          pHosts3 <- setdiff(colnames(FocalNet), pHosts4)
+          
+          Estimates <- FocalNet[pHosts4, pHosts3]
+          
+          if(is.null(dim(Estimates))) Estimates <- rbind(Estimates, Estimates)/2
+          
+          Ests <- data.frame(Sp = names(sort(colSums(Estimates))),
+                             Count = sort(colSums(Estimates))/nrow(Estimates),
+                             Iteration = x) %>%
+            mutate(Focal = ifelse(Sp==b, 1, 0))
+          
+          rownames(Ests) <- Ests$Sp
+          
+          ValidEst[[b]] <- Ests
+          
+        }
+        
+        ValidEst
+        
+      }, mc.cores = 40)
       
-      return(c)
-    })
+      GAMValidation[[names(VirusAssocs)[a]]] <- EstList
+      
+    } else GAMValidation[[names(VirusAssocs)[a]]] <- NA
     
-    #save(Valid, file = "ModelValidation.Rdata")
-    
+    if(a %% 10 == 0){
+      
+      Valid <- GAMValidation %>% lapply(function(a){
+        
+        if(!is.null(names(a[[1]]))){
+          
+          b = map(names(a[[1]]), function(b) map(a, b) %>% bind_rows) %>% bind_rows
+          
+          c = b %>% group_by(Sp, Focal) %>% dplyr::summarise(Count = mean(Count)) %>% 
+            slice(order(Count, decreasing = T)) %>%
+            mutate(Focal = factor(Focal))
+          
+        } else c = NA
+        
+        return(c)
+      })
+      
+      save(GAMValid, file = "Output Files/GAMValidation.Rdata")
+      
+    }
   }
 }
-}
+
+KeepPredictions %>% 
+  lapply(function(a) ggplot(GAMValid[[a]], aes(Focal, Count, colour = Focal)) + 
+           ggforce::geom_sina() + theme(legend.position = "none") +
+           ggtitle(names(VirusAssocs)[[a]])) %>% 
+  arrange_ggplot2(ncol = 5)
 
 KeepPredictions %>% 
   lapply(function(a) ggplot(Valid[[a]], aes(Focal, Count, colour = Focal)) + 
@@ -104,31 +112,31 @@ FocalRank <- function(x){
   
 }
 
-load("Output Files/ModelValidation.Rdata")
+load("Output Files/GAMValidation.Rdata")
 
-KeepPredictions <- (1:length(Valid))[-which(sapply(Valid, function(a) any(is.na(a))))]
+KeepPredictions <- (1:length(GAMValid))[-which(sapply(GAMValid, function(a) any(is.na(a))))]
 
-ValidSummary <- data.frame(
+GAMValidSummary <- data.frame(
   
   Virus = names(VirusAssocs)[KeepPredictions],
   
-  NHosts = map(Valid[KeepPredictions], "Focal") %>% sapply(function(a) which(a=="1") %>% length),
+  NHosts = map(GAMValid[KeepPredictions], "Focal") %>% sapply(function(a) which(a=="1") %>% length),
   
   No = KeepPredictions,
   
-  MeanRank = sapply(Valid[KeepPredictions], function(a) mean(FocalRank(a)))
+  MeanRank = sapply(GAMValid[KeepPredictions], function(a) mean(FocalRank(a)))
   
 ) %>% slice(order(MeanRank))
 
-rownames(ValidSummary) <- ValidSummary$Virus
+rownames(GAMValidSummary) <- GAMValidSummary$Virus
 
-Viruses[,"PredictionSuccess"] <- ValidSummary[as.character(Viruses$Sp), "MeanRank"]
+Viruses[,"PredictionSuccess"] <- GAMValidSummary[as.character(Viruses$Sp), "MeanRank"]
 
 PredHostPlot <- function(virus, threshold = 10, focal = c(1,0), facet = FALSE){
   
   require(ggtree)
   
-  Df <- Valid[[virus]] %>% mutate(Focal = as.numeric(as.character(Focal)))
+  Df <- GAMValid[[virus]] %>% mutate(Focal = as.numeric(as.character(Focal)))
   Df$Include <- ifelse(Df$Focal%in%focal, 1, 0)
   Df <- Df %>% filter(Include==1)
   
@@ -145,7 +153,7 @@ PredHostPlot <- function(virus, threshold = 10, focal = c(1,0), facet = FALSE){
   
   VirusName <- str_replace_all(virus, "_", " ")
   
-  Focal <- Valid[[virus]] %>% mutate(Focal = as.numeric(as.character(Focal))) %>% filter(Focal==1) %>% select(Sp) %>% unlist
+  Focal <- GAMValid[[virus]] %>% mutate(Focal = as.numeric(as.character(Focal))) %>% filter(Focal==1) %>% select(Sp) %>% unlist
   
   if(0 %in%focal) Predicted <- PredHosts %>% filter(Focal==0) %>% select(Sp) %>% unlist else{
     Predicted <- NULL
@@ -178,7 +186,7 @@ PredHostPlot <- function(virus, threshold = 10, focal = c(1,0), facet = FALSE){
       geom_polygon(data = WorldMap, inherit.aes = F, aes(long, lat, group = group), fill = "white", colour = "black") +
       geom_polygon(fill = NA, aes(colour = Host)) + # alpha = max(Rank)-Rank)) +
       labs(#alpha = "Inverse Rank", 
-           title = paste(ifelse(length(focal)==2, "All", ifelse(focal==1, "Known", "Predicted")), VirusName, "Hosts")) +
+        title = paste(ifelse(length(focal)==2, "All", ifelse(focal==1, "Known", "Predicted")), VirusName, "Hosts")) +
       coord_fixed() +
       #theme(legend.position = "none") +
       scale_x_continuous(breaks = -10:10*2000000) +
@@ -195,7 +203,7 @@ PredHostPlot <- function(virus, threshold = 10, focal = c(1,0), facet = FALSE){
       geom_polygon(data = WorldMap, inherit.aes = F, aes(long, lat, group = group), fill = "white", colour = "black") +
       geom_polygon(fill = NA, aes(colour = Host)) + # alpha = max(Rank)-Rank)) +
       labs(#alpha = "Inverse Rank", 
-           title = paste(ifelse(length(focal)==2, "All", ifelse(focal==1, "Known", "Predicted")), VirusName, "Hosts")) +
+        title = paste(ifelse(length(focal)==2, "All", ifelse(focal==1, "Known", "Predicted")), VirusName, "Hosts")) +
       coord_fixed() +
       #theme(legend.position = "none") +
       scale_x_continuous(breaks = -10:10*2000000) +
@@ -228,3 +236,19 @@ lapply(Viruses$Sp[KeepPredictions], function(a) PredHostPlot(a, focal = c(0,1), 
 
 dev.off()
 
+load("GAMValidation.Rdata")
+
+load("Output Files/ModelValidation.Rdata")
+
+
+ValidSummary <- data.frame(
+  
+  Virus = names(VirusAssocs)[KeepPredictions],
+  
+  NHosts = map(Valid[KeepPredictions], "Focal") %>% sapply(function(a) which(a=="1") %>% length),
+  
+  No = KeepPredictions,
+  
+  MeanRank = sapply(GAMValid[KeepPredictions], function(a) mean(FocalRank(a)))
+  
+) %>% slice(order(MeanRank))
