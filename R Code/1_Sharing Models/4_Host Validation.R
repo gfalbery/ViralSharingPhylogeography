@@ -149,6 +149,9 @@ CompSummary <- merge(GAMValidSummary, ValidSummary[,c("Virus","MeanRank")], by =
 
 CompSummary %>% ggplot(aes(MeanRank.GAM, MeanRank.GLM)) + geom_point() + geom_smooth() + geom_abline() + coord_fixed()
 
+CompSum2 <- gather(CompSummary, key = "key", value = "value", MeanRank.GAM, MeanRank.GLM)
+
+BarGraph(CompSum2, "key", "value")
 
 KeepPredictions %>% 
   lapply(function(a) ggplot(GAMValid[[a]], aes(Focal, Count, colour = Focal)) + 
