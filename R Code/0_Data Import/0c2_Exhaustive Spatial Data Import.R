@@ -96,6 +96,8 @@ FullRangeAdj2 <- FullRangeOverlap/(FullRangeA) # Asymmetrical
 
 save(FullRangeAdj1, file = "data/FullRangeOverlap.Rdata")
 
+FullRangeAdj1 <- PairsWisely(FullMammalRanges)
+
 # Making polygons for display ####
 
 FullPolygons <- lapply(levels(FullValuedf2$variable), function(x) {
