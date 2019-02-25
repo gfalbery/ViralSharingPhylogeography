@@ -3,53 +3,53 @@
 
 PairsWisely <- function(Rasterstack, Species = "All"){
   
-  library(raster); library(tidyverse)
+  library(raster); library(tidyverse); library(Matrix)
   
-  # Converting these to meaningful values ####
+  t1 <- Sys.time()
   
-  FullValuedf <- data.frame(getValues(Rasterstack))
-  FullValuedf2 <- reshape2::melt(FullValuedf)
-  FullValuedf2$x <- rep(1:Rasterstack[[1]]@ncols, Rasterstack[[1]]@nrows)
-  FullValuedf2$y <- rep(Rasterstack[[1]]@nrows:1, each = Rasterstack[[1]]@ncols)
+  print("Getting the grid values")
   
-  FullRangedf <- FullValuedf %>% 
-    dplyr::rename(Host = variable, Presence = value)
+  Valuedf <- data.frame(getValues(Rasterstack)) %>% as.matrix
+  Valuedf[is.na(Valuedf)] <- 0
   
-  if(Species != "All") FullRangedf <- FullRangedf %>% filter(Host %in% Species)
+  Valuedf <- Valuedf %>% as("dgCMatrix")
   
-  FullRangedf$GridID <- with(FullRangedf, paste(x, y))
+  if(Species != "All") Valuedf <- Valuedf[,Species]
   
-  Range0 <- levels(FullRangedf$Host)[which(table(FullRangedf$Host)==0)] # Hosts that have no spatial records??
-  FullRangedf <- droplevels(FullRangedf) 
-  FullRangedf <- FullRangedf[order(FullRangedf$Host),]
+  RangeOverlap <- matrix(0, nrow = ncol(Valuedf), ncol = ncol(Valuedf))
+  dimnames(RangeOverlap) <- list(colnames(Valuedf),colnames(Valuedf))
   
-  # Could use igraph to project it into bipartite host-grid matrix
-  # Or could do this bullshit
+  print("Calculating Overlap")
   
-  FullRangeOverlap <- matrix(0, nrow = nlevels(FullRangedf$Host), ncol = nlevels(FullRangedf$Host))
-  dimnames(FullRangeOverlap) <- list(levels(FullRangedf$Host),levels(FullRangedf$Host))
-  
-  for(x in levels(FullRangedf$Host)){
-    
-    if(x == first(levels(FullRangedf$Host))) t1 <- Sys.time()
-    
-    Grids <- FullRangedf[FullRangedf$Host==x,"GridID"]
-    SubFullRangedf <- FullRangedf[FullRangedf$GridID %in% Grids,]
-    
-    FullRangeOverlap[x,] <- table(SubFullRangedf$Host)
+  for(x in colnames(Valuedf)){
     
     print(x)
     
-    if(x == last(levels(FullRangedf$Host))) t2 <- Sys.time()
+    if(x == first(levels(Rangedf$Host))) t1 <- Sys.time()
+    
+    TrainGrids <- Valuedf[,x]
+    
+    SubRangedf <- Valuedf[which(TrainGrids==1),]
+    
+    if(!is.null(dim(SubRangedf))){
+      
+      RangeOverlap[x,] <- apply(SubRangedf, 2, function(a) length(which(a==1)))
+      
+    } else   RangeOverlap[x,] <- SubRangedf
+    
+    if(x == last(levels(Rangedf$Host))) t2 <- Sys.time()
     
   }
   
-  FullRangeA = matrix(rep(diag(FullRangeOverlap), nrow(FullRangeOverlap)), nrow(FullRangeOverlap))
-  FullRangeB = matrix(rep(diag(FullRangeOverlap), each = nrow(FullRangeOverlap)), nrow(FullRangeOverlap))
+  FullRangeA = matrix(rep(diag(RangeOverlap), nrow(RangeOverlap)), nrow(RangeOverlap))
+  FullRangeB = matrix(rep(diag(RangeOverlap), each = nrow(RangeOverlap)), nrow(RangeOverlap))
   
-  FullRangeAdj1 <- FullRangeOverlap/(FullRangeA + FullRangeB - FullRangeOverlap) # Weighted evenly
-  FullRangeAdj2 <- FullRangeOverlap/(FullRangeA) # Asymmetrical
+  RangeAdj <- RangeOverlap/(FullRangeA + FullRangeB - RangeOverlap) # Weighted evenly
+
+  TimeTaken = Sys.time() - t1
   
-  return(FullRangeAdj1)
+  print(TimeTaken)
+  
+  return(RangeAdj)
   
 }
