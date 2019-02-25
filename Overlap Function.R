@@ -25,8 +25,6 @@ PairsWisely <- function(Rasterstack, Species = "All"){
     
     print(x)
     
-    if(x == first(levels(Rangedf$Host))) t1 <- Sys.time()
-    
     TrainGrids <- Valuedf[,x]
     
     SubRangedf <- Valuedf[which(TrainGrids==1),]
@@ -36,8 +34,6 @@ PairsWisely <- function(Rasterstack, Species = "All"){
       RangeOverlap[x,] <- apply(SubRangedf, 2, function(a) length(which(a==1)))
       
     } else   RangeOverlap[x,] <- SubRangedf
-    
-    if(x == last(levels(Rangedf$Host))) t2 <- Sys.time()
     
   }
   
