@@ -5,19 +5,6 @@ library(dplyr)
 setwd("/home/gfalbery/Albersnet")
 
 rm(list = ls())
-#file.remove(LargeFiles)
-
-# Loading files that take a while to obtain ####
-
-#LargeFiles <- paste0("data/",
-#                     list.files("data") %>% subset(endsWith(list.files("data"),".Rdata")))#
-#
-#for(x in LargeFiles) load(x)#
-#
-#ModelFiles <- paste0("Model Files/",
-#                     list.files("Model Files") %>% subset(endsWith(list.files("Model Files"),".Rdata")))
-
-#for(x in ModelFiles) load(x)
 
 # Running data setup scripts ####
 

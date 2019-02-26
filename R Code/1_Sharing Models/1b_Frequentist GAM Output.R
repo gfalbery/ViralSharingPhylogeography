@@ -1,6 +1,47 @@
 
 # Frequentist GAM Output ####
 
+library(mgcv); library(tidyverse); library(ggregplot)
+
+load("Output Files/BAMList.Rdata")
+
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
+
+DataList <- PPList <- list()
+
+for(r in 1:length(BAMList)){
+  
+  print(Resps[r])
+  
+  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r]))
+  
+  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
+  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
+  
+  MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
+  MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix
+  
+  SppMatrix = MZ1 + MZ2
+  
+  DataList[[Resps[[r]]]]$Spp <- SppMatrix
+  DataList[[Resps[[r]]]]$Cites <- rowSums(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1))
+  DataList[[Resps[[r]]]]$MinCites <- apply(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1),1,min)
+  DataList[[Resps[[r]]]]$Domestic <- ifelse(rowSums(cbind(2- FinalHostMatrix$hDom %>% as.factor %>% as.numeric,
+                                                          2- FinalHostMatrix$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
+  
+  PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), diag(nlevels(DataList[[Resps[r]]]$Sp))))
+}
+
+# Model Checking ####
+
+qplot(BAMList[[1]]$coef)
+
+SpCoefNames <- names(BAMList[[1]]$coef)[substr(names(BAMList[[1]]$coef),1,5)=="SppSp"]
+SpCoef <- BAMList[[1]]$coef[SpCoefNames]
+qplot(SpCoef)
+
+# Effects ####
+
 SpaceRange <- seq(from = min(FinalHostMatrix$Space),
                   to = max(FinalHostMatrix$Space),
                   length = 100)
@@ -15,16 +56,28 @@ DietRange <- seq(from = min(FinalHostMatrix$DietSim),
 
 GAMPredDF <- expand.grid(Space = SpaceRange,
                          Phylo2 = PhyloRange,
-                         DietSim = DietRange
-                         #Eaten = c(0,1)
+                         DietSim = DietRange,
+                         MinCites = mean(FinalHostMatrix$MinCites),
+                         Domestic = 0,
+                         Spp = median(SpCoef)
 )
 
 GAMPredDF <- GAMPredDF %>% mutate(SpaceQ = cut(Space, quantile(Space, 0:10/10),include.lowest = T, labels = 1:10),
                                   PhyloQ = cut(Phylo2, quantile(Phylo2, 0:10/10),include.lowest = T, labels = 1:10))
 
-GAMPredDF[,paste0(Resps,"Fit")] <- lapply(BAMList, function(a) logistic(predict(a, newdata = GAMPredDF))) %>% bind_cols
+GAMPredDF[,paste0(Resps,"Fit")] <- predict(BAMList[[1]], newdata = GAMPredDF, exclude = "Spp")
 
-FitSlopeTime <- gather(GAMPredDF, key = "Model", value = "Estimate", paste0(Resps[c(1,3,4,5)],"Fit"))
+PredictionsFit <- predict(BAMList[[1]], 
+                             newdata = GAMPredDF,
+                             type = "terms")
+
+PredictionsFit <- predict.bam(BAMList[[1]], 
+                             newdata = DataList[[1]], # %>% select(-Spp),
+                             type = "iterms",
+                             exclude = "Spp",
+                             terms = colnames(Predictions1b))
+
+InterceptFit <- attr(Predictions1b, "constant")
 
 ggplot(FitSlopeTime %>% filter(DietSim == 0), aes(Space, Estimate)) + 
   geom_line(aes(colour = Phylo2, group = as.factor(Phylo2)), alpha = 0.5) +

@@ -1,5 +1,54 @@
 # Creating final dataset
 
+# Replacing absent names in the full ST matrix ####
+
+FinalHostNames <- reduce(list(#as.character(Hosts$Sp), 
+  rownames(RangeAdj1), 
+  #colnames(CytBMatrix),
+  colnames(STMatrix),
+  rownames(HostAdj)), intersect)
+
+FHN <- FinalHostNames; length(FHN)
+
+AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
+AllMammals <- AllMammals[order(AllMammals)]
+AbsentHosts <- FHN[which(!FHN%in%AllMammals)]
+
+NameReplace <- c(
+  "Micaelamys_namaquensis",
+  "Akodon_paranaensis",
+  "Bos_frontalis",
+  "Bos_grunniens",
+  "Bubalus_arnee", # Absent
+  "Capra_hircus",
+  "Hexaprotodon_liberiensis",
+  "Equus_burchellii",
+  "Oryzomys_alfaroi" ,
+  "Oryzomys_laticeps",
+  "Oryzomys_megacephalus",
+  "Callithrix_argentata",
+  "Miniopterus_schreibersii",
+  "Myotis_ricketti",
+  "Oryzomys_albigularis",
+  "Ovis_aries",
+  "Piliocolobus_badius",
+  "Piliocolobus_rufomitratus" ,
+  "Lycalopex_gymnocercus" ,
+  "Rhinolophus_hildebrandtii",
+  "Oryzomys_angouya",
+  "Mops_condylurus",
+  "Chaerephon_plicatus",
+  "Chaerephon_pumilus",
+  "Taurotragus_oryx")
+
+names(NameReplace) <- AbsentHosts
+
+rownames(FullSTMatrix) <- colnames(FullSTMatrix) <- sapply(rownames(FullSTMatrix), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
+
+rownames(VD) <- colnames(VD) <- sapply(rownames(VD), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
+
+# Going Ahead ####
+
 library(tidyverse)
 
 rownames(Hosts) = Hosts$Sp
@@ -7,7 +56,7 @@ rownames(Hosts) = Hosts$Sp
 tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
 tSTMatrix <- 1 - (STMatrix - min(STMatrix))/max(STMatrix)
 
-FinalHostNames <- reduce(list(as.character(Hosts$Sp), 
+FinalHostNames <- reduce(list(#as.character(Hosts$Sp), 
                               rownames(RangeAdj1), 
                               #colnames(CytBMatrix),
                               colnames(STMatrix),
@@ -96,44 +145,10 @@ FinalHostMatrix <- FinalHostMatrix %>% merge(EltonTraits[,c("Scientific","Carniv
 
 FinalHostMatrix$Eaten <- ifelse(FinalHostMatrix$Carnivore==FinalHostMatrix$Carnivore.Sp2,0,1)
 
-# Establishing all mammal data ####
+Remove1 <- FinalHostMatrix %>% group_by(Sp) %>% summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp)
+Remove2 <- FinalHostMatrix %>% group_by(Sp2) %>% summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp2)
 
-# Replacing absent names in the full ST matrix ####
+RemoveSp <- intersect(Remove1$Sp, Remove2$Sp2)
 
-AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
-AllMammals <- AllMammals[order(AllMammals)]
-AbsentHosts <- FHN[which(!FHN%in%AllMammals)]
-
-NameReplace <- c(
-  "Micaelamys_namaquensis",
-  "Akodon_paranaensis",
-  "Bos_frontalis",
-  "Bos_grunniens",
-  "Bubalus_arnee", # Absent
-  "Capra_hircus",
-  "Hexaprotodon_liberiensis",
-  "Equus_burchellii",
-  "Oryzomys_alfaroi" ,
-  "Oryzomys_laticeps",
-  "Oryzomys_megacephalus",
-  "Callithrix_argentata",
-  "Miniopterus_schreibersii",
-  "Myotis_ricketti",
-  "Oryzomys_albigularis",
-  "Ovis_aries",
-  "Piliocolobus_badius",
-  "Piliocolobus_rufomitratus" ,
-  "Lycalopex_gymnocercus" ,
-  "Rhinolophus_hildebrandtii",
-  "Oryzomys_angouya",
-  "Mops_condylurus",
-  "Chaerephon_plicatus",
-  "Chaerephon_pumilus",
-  "Taurotragus_oryx")
-
-names(NameReplace) <- AbsentHosts
-
-rownames(FullSTMatrix) <- colnames(FullSTMatrix) <- sapply(rownames(FullSTMatrix), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
-
-rownames(VD) <- colnames(VD) <- sapply(rownames(VD), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
+FinalHostMatrix <- FinalHostMatrix %>% filter(!Sp%in%RemoveSp&!Sp2%in%RemoveSp)
 

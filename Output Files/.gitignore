@@ -4,3 +4,6 @@ NVectorModelValidation.rds
 SubDataList.rds
 VectorModelValidation.rds
 GAMValidation.rds
+
+KnownSimGraphs.Rdata
+KnownNetworkStats.Rdata

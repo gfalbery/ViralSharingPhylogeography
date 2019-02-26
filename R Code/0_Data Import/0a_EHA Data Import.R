@@ -22,7 +22,7 @@ AssocsTraits <- AssocsBase2[,1:2]
 m <- table(AssocsTraits)
 M <- as.matrix(m)
 
-bipgraph <- graph.incidence(M, weighted = T)
+bipgraph <- graph.incidence(M, weighted = NULL)
 
 Virusgraph <- bipartite.projection(bipgraph)$proj1
 Hostgraph <- bipartite.projection(bipgraph)$proj2
@@ -40,6 +40,10 @@ HostA <- matrix(rep(table(AssocsBase2$Host), nrow(HostAdj)), nrow(HostAdj))
 HostB <- matrix(rep(table(AssocsBase2$Host), each = nrow(HostAdj)), nrow(HostAdj))
 HostAdj2 <- HostAdj/(HostA + HostB - HostAdj)
 HostAdj3 <- HostAdj/(HostA)
+
+Remove <- which(rowSums(HostAdj)==diag(HostAdj))
+
+HostAdj <- HostAdj[-Remove,-Remove]
 
 # Deriving metrics from the networks ####
 
