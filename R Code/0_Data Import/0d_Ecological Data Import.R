@@ -8,7 +8,7 @@ EltonTraits$Scientific <- EltonTraits$Scientific %>% str_replace(" ","_")
 
 EltonTraits$Carnivore <- ifelse(rowSums(EltonTraits[,c("Diet.Vend","Diet.Vect","Diet.Vfish")])>10,1,0)
 
-DietComp <- EltonTraits %>% select(starts_with("Diet")) %>% select(1:10) %>% as.tibble
+DietComp <- EltonTraits %>% select(starts_with("Diet")) %>% select(1:10) %>% as_tibble
 Remove <- which(rowSums(DietComp)==0)
 DietComp <- DietComp %>% slice(-Remove)
 

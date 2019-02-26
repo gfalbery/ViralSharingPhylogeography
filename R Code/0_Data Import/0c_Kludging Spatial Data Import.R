@@ -46,6 +46,8 @@ if(file.exists("data/MammalRanges2.Rdata")) load(file = "data/MammalRanges2.Rdat
   
   MammalRanges2 <- fasterize(mammal_shapes_red2, mammal_raster2, by = "binomial")
   
+  remove("mammal_raster2", "mammal_shapes2", "mammal_shapes_red2")
+  
 }
 
 data("wrld_simpl")
@@ -75,56 +77,60 @@ CountryCentroids <- WorldMap %>% group_by(Country) %>%
 # THIS DATA FRAME TAKES A LOT OF MEMORY - convert to sparse matrix 
 # Or learn more raster methods before pub ####
 
-Valuedf <- data.frame(getValues(MammalRanges))
-Valuedf2 <- reshape2::melt(Valuedf)
-Valuedf2$x <- rep(1:MammalRanges[[1]]@ncols, MammalRanges[[1]]@nrows)
-Valuedf2$y <- rep(MammalRanges[[1]]@nrows:1, each = MammalRanges[[1]]@ncols)
-
-Valuedf3 <- data.frame(getValues(MammalRanges2))
-Valuedf4 <- reshape2::melt(Valuedf3)
-Valuedf4$x <- rep(1:MammalRanges2[[1]]@ncols, MammalRanges2[[1]]@nrows)
-Valuedf4$y <- rep(MammalRanges2[[1]]@nrows:1, each = MammalRanges2[[1]]@ncols)
-
-Rangedf <- rbind(Valuedf2[!is.na(Valuedf2$value),],Valuedf4[!is.na(Valuedf4$value),]) # This is where a load of them were lost ####
-Rangedf <- Rangedf %>% 
-  dplyr::rename(Host = variable, Presence = value)
-
-Rangedf$GridID <- with(Rangedf, paste(x, y))
-
-Range0 <- levels(Rangedf$Host)[which(table(Rangedf$Host)==0)] # Hosts that have no spatial records??
-Rangedf <- droplevels(Rangedf) 
-Rangedf <- Rangedf[order(Rangedf$Host),]
-
-# Using igraph to project it
-
-RangeOverlap <- matrix(0, nrow = nlevels(Rangedf$Host), ncol = nlevels(Rangedf$Host))
-dimnames(RangeOverlap) <- list(levels(Rangedf$Host),levels(Rangedf$Host))
-
-for(x in levels(Rangedf$Host)){
+if(!file.exists("data/RangeOverlap.Rdata")){
   
-  if(x == first(levels(Rangedf$Host))) t1 <- Sys.time()
+  Valuedf <- data.frame(getValues(MammalRanges))
+  Valuedf2 <- reshape2::melt(Valuedf)
+  Valuedf2$x <- rep(1:MammalRanges[[1]]@ncols, MammalRanges[[1]]@nrows)
+  Valuedf2$y <- rep(MammalRanges[[1]]@nrows:1, each = MammalRanges[[1]]@ncols)
   
-  Grids <- Rangedf[Rangedf$Host==x,"GridID"]
-  SubRangedf <- Rangedf[Rangedf$GridID %in% Grids,]
+  Valuedf3 <- data.frame(getValues(MammalRanges2))
+  Valuedf4 <- reshape2::melt(Valuedf3)
+  Valuedf4$x <- rep(1:MammalRanges2[[1]]@ncols, MammalRanges2[[1]]@nrows)
+  Valuedf4$y <- rep(MammalRanges2[[1]]@nrows:1, each = MammalRanges2[[1]]@ncols)
   
-  RangeOverlap[x,] <- table(SubRangedf$Host)
+  Rangedf <- rbind(Valuedf2[!is.na(Valuedf2$value),],Valuedf4[!is.na(Valuedf4$value),]) # This is where a load of them were lost ####
+  Rangedf <- Rangedf %>% 
+    dplyr::rename(Host = variable, Presence = value)
   
-  print(x)
+  Rangedf$GridID <- with(Rangedf, paste(x, y))
   
-  if(x == last(levels(Rangedf$Host))) t2 <- Sys.time()
+  Range0 <- levels(Rangedf$Host)[which(table(Rangedf$Host)==0)] # Hosts that have no spatial records??
+  Rangedf <- droplevels(Rangedf) 
+  Rangedf <- Rangedf[order(Rangedf$Host),]
   
-}
+  # Using igraph to project it
+  
+  RangeOverlap <- matrix(0, nrow = nlevels(Rangedf$Host), ncol = nlevels(Rangedf$Host))
+  dimnames(RangeOverlap) <- list(levels(Rangedf$Host),levels(Rangedf$Host))
+  
+  for(x in levels(Rangedf$Host)){
+    
+    if(x == first(levels(Rangedf$Host))) t1 <- Sys.time()
+    
+    Grids <- Rangedf[Rangedf$Host==x,"GridID"]
+    SubRangedf <- Rangedf[Rangedf$GridID %in% Grids,]
+    
+    RangeOverlap[x,] <- table(SubRangedf$Host)
+    
+    print(x)
+    
+    if(x == last(levels(Rangedf$Host))) t2 <- Sys.time()
+    
+  }
+  
+  RangeA = matrix(rep(diag(RangeOverlap), nrow(RangeOverlap)), nrow(RangeOverlap))
+  RangeB = matrix(rep(diag(RangeOverlap), each = nrow(RangeOverlap)), nrow(RangeOverlap))
+  
+  RangeAdj <- RangeOverlap/(RangeA + RangeB - RangeOverlap) # Weighted evenly
+  
+  save(RangeAdj, file = "data/RangeOverlap.Rdata")
+  
+  remove(MammalRanges, MammalRanges2)
+  
+} else load("data/RangeOverlap.Rdata")
 
-Hosts$GeogRange <- diag(RangeOverlap)[as.character(Hosts$Sp)]
-
-RangeA = matrix(rep(diag(RangeOverlap), nrow(RangeOverlap)), nrow(RangeOverlap))
-RangeB = matrix(rep(diag(RangeOverlap), each = nrow(RangeOverlap)), nrow(RangeOverlap))
-
-RangeAdj1 <- RangeOverlap/(RangeA + RangeB - RangeOverlap) # Weighted evenly
-RangeAdj2 <- RangeOverlap/(RangeA) # Asymmetrical
-
-Hosts[Hosts$Sp%in%rownames(RangeAdj1),"S.Greg1"] <- rowSums(RangeAdj1[as.character(Hosts[Hosts$Sp%in%rownames(RangeAdj1),"Sp"]),])
-Hosts[Hosts$Sp%in%rownames(RangeAdj2),"S.Greg2"] <- rowSums(RangeAdj2[as.character(Hosts[Hosts$Sp%in%rownames(RangeAdj2),"Sp"]),])
+Hosts[Hosts$Sp%in%rownames(RangeAdj),"S.Greg1"] <- rowSums(RangeAdj[as.character(Hosts[Hosts$Sp%in%rownames(RangeAdj),"Sp"]),])
 
 # Making polygons for display ####
 
@@ -172,89 +178,6 @@ Hosts <- merge(Hosts, HostCentroids, all.x = T, by.x = "Sp", by.y = "Host")
 
 VirusAssocs <- apply(M, 1, function(a) names(a[a>0]))
 
-if(file.exists("data/VirusPolygons.Rdata")) load("data/VirusPolygons.Rdata") else{
-  
-  VirusRanges <- lapply(1:length(VirusAssocs), function(b) data.frame(HostPolygons[HostPolygons$Host%in%VirusAssocs[[b]],]) %>%
-                          mutate(Virus = names(VirusAssocs)[b])) %>% bind_rows()
-  
-  VirusPolygons <- lapply(1:length(VirusAssocs), function(x) {
-    
-    templist <- list()
-    
-    NumAssocs <- which(names(MammalRanges)%in%VirusAssocs[[x]])
-    
-    return(
-      
-      if(length(NumAssocs)>0){
-        if(length(NumAssocs)>1){
-          for(y in 1:length(NumAssocs)){
-            r <- MammalRanges[[NumAssocs[y]]] > -Inf
-            templist[[y]] <- r
-          }
-          
-          m <- do.call(merge, templist)
-          m %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
-            mutate(Virus = names(VirusAssocs)[x])
-          
-        } else {
-          r <- MammalRanges[[NumAssocs]] > -Inf
-          r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
-            mutate(Virus = names(VirusAssocs)[x])
-        }
-      } else NULL
-    )
-  }) 
-  
-  VirusPolygons <- VirusPolygons[!is.na(VirusPolygons)] %>% bind_rows()
-  
-  save(VirusPolygons, file = "data/VirusPolygons.Rdata")}
-
-VirusCentroids <- data.frame(LongMean = with(VirusPolygons, tapply(long, Virus, mean)),
-                             LatMean = with(VirusPolygons, tapply(lat, Virus, mean)),
-                             Virus = unique(VirusPolygons$Virus))
-
-Viruses <- merge(Viruses, VirusCentroids, all.x = T, by.x = "Sp", by.y = "Virus")
-
-# Creating virus range overlap matrix ####
-
-VirusRangeOverlap <- matrix(NA, nrow = nunique(Viruses$Sp), 
-                            ncol = nunique(Viruses$Sp))
-
-dimnames(VirusRangeOverlap) <- list(unique(Viruses$Sp),
-                                    unique(Viruses$Sp))
-
-
-if(file.exists("data/VirusRangeOverlap.Rdata")) load("data/VirusRangeOverlap.Rdata") else{
-  
-  GridList <- lapply(VirusAssocs, function(x){
-    
-    unique(Rangedf[Rangedf$Host %in% x,"GridID"]) %>% return
-    
-  })
-  
-  for(x in unique(Viruses$Sp)){
-    
-    VirusRangeOverlap[x,] <- sapply(GridList[unique(Viruses$Sp)], function(y) length(unlist(intersect(GridList[unique(Viruses$Sp)][[which(unique(Viruses$Sp)==x)]], y))))
-    
-    print(x)
-    
-  }
-  
-  diag(VirusRangeOverlap) <- sapply(GridList[unique(Viruses$Sp)], length)
-  
-  all(apply(VirusRangeOverlap,1,max) == diag(VirusRangeOverlap))
-  
-  save(GridList, file = "data/GridList.Rdata")
-  save(VirusRangeOverlap, file = "data/VirusRangeOverlap.Rdata")}
-
-VirusRangeA = matrix(rep(diag(VirusRangeOverlap), nrow(VirusRangeOverlap)), nrow(VirusRangeOverlap))
-VirusRangeB = matrix(rep(diag(VirusRangeOverlap), each = nrow(VirusRangeOverlap)), nrow(VirusRangeOverlap))
-
-VirusRangeAdj1 <- VirusRangeOverlap/(VirusRangeA + VirusRangeB - VirusRangeOverlap) # Weighted evenly
-VirusRangeAdj2 <- VirusRangeOverlap/(VirusRangeA) # Asymmetrical
-
-#load("~/Albersnet/data/FullMammalRanges.Rdata")
-#load("~/Albersnet/data/FullMammalRanges2.Rdata")
 load("~/Albersnet/data/FullPolygons.Rdata")
 
 CodeRoot <- "R Code/0_Data Import"

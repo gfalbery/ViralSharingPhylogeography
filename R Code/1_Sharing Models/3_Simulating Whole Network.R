@@ -29,10 +29,19 @@ load("~/Albersnet/Output Files/BAMList.Rdata")
 SpCoefNames <- names(BAMList[[1]]$coef)[substr(names(BAMList[[1]]$coef),1,5)=="SppSp"]
 SpCoef <- BAMList[[1]]$coef[SpCoefNames]
 
+FakeSpp <- matrix(0 , nrow = N, ncol = length(SpCoef)) %>% as("dgCMatrix")
+
+FakeSpp2 <- apply(FakeSpp, 1, function(a){
+  a[sample(length(a),2)] <- 1
+  return(a)
+})
+
 Predictions1b <- predict.bam(BAMList[[1]], 
-                             newdata = DataList[[1]], # %>% select(-Spp),
+                             newdata = AllMammaldf, # %>% select(-Spp),
                              type = "terms",
                              exclude = "Spp")
+
+
 
 Intercept1b <- attr(Predictions1b, "constant")
 

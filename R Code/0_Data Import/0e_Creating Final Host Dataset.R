@@ -3,7 +3,7 @@
 # Replacing absent names in the full ST matrix ####
 
 FinalHostNames <- reduce(list(#as.character(Hosts$Sp), 
-  rownames(RangeAdj1), 
+  rownames(RangeAdj), 
   #colnames(CytBMatrix),
   colnames(STMatrix),
   rownames(HostAdj)), intersect)
@@ -57,10 +57,10 @@ tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
 tSTMatrix <- 1 - (STMatrix - min(STMatrix))/max(STMatrix)
 
 FinalHostNames <- reduce(list(#as.character(Hosts$Sp), 
-                              rownames(RangeAdj1), 
-                              #colnames(CytBMatrix),
-                              colnames(STMatrix),
-                              rownames(HostAdj)), intersect)
+  rownames(RangeAdj), 
+  #colnames(CytBMatrix),
+  colnames(STMatrix),
+  rownames(HostAdj)), intersect)
 
 FHN <- FinalHostNames; length(FHN)
 
@@ -71,11 +71,8 @@ UpperHosts <- # Removing diagonals, as they're uninformative
   which(upper.tri(HostAdj[FHN,FHN], diag = T))
 
 HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
-                           PropVirus = c(HostAdj2[FHN, FHN]),
-                           PropVirus2 = c(HostAdj3[FHN, FHN]),
-                           Space = c(RangeAdj1[FHN, FHN]),
-                           #Phylo = c(tCytBMatrix[FHN, FHN]), 
-                           Phylo2 = c(tSTMatrix[FHN, FHN]),
+                           Space = c(RangeAdj[FHN, FHN]),
+                           Phylo = c(tSTMatrix[FHN, FHN]),
                            Sp = as.character(rep(FHN, each = length(FHN))),
                            Sp2 = as.character(rep(FHN, length(FHN)))
 )
@@ -83,8 +80,9 @@ HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
 HostMatrixdf$Sp <- as.character(HostMatrixdf$Sp)
 HostMatrixdf$Sp2 <- as.character(HostMatrixdf$Sp2)
 
-HostMatrixVar <- c("hOrder", "hFamily", "hDom", "hAllZACites", "hDiseaseZACites", 
-                   "LongMean", "LatMean")
+HostMatrixVar <- c("hOrder", "hFamily", "hDom", "hAllZACites", "hDiseaseZACites"
+                   #"LongMean", "LatMean")
+)
 
 HostMatrixdf[,HostMatrixVar] <- Hosts[HostMatrixdf$Sp, HostMatrixVar]
 HostMatrixdf[,paste0(HostMatrixVar,".Sp2")] <- Hosts[HostMatrixdf$Sp2, HostMatrixVar]
@@ -105,14 +103,6 @@ HostMatrixdf$DCites <- log(HostMatrixdf$hDiseaseZACites + 1)
 HostMatrixdf$MinDCites <- apply(HostMatrixdf[,c("hDiseaseZACites", "hDiseaseZACites.Sp2")],1, function(a) min(a, na.rm = T))
 HostMatrixdf$TotalDCites <- log(HostMatrixdf$hDiseaseZACites + HostMatrixdf$hAllZACites.Sp2 + 1)
 
-HostMatrixdf$SpaceQuantile <- cut(HostMatrixdf$Space, 
-                                  breaks = c(-0.1,0,0.25,0.5, 0.75, 1.1),
-                                  labels = c(0, 0.25, 0.5, 0.75, 1))
-
-#HostMatrixdf$PhyloQuantile <- cut(HostMatrixdf$Phylo2, 
-#                                  breaks = c(quantile(HostMatrixdf$Phylo2, 0:5/5)),
-#                                  labels = c(0, 0.25, 0.5, 0.75, 1))
-
 HostMatrixdf$DomDom <- paste(HostMatrixdf$hDom, HostMatrixdf$hDom.Sp2)
 HostMatrixdf$DomDom <- ifelse(HostMatrixdf$DomDom == "domestic wild", "wild domestic", HostMatrixdf$DomDom) %>%
   factor(levels = c("wild wild", "domestic domestic", "wild domestic"))
@@ -122,19 +112,13 @@ UpperHosts <- # Removing diagonals and
 
 FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
-UpperHosts <- # Removing diagonals and 
-  which(upper.tri(HostAdj[FHN,FHN], diag = T))
+remove(HostMatrixdf)
 
-HostThemselves <- # Removing diagonals and 
-  which(upper.tri(HostAdj[FHN,FHN], diag = T)&lower.tri(HostAdj[FHN,FHN], diag = T))
-
-FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
-FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo2
+FinalHostMatrix$Phylo2 <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
-
 
 FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
   mutate(DietSim = 1 - DietSim)

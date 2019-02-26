@@ -127,3 +127,6 @@ FullPolygons2 <- lapply(levels(FullValuedf4$variable), function(x) {
 FullPolygons <- bind_rows(FullPolygons, FullPolygons2)
 
 save(FullPolygons, file = "data/FullPolygons.Rdata")
+
+detach(package:raster)
+

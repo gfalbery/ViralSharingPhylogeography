@@ -2,13 +2,8 @@
 
 if(!file.exists("data/intermediate/HP3-ST_PDmatrix.csv")){
   
-  ## 23 June 2016 - KJO
-  # Phylogenetic matrix code, from  Cleaning_v41.r
-  #require(dplyr)
-  #library(geiger)
-  #require(picante)
   P <- rprojroot::find_rstudio_root_file
-  library(PVR) # Note this package has been removed from CRAN
+  library(PVR)
   library(ape)
   library(phylogram)
   
@@ -17,7 +12,6 @@ if(!file.exists("data/intermediate/HP3-ST_PDmatrix.csv")){
   v <- VirusTraits
   
   #check that host, virus, and asc files all match up with unique viruses and hosts included
-  #names(asc)
   va <- unique(asc$Virus)
   ha <- unique(asc$Host)
   
