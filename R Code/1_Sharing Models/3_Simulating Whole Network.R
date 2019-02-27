@@ -31,32 +31,32 @@ load("~/Albersnet/Output Files/BAMList.Rdata")
 SpCoefNames <- names(BAMList[[1]]$coef)[substr(names(BAMList[[1]]$coef),1,5)=="SppSp"]
 SpCoef <- BAMList[[1]]$coef[SpCoefNames]
 
-FakeSpp <- matrix(0 , nrow = N, ncol = length(SpCoef))# %>% as("dgCMatrix")
-
-AllMammaldf$Spp <- FakeSpp; remove(FakeSpp)
-AllMammaldf$MinCites <- mean(c(log(FinalHostMatrix$MinCites+1), log(FinalHostMatrix$MinCites.Sp2+1)))
-AllMammaldf$Domestic <- 0
+Divisions = round(seq(0, nrow(AllMammaldf), length = 21))
 
 print("Prediction Effects!")
 
 if(file.exists("Output Files/AllPredictions1b.Rdata")) load("Output Files/AllPredictions1b.Rdata") else{
+  
+  FakeSpp <- matrix(0 , nrow = N, ncol = length(SpCoef))# %>% as("dgCMatrix")
+  
+  AllMammaldf$Spp <- FakeSpp; remove(FakeSpp)
+  AllMammaldf$MinCites <- mean(c(log(FinalHostMatrix$MinCites+1), log(FinalHostMatrix$MinCites.Sp2+1)))
+  AllMammaldf$Domestic <- 0
   
   AllPredictions1b <- predict.bam(BAMList[[1]], 
                                   newdata = AllMammaldf, # %>% select(-Spp),
                                   type = "terms",
                                   exclude = "Spp")
   
-  Divisions = round(seq(0, nrow(AllMammaldf), length = 21))
-  
   AllPredictions1b <- mclapply(2:21, function(i){
     predict.bam(BAMList[[1]], 
-                newdata = AllMammaldf[(Divisions[[i-1]]+1):Divisions[[i]],], 
+                newdata = AllMammaldf[(Divisions[i-1]+1):Divisions[i],], 
                 type = "terms",
                 exclude = "Spp")
   })
   
   save(AllPredictions1b, file = "Output Files/AllPredictions1b.Rdata")
-
+  
 }
 
 print("Predicting Links!")
@@ -76,7 +76,7 @@ if(file.exists("Output Files/AllPredList.Rdata")) load("Output Files/AllPredList
     
     AllPredictions[,"Spp"] <- sample(SpCoef, N, replace = T) + 
       sample(SpCoef, N, replace = T)
-  
+    
     BinPred <- rbinom(n = N,
                       prob = logistic(rowSums(AllPredictions)),
                       size  = 1)

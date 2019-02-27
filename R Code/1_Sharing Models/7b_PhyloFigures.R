@@ -1,8 +1,6 @@
 
 # Importing Phylopics ####
 
-install.packages("rphylopic")
-
 library(rphylopic); library(tidyverse)
 
 Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
@@ -10,11 +8,13 @@ Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
 
 lapply(levels(Panth1$hOrder), function(a){
   
-  Species <- Panth1 %>% filter(hOrder==a) %>% select(Species)
+  Species <- Panth1 %>% filter(hOrder==a) %>% select(Sp)
   
-  lapply(Species, function(b){
+  lapply(Species$Sp, function(b){
     
-    rphylopc::name_search(text = b, options = "namebankID")
+    pic <- rphylopic::name_search(text = as.character(b), options = "namebankID") %>% return
+    
+    if(length(pic)>0) return(pic)
     
   })
   

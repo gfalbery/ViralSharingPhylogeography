@@ -1,16 +1,17 @@
 
 # STAN Model Output ####
 
-library(rstan); library(reskew); library(ggregplot); library(parallel); library(igraph)
+library(rstan); library(reskew); library(ggregplot); library(parallel); library(igraph);
+library(mgcv); library(tidyverse)
 
 if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
+
+load("Output Files/BAMList.Rdata")
 
 FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 
-library(mgcv); library(tidyverse)
-
-Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
+Resps <- c("VirusBinary")#,"RNA","DNA","Vector","NVector")
 
 DataList <- list()
 
@@ -39,7 +40,8 @@ for(r in 1:length(Resps)){
 
 PredList1 <- list()
 
-Predictions1 <- predict(BAMList[[1]], newdata = DataList[[1]])
+Predictions1 <- predict.gam(BAMList[[1]], 
+                            newdata = DataList[[1]])
 
 N = nrow(DataList[[1]])
 
@@ -65,8 +67,8 @@ SimNets1 <- mclapply(1:length(PredList1), function(i){
                    nrow = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)), 
                    ncol = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
   
-  AssMat[lower.tri(AssMat)] <- round(PredList1[[i]])# %>% as.matrix %>% as("dgCMatrix")
-  AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))] #%>% as.matrix %>% as("dgCMatrix")
+  AssMat[lower.tri(AssMat)] <- round(PredList1[[i]])
+  AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
   diag(AssMat) <- 0
   dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
                            union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))

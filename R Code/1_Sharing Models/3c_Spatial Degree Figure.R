@@ -4,8 +4,9 @@
 library(tidyverse); library(raster)
 
 load("~/Albersnet/data/FullMammalRanges.Rdata")
+load("Output Files/Panth1.Rdata")
 
-FullValuedf <- data.frame(getValues(FullMammalRanges))
+FullValuedf <- data.frame(getValues(FullMammalRanges)); detach(package:raster)
 FullValuedf2 <- reshape2::melt(FullValuedf)
 FullValuedf2$x <- rep(1:FullMammalRanges[[1]]@ncols, FullMammalRanges[[1]]@nrows)
 FullValuedf2$y <- rep(FullMammalRanges[[1]]@nrows:1, each = FullMammalRanges[[1]]@ncols)
@@ -18,7 +19,7 @@ FullRangedf$GridID <- with(FullRangedf, paste(x, y))
 FullRangedf <- droplevels(FullRangedf) 
 FullRangedf <- FullRangedf[order(FullRangedf$Host),]
 
-FullRangedf <- FullRangedf %>% left_join(Panth1, by.x = "Host", by.y = "Sp", all.x = T)
+FullRangedf <- FullRangedf %>% left_join(Panth1[,c("Sp","AllPredDegree", "InDegree", "OutDegree")], by = c("Host" = "Sp"), all.x = T)
 
 GridDegree <- with(FullRangedf, tapply(AllPredDegree, list(x, y), function(a) mean(a, na.rm = T))) %>% 
   reshape2::melt() %>% na.omit %>% dplyr::rename(AllDegree = value)

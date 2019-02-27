@@ -1,6 +1,8 @@
 
 # Generating Figures ####
 
+library(ggplot2); library(ggregplot); library(colorspace)
+
 # 1.	Panel: Relationships/model outputs from: 
 # Space and phylogeny; phylogeny and viral sharing; space and viral sharing for all data
 
