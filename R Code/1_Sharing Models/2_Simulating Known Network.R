@@ -8,8 +8,8 @@ if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata")
 
 load("Output Files/BAMList.Rdata")
 
-FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
-FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
+FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 
 Resps <- c("VirusBinary")#,"RNA","DNA","Vector","NVector")
 
@@ -21,8 +21,8 @@ for(r in 1:length(Resps)){
   
   DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r]))
   
-  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
-  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
+  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
+  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
   
   MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
   MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix
@@ -41,14 +41,21 @@ for(r in 1:length(Resps)){
 PredList1 <- list()
 
 Predictions1 <- predict.gam(BAMList[[1]], 
-                            newdata = DataList[[1]])
+                            newdata = DataList[[1]],
+                            type = "terms")
+
+Intercept1 <- attr(Predictions1, "constant")
+
+Predictions1 <- Predictions1 %>% as.data.frame()
+
+Predictions1$Intercept <- Intercept1
 
 N = nrow(DataList[[1]])
 
 PredList1 <- parallel::mclapply(1:1000, function(x){ # to do something non-specific
   
   BinPred <- rbinom(n = N,
-                    prob = logistic(Predictions1),
+                    prob = logistic(rowSums(Predictions1)),
                     size  = 1)
   
   BinPred
@@ -91,7 +98,7 @@ SpCoefNames <- names(BAMList[[1]]$coef)[substr(names(BAMList[[1]]$coef),1,5)=="S
 SpCoef <- BAMList[[1]]$coef[SpCoefNames]
 
 Predictions1b <- predict.bam(BAMList[[1]], 
-                             newdata = DataList[[1]] %>% select(-Spp),
+                             newdata = DataList[[1]],# %>% select(-Spp),
                              type = "terms",
                              exclude = "Spp")
 

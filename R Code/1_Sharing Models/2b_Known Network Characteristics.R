@@ -29,9 +29,9 @@ PredDegrees1b <- map(PredNetwork1b, "Degree") %>% bind_cols()
 
 PredDegrees <- data.frame(PredDegree1 = apply(PredDegrees1, 1, mean),
                           PredDegree1b = apply(PredDegrees1b, 1, mean),
-                          Sp = V(SimGraphs1[[1]])$name)
+                          Sp = names(PredNetwork1b[[1]]$Degree))
 
-Hosts <- Hosts %>% #select(-c("PredDegree1","PredDegree1b")) %>%
+Hosts <- Hosts %>% select(-c("PredDegree1","PredDegree1b")) %>%
                             left_join(PredDegrees, by = "Sp")
 
 

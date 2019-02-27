@@ -48,6 +48,9 @@ BarGraph(Panth1, "hOrder", "OutDegree", order = T, text = "N") +
 
 # 4.	Gridcell level centrality measure (map), to see if overlaps w species diversity (optional)
 
+load("Output Files/GridDegree.Rdata")
+
+
 
 
 # 5.	Panel: viral trait plots (RNA vs. DNA; vector-borne or not; etc)

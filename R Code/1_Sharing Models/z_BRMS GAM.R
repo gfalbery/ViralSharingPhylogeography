@@ -1,9 +1,9 @@
 
 # Fitting STAN Model in BRMS
 # Rscript "R Code/1_Sharing Models/1b_Full GAM.R"
-# Rscript "R Code/1_Sharing Models/1b_Full GAM.R" >> my_log.txt
+# Rscript --verbose "R Code/1_Sharing Models/z_BRMS GAM.R" >> my_log.txt
 
-source("R Code/00_Master Code.R")
+if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
 
 library(rstan); library(tidyverse); library(reskew); library(brms)
 
@@ -33,8 +33,8 @@ f <- f %>% mutate(
   dom = ifelse(hDom=="wild",0,1),
   dom_2 = ifelse(hDom.Sp2=="wild",0,1),
   
-  d_cites_s1 = scale(hDiseaseZACites)[,1],
-  d_cites_s2 = scale(hDiseaseZACites.Sp2)[,1],
+  d_cites_s1 = scale(log(hDiseaseZACites+1))[,1],
+  d_cites_s2 = scale(log(hDiseaseZACites.Sp2+1))[,1],
   
 )
 
@@ -42,20 +42,22 @@ f <- f %>% mutate(
 
 sink(stdout())
 
-BinGAM <- brm(VirusBinary ~ t2(space_s,phylo_s) + s(DietSim) +
+BRMSGAM <- brm(VirusBinary ~ t2(space_s,phylo_s) + s(DietSim) +
               (1 + mmc(dom, dom_2) + mmc(d_cites_s1, d_cites_s2) | mm(Sp, Sp2)),
             data = f, 
             family = bernoulli(), 
             cores = 10,
             chains = 10,
-            iter = 1500, 
+            iter = 1000,
             warmup = 500,
             thin = 10, 
             refresh = 0,
-            save_ranef = TRUE)
+            save_ranef = TRUE,
+            verbose = TRUE,
+            silent = FALSE)
 
 sink()
 
-save(BinGAM, file = "Model Files/BinGAM.Rdata")
+save(BRMSGAM, file = "Model Files/BRMSGAM.Rdata")
 
 

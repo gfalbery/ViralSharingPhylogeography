@@ -14,16 +14,16 @@ StartTime <- Sys.time()
 
 source("R Code/00_Master Code.R")
 
-#if(file.exists("BAMList.Rdata")) load("BAMList.Rdata") else source(paste0(CodeRoot2,"Frequentist GAMs.R"))
+#if(file.exists("BAMList.Rdata")) load("BAMList.Rdata") else source(paste0(CodeRoot2,"1a_Frequentist GAMs.R"))
 
-#source(paste0(CodeRoot2,"2_Simulating Known Network.R"))
-#source(paste0(CodeRoot2,"2b_Known Network Characteristics.R"))
+source(paste0(CodeRoot2,"2_Simulating Known Network.R"))
+source(paste0(CodeRoot2,"2b_Known Network Characteristics.R"))
 
 source(paste0(CodeRoot2,"3_Simulating Whole Network.R"))
 source(paste0(CodeRoot2,"3b_All Network Characteristics.R"))
 source(paste0(CodeRoot2,"3c_Spatial Degree Figure.R"))
 
-#source(paste0(CodeRoot2,"4_Host Validation.R"))
+source(paste0(CodeRoot2,"4_Host Validation.R"))
 
 EndTime <- Sys.time()
 

@@ -8,3 +8,5 @@ GAMValidation.rds
 KnownSimGraphs.Rdata
 KnownNetworkStats.Rdata
 AllPredList.Rdata
+AllSims.Rdata
+AllSimGs.Rdata
