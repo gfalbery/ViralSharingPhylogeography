@@ -11,38 +11,28 @@ AllNetworkStats <- function(graph){
     
     Degree = degree(graph),
     
-    Eigen = eigenvector(graph),
+    Eigen = eigen_centrality(graph),
     
-    Between = betweenness(graph),
+    #Between = betweenness(graph),
     
-    Closeness = closenness(graph),
+    #Closeness = closenness(graph),
     
     Trans = transitivity(graph),
     
-    Components = components(graph),
+    Components = components(graph)
     
-    Prev = Prev(graph)
+    #Prev = Prev(graph)
     
   ) %>% return
 }
 
 print("Making AllGraphs")
 
-load("Output Files/AllSimsGAM.Rdata")
-
-AllSimGs <- parallel::mclapply(1:length(AllSims), function(i){
-  
-  graph.adjacency(AllSims[[i]], mode = "undirected", diag = F)
-  
-}, mc.cores = 10)
-
-if(length(which(sapply(AllSims, is.null)))>0) AllSimGs <- AllSimGs[-which(sapply(AllSims, is.null))]
-
-save(AllSimGs, fiel = "Output Files/AllSimGraphs.Rdata")
+load("Output Files/AllSimGs.Rdata")
 
 print("Deriving Characteristics")
 
-AllPredNetwork <- lapply(AllSimGs, NetworkStats)
+AllPredNetwork <- mclapply(AllSimGs, AllNetworkStats, mc.cores = 10)
 
 save(AllPredNetwork, file = "Output Files/KnownNetworkStats.Rdata")
 

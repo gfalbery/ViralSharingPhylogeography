@@ -44,65 +44,45 @@ qplot(SpCoef)
 
 SpaceRange <- seq(from = min(FinalHostMatrix$Space),
                   to = max(FinalHostMatrix$Space),
-                  length = 100)
+                  length = 20)
 
-PhyloRange <- seq(from = min(FinalHostMatrix$Phylo2),
-                  to = max(FinalHostMatrix$Phylo2),
-                  length = 100)
+PhyloRange <- seq(from = min(scale(FinalHostMatrix$Phylo2)),
+                  to = max(scale(FinalHostMatrix$Phylo2)),
+                  length = 20)
 
 DietRange <- seq(from = min(FinalHostMatrix$DietSim),
                  to = max(FinalHostMatrix$DietSim),
-                 length = 100)
+                 length = 10)
 
 GAMPredDF <- expand.grid(Space = SpaceRange,
                          Phylo2 = PhyloRange,
                          DietSim = DietRange,
                          MinCites = mean(FinalHostMatrix$MinCites),
-                         Domestic = 0,
-                         Spp = median(SpCoef)
+                         Domestic = 0
 )
+
+GAMPredDF$Spp <- matrix(0 , nrow = nrow(GAMPredDF), ncol = length(SpCoef))# %>% as("dgCMatrix")
 
 GAMPredDF <- GAMPredDF %>% mutate(SpaceQ = cut(Space, quantile(Space, 0:10/10),include.lowest = T, labels = 1:10),
                                   PhyloQ = cut(Phylo2, quantile(Phylo2, 0:10/10),include.lowest = T, labels = 1:10))
 
-GAMPredDF[,paste0(Resps,"Fit")] <- predict(BAMList[[1]], newdata = GAMPredDF, exclude = "Spp")
+FitPredictions  <- predict(BAMList[[1]], 
+                           newdata = GAMPredDF)
 
-PredictionsFit <- predict(BAMList[[1]], 
-                             newdata = GAMPredDF,
-                             type = "terms")
+GAMPredDF[,"Fit"] <- logistic(FitPredictions)
 
-PredictionsFit <- predict.bam(BAMList[[1]], 
-                             newdata = DataList[[1]], # %>% select(-Spp),
-                             type = "iterms",
-                             exclude = "Spp",
-                             terms = colnames(Predictions1b))
-
-InterceptFit <- attr(Predictions1b, "constant")
-
-ggplot(FitSlopeTime %>% filter(DietSim == 0), aes(Space, Estimate)) + 
-  geom_line(aes(colour = Phylo2, group = as.factor(Phylo2)), alpha = 0.5) +
-  labs(y = "Predicted Value") +
-  facet_wrap(~Model)
-
-ggplot(FitSlopeTime %>% filter(DietSim == 0), aes(Phylo2, Estimate)) + 
-  geom_line(aes(colour = Space, group = as.factor(Space))) +
-  labs(y = "Predicted Value") +
-  facet_wrap(~Model)
-
-ggplot(FitSlopeTime %>% filter(Space == min(Space)), aes(DietSim, Estimate)) + 
-  geom_line(aes(colour = Phylo2, group = as.factor(Phylo2))) +
-  labs(y = "Predicted Value") +
-  facet_wrap(~Model)
+tiff("Figures/Model Predictions.jpeg", units = "mm", width = 200, height = 150, res = 300)
 
 list(
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo2, Estimate, colour = Space)) + 
+  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo2, Fit, colour = Space)) + 
     geom_line(aes(group = as.factor(Space)), alpha = 0.3),
   
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Space, Estimate, colour = Phylo2)) + 
+  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Space, Fit, colour = Phylo2)) + 
     geom_line(aes(group = as.factor(Phylo2)), alpha = 0.3)
   
 ) %>% arrange_ggplot2
 
+dev.off()
 
 list(
   ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo2, Estimate, colour = Space)) + 

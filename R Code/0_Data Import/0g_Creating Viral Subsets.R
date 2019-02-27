@@ -6,8 +6,8 @@ SubResps <- c("RNA", "DNA", "Vector","NVector")
 
 library(igraph); library(tidyverse); library(ggregplot)
 
-RNAViruses <- Viruses %>% filter(vDNAoRNA == "RNA") %>% select(Sp) %>% unlist
-DNAViruses <- Viruses %>% filter(vDNAoRNA == "DNA") %>% select(Sp) %>% unlist
+RNAViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA") %>% select(vVirusNameCorrected) %>% unlist
+DNAViruses <- VirusTraits %>% filter(vDNAoRNA == "DNA") %>% select(vVirusNameCorrected) %>% unlist
 
 MRNA <- M[RNAViruses,]
 MDNA <- M[DNAViruses,]

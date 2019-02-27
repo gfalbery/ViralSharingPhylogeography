@@ -39,9 +39,9 @@ for(r in 1:length(Resps)){
 
 PredList1 <- list()
 
-Predictions1 <- predict(BAMList[[1]], newdata = FinalHostMatrix)
+Predictions1 <- predict(BAMList[[1]], newdata = DataList[[1]])
 
-N = nrow(FinalHostMatrix)
+N = nrow(DataList[[1]])
 
 PredList1 <- parallel::mclapply(1:1000, function(x){ # to do something non-specific
   
@@ -89,7 +89,7 @@ SpCoefNames <- names(BAMList[[1]]$coef)[substr(names(BAMList[[1]]$coef),1,5)=="S
 SpCoef <- BAMList[[1]]$coef[SpCoefNames]
 
 Predictions1b <- predict.bam(BAMList[[1]], 
-                             newdata = DataList[[1]], # %>% select(-Spp),
+                             newdata = DataList[[1]] %>% select(-Spp),
                              type = "terms",
                              exclude = "Spp")
 
