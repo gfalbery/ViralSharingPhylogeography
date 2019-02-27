@@ -63,9 +63,9 @@ if(file.exists("Output Files/AllPredictions1b.Rdata")) load("Output Files/AllPre
 
 if(file.exists("Output Files/AllPredList.Rdata")) load("Output Files/AllPredList.Rdata") else{
   
-  AllIntercept <- attr(AllPredictions1b, "constant")
+  AllIntercept <- attr(AllPredictions1b[[1]], "constant")
   
-  AllPredictions <- AllPredictions1b %>% as.data.frame
+  AllPredictions <- lapply(AllPredictions1b, as.data.frame) %>% bind_rows
   
   AllPredictions[,"Intercept"] <- AllIntercept
   
