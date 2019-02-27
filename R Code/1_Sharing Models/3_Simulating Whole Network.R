@@ -24,8 +24,6 @@ UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals,AllMammals], diag = T))
 
 AllMammaldf <- AllMammalMatrix[-UpperMammals,]; remove(AllMammalMatrix)
 
-AllPredList <- list()
-
 N = nrow(AllMammaldf)
 
 load("~/Albersnet/Output Files/BAMList.Rdata")
@@ -36,23 +34,23 @@ SpCoef <- BAMList[[1]]$coef[SpCoefNames]
 FakeSpp <- matrix(0 , nrow = N, ncol = length(SpCoef))# %>% as("dgCMatrix")
 
 AllMammaldf$Spp <- FakeSpp; remove(FakeSpp)
-AllMammaldf$MinCites <- mean(c(FinalHostMatrix$MinCites, FinalHostMatrix$MinCites.Sp2))
+AllMammaldf$MinCites <- mean(c(log(FinalHostMatrix$MinCites+1), log(FinalHostMatrix$MinCites.Sp2+1)))
 AllMammaldf$Domestic <- 0
 
+print("Prediction Effects!")
+
 if(file.exists("Output Files/AllPredictions1b.Rdata")) load("Output Files/AllPredictions1b.Rdata") else{
-  
-  print("Predicting Links!")
   
   AllPredictions1b <- predict.bam(BAMList[[1]], 
                                   newdata = AllMammaldf, # %>% select(-Spp),
                                   type = "terms",
                                   exclude = "Spp")
   
-  Divisions = round(seq(1, nrow(AllMammaldf), length = 21))
+  Divisions = round(seq(0, nrow(AllMammaldf), length = 21))
   
   AllPredictions1b <- mclapply(2:21, function(i){
     predict.bam(BAMList[[1]], 
-                newdata = AllMammaldf[Divisions[[i-1]]:Divisions[[i]],], 
+                newdata = AllMammaldf[(Divisions[[i-1]]+1):Divisions[[i]],], 
                 type = "terms",
                 exclude = "Spp")
   })
@@ -61,6 +59,8 @@ if(file.exists("Output Files/AllPredictions1b.Rdata")) load("Output Files/AllPre
 
 }
 
+print("Predicting Links!")
+
 if(file.exists("Output Files/AllPredList.Rdata")) load("Output Files/AllPredList.Rdata") else{
   
   AllIntercept <- attr(AllPredictions1b[[1]], "constant")
@@ -68,6 +68,9 @@ if(file.exists("Output Files/AllPredList.Rdata")) load("Output Files/AllPredList
   AllPredictions <- lapply(AllPredictions1b, as.data.frame) %>% bind_rows
   
   AllPredictions[,"Intercept"] <- AllIntercept
+  
+  #Remove <- which(table(lapply(2:21, function(i) Divisions[[i-1]]:Divisions[[i]]) %>% unlist)>1)
+  #AllPredictions <- AllPredictions[-Remove,]
   
   AllPredList <- parallel::mclapply(1:100, function(x){ # to do something non-specific
     
@@ -87,6 +90,8 @@ if(file.exists("Output Files/AllPredList.Rdata")) load("Output Files/AllPredList
 }
 
 PredDF1 <- data.frame(AllPredList)
+
+print("Simulating Networks!")
 
 # Simulating the network #####
 
@@ -111,6 +116,8 @@ if(file.exists("Output Files/AllSims.Rdata")) load("Output Files/AllSims.Rdata")
   save(AllSims, file = "Output Files/AllSims.Rdata")
   
 }
+
+print("Making Graphs!")
 
 # Making into Graphs ####
 
