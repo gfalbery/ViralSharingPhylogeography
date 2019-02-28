@@ -1,6 +1,8 @@
 
 # STAN Model Output ####
 
+# Rscript "R Code/1_Sharing Models/2_Simulating Known Network.R"
+
 library(rstan); library(reskew); library(ggregplot); library(parallel); library(igraph);
 library(mgcv); library(tidyverse)
 

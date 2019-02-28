@@ -9,7 +9,11 @@ library(MCMCglmm); library(tidyverse); library(Matrix); library(parallel); libra
 
 tFullSTMatrix <- 1 - (FullSTMatrix - min(FullSTMatrix))/max(FullSTMatrix)
 
-AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
+AllMammals <- reduce(list(colnames(FullSTMatrix),
+                          colnames(FullRangeAdj1),
+                          colnames(VD)), 
+                     intersect)
+
 AllMammals <- AllMammals[order(AllMammals)]
 
 AllMammalMatrix <- data.frame(
@@ -17,7 +21,7 @@ AllMammalMatrix <- data.frame(
   Sp2 = as.character(rep(AllMammals,length(AllMammals))),
   Space = c(FullRangeAdj1[AllMammals,AllMammals]),
   Phylo2 = scale(c(tFullSTMatrix[AllMammals,AllMammals])),
-  DietSim = c(tFullSTMatrix[AllMammals,AllMammals])
+  DietSim = c(VD[AllMammals,AllMammals])
 )
 
 UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals,AllMammals], diag = T))

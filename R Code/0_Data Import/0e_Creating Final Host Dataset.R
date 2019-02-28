@@ -2,9 +2,8 @@
 
 # Replacing absent names in the full ST matrix ####
 
-FinalHostNames <- reduce(list(#as.character(Hosts$Sp), 
+FinalHostNames <- reduce(list(
   rownames(RangeAdj), 
-  #colnames(CytBMatrix),
   colnames(STMatrix),
   rownames(HostAdj)), intersect)
 
@@ -56,10 +55,10 @@ rownames(Hosts) = Hosts$Sp
 tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
 tSTMatrix <- 1 - (STMatrix - min(STMatrix))/max(STMatrix)
 
-FinalHostNames <- reduce(list(#as.character(Hosts$Sp), 
+FinalHostNames <- reduce(list(
   rownames(RangeAdj), 
-  #colnames(CytBMatrix),
   colnames(STMatrix),
+  colnames(VD),
   rownames(HostAdj)), intersect)
 
 FHN <- FinalHostNames; length(FHN)
@@ -117,17 +116,15 @@ remove(HostMatrixdf)
 FinalHostMatrix$Phylo2 <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
-FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
-FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
 
 FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
   mutate(DietSim = 1 - DietSim)
 
-FinalHostMatrix <- FinalHostMatrix %>% merge(EltonTraits[,c("Scientific","Carnivore")], by.x = "Sp", by.y = "Scientific")
-FinalHostMatrix <- FinalHostMatrix %>% merge(EltonTraits[,c("Scientific","Carnivore")], by.x = "Sp2", by.y = "Scientific",
-                                             suffixes = c("",".Sp2"))
+#FinalHostMatrix <- FinalHostMatrix %>% left_join(EltonTraits[,c("Scientific","Carnivore")], by = c("Sp" = "Scientific"))
+#FinalHostMatrix <- FinalHostMatrix %>% left_join(EltonTraits[,c("Scientific","Carnivore")], by = c("Sp2" = "Scientific"),
+#                                                 suffix = c("",".Sp2"))
 
-FinalHostMatrix$Eaten <- ifelse(FinalHostMatrix$Carnivore==FinalHostMatrix$Carnivore.Sp2,0,1)
+#FinalHostMatrix$Eaten <- ifelse(FinalHostMatrix$Carnivore==FinalHostMatrix$Carnivore.Sp2,0,1)
 
 Remove1 <- FinalHostMatrix %>% group_by(Sp) %>% summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp)
 Remove2 <- FinalHostMatrix %>% group_by(Sp2) %>% summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp2)
@@ -135,4 +132,7 @@ Remove2 <- FinalHostMatrix %>% group_by(Sp2) %>% summarise(Mean = mean(VirusBina
 RemoveSp <- intersect(Remove1$Sp, Remove2$Sp2)
 
 FinalHostMatrix <- FinalHostMatrix %>% filter(!Sp%in%RemoveSp&!Sp2%in%RemoveSp)
+
+FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 

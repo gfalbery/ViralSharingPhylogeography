@@ -33,26 +33,73 @@ GridDegree2 <- gather(GridDegree, key = "Metric", value = "Degree", ends_with("D
 
 save(GridDegree2, file = "Output Files/GridDegree2.Rdata")
 
-GridDegree2 %>% filter(Metric == "AllPredDegree") %>% filter(abs(scale(Degree))<310) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
-  coord_fixed() +  
-  labs(x = "Longitude", y = "Latitude") +
-  scale_colour_continuous_sequential(palette = AlberPalettes[2]) +  
-  scale_fill_continuous_sequential(palette = AlberPalettes[2])
+GridDegree %>% mutate_at(vars(ends_with("Degree")), 
+                         function(a){ifelse(abs(scale(a))>5,
+                                            NA,
+                                            a
+                         )})
 
-GridDegree2 %>% filter(Metric == "InDegree") %>% filter(Degree<180) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
-  coord_fixed() +  
-  labs(x = "Longitude", y = "Latitude") +
-  scale_colour_continuous_sequential(palette = AlberPalettes[2]) +  
-  scale_fill_continuous_sequential(palette = AlberPalettes[2])
+GridDegree3 <- GridDegree %>% 
+  mutate(AllPredDegree = ifelse(abs(scale(AllPredDegree)[,1])>5,
+                                NA,
+                                AllPredDegree
+  ),
+  InDegree = ifelse(abs(scale(InDegree)[,1])>5,
+                    NA,
+                    InDegree
+  ),
+  OutDegree = ifelse(abs(scale(OutDegree)[,1])>5,
+                     NA,
+                     OutDegree
+  )
+  )
 
-GridDegree2 %>% filter(Metric == "OutDegree") %>% filter(Degree<190) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
-  coord_fixed() +  
-  labs(x = "Longitude", y = "Latitude") +
-  scale_colour_continuous_sequential(palette = AlberPalettes[3]) +  
-  scale_fill_continuous_sequential(palette = AlberPalettes[3])
+for(j in c("AllPredDegree","InDegree","OutDegree")){
+  
+  print(j)
+  
+  for(i in which(is.na(GridDegree3[,j]))){
+    
+    print(i/nrow(GridDegree3))
+    
+    xSurroundings <- GridDegree3[i,"x"]
+    ySurroundings <- GridDegree3[i,"y"]
+    
+    xMeans <- GridDegree3 %>% filter(x == xSurroundings$x) %>% 
+      slice(which(y-ySurroundings$y == min(y-ySurroundings$y)))
+    
+    xMeans <- GridDegree3 %>% 
+      slice(-which(is.na(j))) %>%
+      filter(x == xSurroundings$x) %>%
+      mutate(a = y-ySurroundings$y) 
+    
+    if(nrow(xMeans)>0){
+      xMeans <- xMeans %>%
+        mutate(a = a-min(a)) %>%
+        filter(a<10)
+    } else xMeans <- NULL
+    
+    yMeans <- GridDegree3 %>% 
+      slice(-which(is.na(j))) %>%
+      filter(y == ySurroundings$y) %>%
+      mutate(a = x-xSurroundings$x)
+    
+    if(nrow(yMeans)>0){
+      yMeans <- yMeans %>%
+        mutate(a = a-min(a)) %>%
+        filter(a<10)
+    } else yMeans <- NULL
+    
+    if(!(is.null(xMeans)&is.null(yMeans))){
+      GridDegree3[i,j] <- mean(c(xMeans[,j],yMeans[,j]))
+    }
+  }
+}
+
+GridDegree4 <- gather(GridDegree3, key = "Metric", value = "Degree", ends_with("Degree"))
+
+
+
+
+
+

@@ -3,23 +3,17 @@
 
 if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
 
-FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
-FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
-
 library(mgcv); library(tidyverse)
 
 Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
 BAMList <- BAMList2 <- DataList <- PPList <- list()
 
-for(r in 1:length(Resps)){
+for(r in 1){#:length(Resps)){
   
   print(Resps[r])
   
   DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r]))
-  
-  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
-  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
   
   MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
   MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix
