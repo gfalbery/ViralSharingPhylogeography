@@ -6,7 +6,7 @@
 
 library(sf); library(fasterize); library(Matrix);library(ggplot2);
 library(ggregplot); library(raster); library(tidyverse); library(igraph); 
-library(maptools)
+library(maptools); library(SpRanger)
 
 if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata") else{
   
@@ -83,14 +83,15 @@ if(!file.exists("data/RangeOverlap.Rdata")){
   Valuedf2 <- reshape2::melt(Valuedf)
   Valuedf2$x <- rep(1:MammalRanges[[1]]@ncols, MammalRanges[[1]]@nrows)
   Valuedf2$y <- rep(MammalRanges[[1]]@nrows:1, each = MammalRanges[[1]]@ncols)
+  Valuedf2 <- Valuedf2 %>% slice(-which(is.na(value)))
   
   Valuedf3 <- data.frame(getValues(MammalRanges2))
   Valuedf4 <- reshape2::melt(Valuedf3)
   Valuedf4$x <- rep(1:MammalRanges2[[1]]@ncols, MammalRanges2[[1]]@nrows)
   Valuedf4$y <- rep(MammalRanges2[[1]]@nrows:1, each = MammalRanges2[[1]]@ncols)
+  Valuedf4 <- Valuedf4 %>% slice(-which(is.na(value)))
   
-  Rangedf <- rbind(Valuedf2[!is.na(Valuedf2$value),],Valuedf4[!is.na(Valuedf4$value),]) # This is where a load of them were lost ####
-  Rangedf <- Rangedf %>% 
+  Rangedf <- rbind(Valuedf2,Valuedf4) %>% 
     dplyr::rename(Host = variable, Presence = value)
   
   Rangedf$GridID <- with(Rangedf, paste(x, y))

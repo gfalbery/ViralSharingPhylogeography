@@ -61,7 +61,9 @@ Covar2 <- Covar[c(2:7)]
 
 for(r in 1:length(Covar2)){
   
-  if(r<3) Covar3 <- Covar2 else Covar3 <- Covar[c(1,4:7)]
+  Covar3 <- Covar2
+  
+  if(r<3) Covar3 <- Covar2 #else Covar3 <- Covar[c(1,4:7)]
   
   print(Covar2[r])
   
@@ -80,9 +82,9 @@ for(r in 1:length(Covar2)){
 
 save(DevList, file = "Output Files/DevList.Rdata")
 
-DevCompList <- list(Full = BAMList[[1]],
-                    Spp = BAMList2[[1]],
-                    Tensor = DevList[[1]])
+DevCompList <- list(Tensor = DevList[[1]],
+                    Full = BAMList[[1]],
+                    Spp = BAMList2[[1]])
 
 Devs = sapply(DevCompList, deviance)
 
@@ -90,7 +92,7 @@ OrigDev = Devs[1]
 RemoveDev = Devs[2:length(Devs)]
 
 DevExplained = (RemoveDev - OrigDev)
-DevExplained = DevExplained/sum(DevExplained)
+DevExplained/sum(DevExplained)
 
 
 
