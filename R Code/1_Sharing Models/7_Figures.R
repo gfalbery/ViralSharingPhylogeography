@@ -70,6 +70,7 @@ list(PredHostPlot("Andes_virus", focal = 0), PredHostPlot("Andes_virus", focal =
 
 # No. hosts versus predictability
 ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))
+ggplot(GAMValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))
 
 
 

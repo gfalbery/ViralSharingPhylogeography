@@ -32,7 +32,8 @@ for(r in 1:length(Resps)){
   DataList[[Resps[[r]]]]$Domestic <- ifelse(rowSums(cbind(2- FinalHostMatrix$hDom %>% as.factor %>% as.numeric,
                                                           2- FinalHostMatrix$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
   
-  PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), diag(nlevels(DataList[[Resps[r]]]$Sp))))
+  PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), 
+                                        diag(nlevels(DataList[[Resps[r]]]$Sp))))
   
   Formula = as.formula(paste0(Resps[r], 
                               "~ t2(Space, scale(Phylo2)) + s(DietSim) + 
@@ -45,7 +46,8 @@ for(r in 1:length(Resps)){
   
   BAMList[[Resps[r]]] <- bam(Formula,
                              data = DataList[[Resps[r]]], 
-                             family = binomial())
+                             family = binomial(),
+                             paraPen = PPList[[Resps[r]]])
   
   BAMList2[[Resps[r]]] <- bam(Formula2,
                               data = DataList[[Resps[r]]], 

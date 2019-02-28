@@ -144,7 +144,6 @@ GAMValidSummary <- data.frame(
   
 ) %>% slice(order(MeanRank))
 
-
 ValidSummary <- data.frame(
   
   Virus = names(Valid)[ValidPredictions],

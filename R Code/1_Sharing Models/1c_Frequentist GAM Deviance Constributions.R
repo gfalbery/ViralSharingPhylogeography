@@ -1,0 +1,96 @@
+
+# Extracting deviance parameters from BAM ####
+
+# Running Frequentist GAMS
+
+if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
+
+load("Output Files/BAMList.Rdata")
+load("Output Files/BAMList2.Rdata")
+
+FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+
+library(mgcv); library(tidyverse)
+
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")[1]
+
+DevList <- DevList2 <- DataList <- PPList <- list()
+
+for(r in 1:length(BAMList)){
+  
+  print(Resps[r])
+  
+  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r]))
+  
+  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
+  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
+  
+  MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
+  MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix
+  
+  SppMatrix = MZ1 + MZ2
+  
+  DataList[[Resps[[r]]]]$Spp <- SppMatrix
+  DataList[[Resps[[r]]]]$Cites <- rowSums(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1))
+  DataList[[Resps[[r]]]]$MinCites <- apply(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1),1,min)
+  DataList[[Resps[[r]]]]$Domestic <- ifelse(rowSums(cbind(2- FinalHostMatrix$hDom %>% as.factor %>% as.numeric,
+                                                          2- FinalHostMatrix$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
+  
+  PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), diag(nlevels(DataList[[Resps[r]]]$Sp))))
+}
+
+Covar <- c("t2(Space, scale(Phylo2))", "s(Space)", "s(scale(Phylo2))","s(DietSim)",
+           "MinCites", "Domestic","Spp")
+
+r = 1
+
+Formula <- as.formula(paste0(Resps[r], " ~ ", paste(Covar[2:7], collapse = " + ")))
+Formula2 <- as.formula(paste0(Resps[r], " ~ ", paste(Covar[2:6], collapse = " + ")))
+
+DevList[[Covar[1]]] <- bam(Formula,
+                           data = DataList[[Resps[r]]], 
+                           family = binomial(),
+                           paraPen = PPList[[Resps[r]]])
+
+DevList2[[Covar[1]]] <- bam(Formula2,
+                            data = DataList[[Resps[r]]], 
+                            family = binomial())
+
+Covar2 <- Covar[c(2:7)]
+
+for(r in 1:length(Covar2)){
+  
+  if(r<3) Covar3 <- Covar2 else Covar3 <- Covar[c(1,4:7)]
+  
+  print(Covar2[r])
+  
+  TestCovar <- setdiff(Covar3, Covar2[r])
+  
+  Formula = as.formula(paste0(Resps[1], 
+                              " ~ ",
+                              paste(Covar3, collapse = " + ")))
+  
+  DevList[[Covar2[r]]] <- bam(Formula,
+                              data = DataList[[Resps[1]]], 
+                              family = binomial(),
+                              paraPen = PPList[[Resps[1]]])
+  
+}
+
+save(DevList, file = "Output Files/DevList.Rdata")
+
+DevCompList <- list(Full = BAMList[[1]],
+                    Spp = BAMList2[[1]],
+                    Tensor = DevList[[1]])
+
+Devs = sapply(DevCompList, deviance)
+
+OrigDev = Devs[1]
+RemoveDev = Devs[2:length(Devs)]
+
+DevExplained = (RemoveDev - OrigDev)
+DevExplained = DevExplained/sum(DevExplained)
+
+
+
