@@ -50,6 +50,35 @@ BarGraph(Panth1, "hOrder", "OutDegree", order = T, text = "N") +
 
 load("Output Files/GridDegree.Rdata")
 
+GridDegree2 %>% filter(Metric == "AllPredDegree") %>% filter(Degree<310) %>%
+  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
+  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
+  coord_fixed() +  
+  lims(x = c(80, 720)) +
+  labs(x = "Longitude", y = "Latitude") +
+  scale_colour_continuous_sequential(palette = AlberPalettes[1]) +  
+  scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
+  ggsave("Figures/All Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
+
+GridDegree2 %>% filter(Metric == "InDegree") %>% filter(Degree<180) %>%
+  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
+  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
+  coord_fixed() +  
+  lims(x = c(80, 720)) +
+  labs(x = "Longitude", y = "Latitude") +
+  scale_colour_continuous_sequential(palette = AlberPalettes[2]) +  
+  scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
+  ggsave("Figures/In Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
+
+GridDegree2 %>% filter(Metric == "OutDegree") %>% filter(Degree<190) %>%
+  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
+  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
+  coord_fixed() +  
+  lims(x = c(80, 720)) +
+  labs(x = "Longitude", y = "Latitude") +
+  scale_colour_continuous_sequential(palette = AlberPalettes[3]) +  
+  scale_fill_continuous_sequential(palette = AlberPalettes[3]) +
+  ggsave("Figures/Out Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
 
 
