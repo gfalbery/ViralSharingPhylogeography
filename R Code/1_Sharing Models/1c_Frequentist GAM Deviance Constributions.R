@@ -14,7 +14,7 @@ FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHost
 
 library(mgcv); library(tidyverse)
 
-Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")[1]
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
 DevList <- DevList2 <- DataList <- PPList <- list()
 
@@ -24,8 +24,8 @@ for(r in 1:length(BAMList)){
   
   DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r]))
   
-  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
-  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
+  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
+  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
   
   MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
   MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix

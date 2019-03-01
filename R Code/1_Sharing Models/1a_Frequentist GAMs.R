@@ -4,7 +4,7 @@
 # Rscript "R Code/1_Sharing Models/1a_Frequentist GAMs.R"
 
 #if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else 
-source("R Code/00_Master Code.R")
+#source("R Code/00_Master Code.R")
 
 library(mgcv); library(tidyverse)
 
@@ -16,7 +16,10 @@ for(r in 1:length(Resps)){
   
   print(Resps[r])
   
-  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r]))
+  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r])) %>% droplevels
+  
+  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
+  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
   
   MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
   MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix

@@ -54,7 +54,7 @@ load("Output Files/GridDegreeSum4.Rdata")
 
 PlotGrids <- GridDegree2
 
-PlotGrids %>% filter(Metric == "AllPredDegree") %>% #filter(Degree<420 & Degree>175) %>%
+PlotGrids %>% filter(Metric == "AllPredDegree") %>% filter(Degree<420 & Degree>175) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
   coord_fixed() +  
@@ -64,7 +64,7 @@ PlotGrids %>% filter(Metric == "AllPredDegree") %>% #filter(Degree<420 & Degree>
   scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
   ggsave("Figures/All Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
-PlotGrids %>% filter(Metric == "InDegree") %>% #filter(Degree<250 & Degree>25) %>%
+PlotGrids %>% filter(Metric == "InDegree") %>% filter(Degree<250 & Degree>25) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
   coord_fixed() +  
@@ -74,7 +74,7 @@ PlotGrids %>% filter(Metric == "InDegree") %>% #filter(Degree<250 & Degree>25) %
   scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
   ggsave("Figures/In Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
-PlotGrids %>% filter(Metric == "OutDegree") %>% #filter(Degree<265 & Degree>110) %>%
+PlotGrids %>% filter(Metric == "OutDegree") %>% filter(Degree<265 & Degree>110) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
   coord_fixed() +  
@@ -100,15 +100,22 @@ list(PredHostPlot("Andes_virus", focal = 0), PredHostPlot("Andes_virus", focal =
 
 # Supplementary? #####
 
-# No. hosts versus predictability
-ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))
+# No. hosts versus predictability ####
+
 ggplot(GAMValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))
 
-# Correlations among degree measures 
+# Correlations among degree measures ####
 
 GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
 
+# Numbers of species versus centrality ####
 
+Panth1 %>% group_by(hOrder) %>%
+  summarise(Number = n(),
+            AllPredDegree = mean(AllPredDegree),
+            InDegree = mean(InDegree),
+            OutDegree = mean(OutDegree)) %>%
+  gather(key = "Metric", value = "Degree", contains("Degree"))
 
 
 

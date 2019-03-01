@@ -26,8 +26,11 @@ print("Getting links")
 
 AllDegrees <- map(AllPredNetwork, "Degree") %>% bind_cols()
 
-AllPredDegrees <- data.frame(AllPredDegree = apply(AllDegrees, 1, mean),
-                             Sp = rownames(AllSims[[1]]))
+AllPredDegree = apply(AllDegrees, 1, mean)
+
+Sp = rownames(AllSims[[1]])
+
+AllPredDegrees <- data.frame(AllPredDegree, Sp)
 
 # Hosts <- left_join(Hosts, AllPredDegrees, by = "Sp")
 # GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))

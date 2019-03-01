@@ -64,11 +64,3 @@ if(!file.exists("data/intermediate/FullSTMatrix.csv")){
   FullSTMatrix <- as.data.frame(cophenetic(STFull)) %>% as.matrix
   
 } else{ FullSTMatrix <- as.matrix(read.csv("data/intermediate/FullSTMatrix.csv", header = T)) }
-
-PVRMass <- read_csv("https://raw.githubusercontent.com/ecohealthalliance/HP3/master/data/intermediate/PVR_cytb_hostmass.csv") %>% data.frame
-PVRMass <- PVRMass[order(PVRMass$hHostNameFinal),] %>% rename(Host = hHostNameFinal, PVRMass = PVRcytb_resid)
-rownames(PVRMass) <- PVRMass$Host
-
-Hosts[Hosts$Sp%in%PVRMass$Host,"PVRMass"] <- PVRMass[as.character(Hosts[Hosts$Sp%in%PVRMass$Host,"Sp"]),"PVRMass"]
-
-

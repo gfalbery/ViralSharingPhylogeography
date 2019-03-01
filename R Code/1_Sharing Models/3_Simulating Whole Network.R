@@ -128,9 +128,32 @@ if(file.exists("Output Files/AllSims.Rdata")) load("Output Files/AllSims.Rdata")
   
 }
 
-print("Making All Graphs!")
+# Making summed matrix ####
+
+print("Summing Matrix!")
+
+AllPredDF <- AllPredList %>% as.data.frame()
+
+AllPredSums <- apply(AllPredDF,1,sum)
+
+AssMat <- matrix(NA, 
+                 nrow = 4276, #length(union(AllMammaldf$Sp,AllMammaldf$Sp2)), 
+                 ncol = 4276) #length(union(AllMammaldf$Sp,AllMammaldf$Sp2)))
+
+AssMat[lower.tri(AssMat)] <- AllPredSums
+AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
+diag(AssMat) <- 0
+
+dimnames(AssMat) <- list(union(AllMammaldf$Sp,AllMammaldf$Sp2),
+                         union(AllMammaldf$Sp,AllMammaldf$Sp2))
+
+AllSums <- as(AssMat, "dgCMatrix")
+
+save(AllSums, file = "Output Files/AllSums.Rdata")
 
 # Making into Graphs ####
+
+print("Making All Graphs!")
 
 if(file.exists("Output Files/AllSimGs.Rdata")) load("Output Files/AllSimGs.Rdata") else{
   
