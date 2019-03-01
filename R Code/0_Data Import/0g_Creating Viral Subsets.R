@@ -6,8 +6,8 @@ SubResps <- c("RNA", "DNA", "Vector","NVector")
 
 library(igraph); library(tidyverse); library(ggregplot)
 
-RNAViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA") %>% select(vVirusNameCorrected) %>% unlist
-DNAViruses <- VirusTraits %>% filter(vDNAoRNA == "DNA") %>% select(vVirusNameCorrected) %>% unlist
+RNAViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA") %>% select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
+DNAViruses <- VirusTraits %>% filter(vDNAoRNA == "DNA") %>% select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
 
 MRNA <- M[RNAViruses,]
 MDNA <- M[DNAViruses,]
@@ -36,14 +36,14 @@ rownames(RNAHostdf) <- with(RNAHostdf, paste(Sp, Sp2))
 rownames(DNAHostdf) <- with(DNAHostdf, paste(Sp, Sp2))
 
 FinalHostMatrix <- FinalHostMatrix %>% left_join(RNAHostdf,
-                                                 by = c("Sp","Sp2"), all.x = T)
+                                                 by = c("Sp","Sp2"))
 
 FinalHostMatrix <- FinalHostMatrix %>% left_join(DNAHostdf,
-                                                 by = c("Sp","Sp2"), all.x = T)
+                                                 by = c("Sp","Sp2"))
 
 # Vector-Borne ####
 
-VectorViruses <- Viruses %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "Y") %>% select(Sp) %>% unlist
+VectorViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "Y") %>% select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
 MVector <- M[VectorViruses,]
 MVector <- MVector[,which(colSums(MVector)>0)]
 VectorBipGraph <- graph.incidence(MVector, weighted = T)
@@ -59,7 +59,7 @@ rownames(VectorHostdf) <- with(VectorHostdf, paste(Sp, Sp2))
 
 # Non-Vector-Borne ####
 
-NVectorViruses <- Viruses %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "N") %>% select(Sp) %>% unlist
+NVectorViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "N") %>% select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
 MNVector <- M[NVectorViruses,]
 MNVector <- MNVector[,which(colSums(MNVector)>0)]
 NVectorBipGraph <- graph.incidence(MNVector, weighted = T)
@@ -73,10 +73,10 @@ NVectorHostdf <- NVectorHostAdj %>% reshape2::melt() %>%
 rownames(NVectorHostdf) <- with(NVectorHostdf, paste(Sp, Sp2))
 
 FinalHostMatrix <- FinalHostMatrix %>% left_join(VectorHostdf,
-                                                 by = c("Sp","Sp2"), all.x = T)
+                                                 by = c("Sp","Sp2"))
 
 FinalHostMatrix <- FinalHostMatrix %>% left_join(NVectorHostdf,
-                                                 by = c("Sp","Sp2"), all.x = T)
+                                                 by = c("Sp","Sp2"))
 
 
 SlopeTime <- gather(FinalHostMatrix, key = "Group", value = "Shared", paste0(SubResps)) %>%
@@ -88,4 +88,6 @@ SlopeTime <- gather(FinalHostMatrix, key = "Group", value = "Shared", paste0(Sub
 #  theme(legend.position = "none") +
 #  geom_smooth()
 
+FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 

@@ -1,6 +1,8 @@
 
 # Comparison of deviance models ####
 
+library(mgcv)
+
 load("~/Albersnet/Output Files/DevList.Rdata")
 load("~/Albersnet/Output Files/TensorDevList.Rdata")
 
@@ -19,4 +21,4 @@ RemoveDev = sapply(TensorDevList[2:length(TensorDevList)], deviance)
 
 DevExplained = (RemoveDev - OrigDev)
 
-(DevExplained/sum(DevExplained))# %>% round(2)
+(DevExplained/sum(DevExplained)) %>% round(2)

@@ -87,6 +87,7 @@ PlotGrids %>% filter(Metric == "OutDegree") %>% #filter(Degree<265 & Degree>110)
 # 5.	Panel: viral trait plots (RNA vs. DNA; vector-borne or not; etc)
 
 
+
 # 6.	Panel of maps: Illustrative maps of host ranges for mammal species from host predictions (currently unidentified) for specific viruses, e.g. CCHFV; Nipah virus; Ebola; etc. (supplement will list out probability of being a host for all viruses)
 
 PredHostPlot("Crimean-congo_haemorrhagic_fever_virus", focal = c(1,0), facet = T)
