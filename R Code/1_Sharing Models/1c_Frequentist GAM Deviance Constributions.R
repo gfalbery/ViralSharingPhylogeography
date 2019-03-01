@@ -1,5 +1,5 @@
-
 # Extracting deviance parameters from BAM ####
+
 # Rscript "R Code/1_Sharing Models/1c_Frequentist GAM Deviance Constributions.R" BAM ####
 
 # Running Frequentist GAMS

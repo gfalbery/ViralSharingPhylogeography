@@ -24,7 +24,6 @@ ggplot(Hosts, aes(Degree, AllPredDegree)) + geom_point() +
 
 # 3.	Mammal order level centrality (bar plots)
 
-
 BarGraph(Panth1, "hOrder", "AllPredDegree", order = T, text = "N") + 
   theme(legend.position = "none") + 
   labs(x = "Order", y = "Degree Centrality", title = "All Links") +  
@@ -48,9 +47,14 @@ BarGraph(Panth1, "hOrder", "OutDegree", order = T, text = "N") +
 
 # 4.	Gridcell level centrality measure (map), to see if overlaps w species diversity (optional)
 
-load("Output Files/GridDegree.Rdata")
+load("Output Files/GridDegree2.Rdata")
+load("Output Files/GridDegree4.Rdata")
+load("Output Files/GridDegreeSum2.Rdata")
+load("Output Files/GridDegreeSum4.Rdata")
 
-GridDegree2 %>% filter(Metric == "AllPredDegree") %>% filter(Degree<310) %>%
+PlotGrids <- GridDegree2
+
+PlotGrids %>% filter(Metric == "AllPredDegree") %>% #filter(Degree<420 & Degree>175) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
   coord_fixed() +  
@@ -60,7 +64,7 @@ GridDegree2 %>% filter(Metric == "AllPredDegree") %>% filter(Degree<310) %>%
   scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
   ggsave("Figures/All Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
-GridDegree2 %>% filter(Metric == "InDegree") %>% filter(Degree<180) %>%
+PlotGrids %>% filter(Metric == "InDegree") %>% #filter(Degree<250 & Degree>25) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
   coord_fixed() +  
@@ -70,7 +74,7 @@ GridDegree2 %>% filter(Metric == "InDegree") %>% filter(Degree<180) %>%
   scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
   ggsave("Figures/In Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
-GridDegree2 %>% filter(Metric == "OutDegree") %>% filter(Degree<190) %>%
+PlotGrids %>% filter(Metric == "OutDegree") %>% #filter(Degree<265 & Degree>110) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
   coord_fixed() +  
@@ -79,38 +83,6 @@ GridDegree2 %>% filter(Metric == "OutDegree") %>% filter(Degree<190) %>%
   scale_colour_continuous_sequential(palette = AlberPalettes[3]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[3]) +
   ggsave("Figures/Out Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
-
-
-GridDegree4 %>% filter(Metric == "AllPredDegree") %>% filter(Degree<310) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
-  coord_fixed() +  
-  lims(x = c(80, 720)) +
-  labs(x = "Longitude", y = "Latitude") +
-  scale_colour_continuous_sequential(palette = AlberPalettes[1]) +  
-  scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
-  ggsave("Figures/All Link Map Smooth.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
-
-GridDegree4 %>% filter(Metric == "InDegree") %>% filter(Degree<180) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
-  coord_fixed() +  
-  lims(x = c(80, 720)) +
-  labs(x = "Longitude", y = "Latitude") +
-  scale_colour_continuous_sequential(palette = AlberPalettes[2]) +  
-  scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
-  ggsave("Figures/In Link Map Smooth.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
-
-GridDegree4 %>% filter(Metric == "OutDegree") %>% filter(Degree<190) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
-  coord_fixed() +  
-  lims(x = c(80, 720)) +
-  labs(x = "Longitude", y = "Latitude") +
-  scale_colour_continuous_sequential(palette = AlberPalettes[3]) +  
-  scale_fill_continuous_sequential(palette = AlberPalettes[3]) +
-  ggsave("Figures/Out Link Map Smooth.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
-
 
 # 5.	Panel: viral trait plots (RNA vs. DNA; vector-borne or not; etc)
 
@@ -131,6 +103,9 @@ list(PredHostPlot("Andes_virus", focal = 0), PredHostPlot("Andes_virus", focal =
 ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))
 ggplot(GAMValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))
 
+# Correlations among degree measures 
+
+GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
 
 
 

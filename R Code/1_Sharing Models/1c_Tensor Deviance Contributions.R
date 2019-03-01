@@ -1,5 +1,7 @@
 # Extracting deviance parameters from BAM ####
 
+# Rscript "R Code/1_Sharing Models/1c_Tensor Deviance Contributions.R"
+
 # Running Frequentist GAMS
 
 if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
@@ -22,9 +24,6 @@ for(r in 1:length(BAMList)){
   
   DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r]))
   
-  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
-  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2))
-  
   MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
   MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix
   
@@ -44,12 +43,19 @@ Covar <- c("t2(Space, scale(Phylo2))", "s(Space)", "s(scale(Phylo2))","s(DietSim
 
 r = 1
 
+Formula <- as.formula(paste0(Resps[r], " ~ ", paste(Covar[c(1,4:7)], collapse = " + ")))
+
+TensorDevList[["FullModel"]] <- bam(Formula,
+                                    data = DataList[[Resps[r]]], 
+                                    family = binomial(),
+                                    paraPen = PPList[[Resps[r]]])
+
 Formula <- as.formula(paste0(Resps[r], " ~ ", paste(Covar[2:7], collapse = " + ")))
 
 TensorDevList[[Covar[1]]] <- bam(Formula,
-                           data = DataList[[Resps[r]]], 
-                           family = binomial(),
-                           paraPen = PPList[[Resps[r]]])
+                                 data = DataList[[Resps[r]]], 
+                                 family = binomial(),
+                                 paraPen = PPList[[Resps[r]]])
 
 Covar2 <- Covar[c(2:7)]
 
@@ -57,7 +63,7 @@ for(r in 1:length(Covar2)){
   
   Covar3 <- Covar2
   
-  if(r<3) Covar3 <- Covar2 #else Covar3 <- Covar[c(1,4:7)]
+  if(r<3) Covar3 <- Covar2 else Covar3 <- Covar[c(1,4:7)]
   
   print(Covar2[r])
   
@@ -65,12 +71,12 @@ for(r in 1:length(Covar2)){
   
   Formula = as.formula(paste0(Resps[1], 
                               " ~ ",
-                              paste(Covar3, collapse = " + ")))
+                              paste(TestCovar, collapse = " + ")))
   
   TensorDevList[[Covar2[r]]] <- bam(Formula,
-                              data = DataList[[Resps[1]]], 
-                              family = binomial(),
-                              paraPen = PPList[[Resps[1]]])
+                                    data = DataList[[Resps[1]]], 
+                                    family = binomial(),
+                                    paraPen = PPList[[Resps[1]]])
   
 }
 

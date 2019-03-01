@@ -1,8 +1,5 @@
-DNAModelValidation.rds
+
 ModelValidation.Rdata
-NVectorModelValidation.rds
-SubDataList.rds
-VectorModelValidation.rds
 GAMValidation.rds
 
 KnownSimGraphs.Rdata
@@ -10,3 +7,5 @@ KnownNetworkStats.Rdata
 AllPredList.Rdata
 AllSims.Rdata
 AllSimGs.Rdata
+
+SaveDevList.Rdata

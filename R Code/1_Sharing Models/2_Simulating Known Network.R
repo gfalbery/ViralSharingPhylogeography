@@ -155,3 +155,4 @@ SimGraphs1b <- mclapply(1:length(PredList1b), function(i){
 
 save(SimGraphs1, SimGraphs1b, file = "Output Files/KnownSimGraphs.Rdata")
 
+print(Sys.time())

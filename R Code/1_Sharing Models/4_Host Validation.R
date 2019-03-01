@@ -117,8 +117,9 @@ GAMValid <- GAMValidation %>% lapply(function(a){
 
 save(GAMValid, file = "Output Files/GAMValidation.Rdata")
 
-load("Output Files/GAMValidation.Rdata")
+{
 load("Output Files/ModelValidation.Rdata")
+load("Output Files/GAMValidation.Rdata")
 
 KeepPredictions <- (1:length(GAMValid))[-which(sapply(GAMValid, function(a) any(is.na(a))))]
 ValidPredictions <- (1:length(Valid))[-which(sapply(Valid, function(a) any(is.na(a))))]
@@ -164,4 +165,11 @@ CompSummary %>% ggplot(aes(MeanRank.GAM, MeanRank.GLM)) + geom_point() + geom_sm
 CompSum2 <- gather(CompSummary, key = "key", value = "value", MeanRank.GAM, MeanRank.GLM)
 
 BarGraph(CompSum2, "key", "value")
+
+CompSummary %>% summarise(mean(MeanRank.GAM), 
+                          mean(MeanRank.GLM),
+                          median(MeanRank.GAM),
+                          median(MeanRank.GLM))
+
+}
 

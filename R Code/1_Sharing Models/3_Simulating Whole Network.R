@@ -8,6 +8,7 @@ source("R Code/00_Master Code.R")
 library(MCMCglmm); library(tidyverse); library(Matrix); library(parallel); library(mgcv)
 
 tFullSTMatrix <- 1 - (FullSTMatrix - min(FullSTMatrix))/max(FullSTMatrix)
+tVD <- 1 - VD
 
 AllMammals <- reduce(list(colnames(FullSTMatrix),
                           colnames(FullRangeAdj1),
@@ -21,7 +22,7 @@ AllMammalMatrix <- data.frame(
   Sp2 = as.character(rep(AllMammals,length(AllMammals))),
   Space = c(FullRangeAdj1[AllMammals,AllMammals]),
   Phylo2 = scale(c(tFullSTMatrix[AllMammals,AllMammals])),
-  DietSim = c(VD[AllMammals,AllMammals])
+  DietSim = c(tVD[AllMammals,AllMammals])
 )
 
 UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals,AllMammals], diag = T))
@@ -63,7 +64,7 @@ if(file.exists("Output Files/AllPredictions1b.Rdata")) load("Output Files/AllPre
   
 }
 
-print("Predicting Links!")
+print("Predicting All Links!")
 
 if(file.exists("Output Files/AllPredList.Rdata")) load("Output Files/AllPredList.Rdata") else{
   
@@ -95,7 +96,7 @@ if(file.exists("Output Files/AllPredList.Rdata")) load("Output Files/AllPredList
 
 PredDF1 <- data.frame(AllPredList)
 
-print("Simulating Networks!")
+print("Simulating All Networks!")
 
 # Simulating the network #####
 
@@ -117,11 +118,17 @@ if(file.exists("Output Files/AllSims.Rdata")) load("Output Files/AllSims.Rdata")
     
   }, mc.cores = 10)
   
+  if(length(which(sapply(AllSims, is.null)))>0){
+    AllSims <- AllSims[-which(sapply(AllSims, is.null))]
+    print("Something went wrong UGH")
+    print(paste("New Length = ", length(AllSims)))
+  }
+  
   save(AllSims, file = "Output Files/AllSims.Rdata")
   
 }
 
-print("Making Graphs!")
+print("Making All Graphs!")
 
 # Making into Graphs ####
 
@@ -133,8 +140,13 @@ if(file.exists("Output Files/AllSimGs.Rdata")) load("Output Files/AllSimGs.Rdata
     
   }, mc.cores = 10)
   
-  if(length(which(sapply(AllSims, is.null)))>0) AllSimGs <- AllSimGs[-which(sapply(AllSims, is.null))]
+  if(length(which(sapply(AllSims, is.null)))>0){
+    AllSimGs <- AllSimGs[-which(sapply(AllSims, is.null))]
+    print("Something went wrong UGH")
+  }
   
   save(AllSimGs, file = "Output Files/AllSimGs.Rdata")
   
 }
+
+print(Sys.time())

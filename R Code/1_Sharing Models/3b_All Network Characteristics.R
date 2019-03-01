@@ -1,11 +1,13 @@
 
 # 3b_Getting Whole Network Characteristics ####
 
-library(igraph); library(tidyverse); library(ggregplot); library(parallel)
+# Rscript "R Code/1_Sharing Models/3b_All Network Characteristics.R"
 
-source("R Code/00_Master Code.R")
+library(igraph); library(tidyverse); library(ggregplot); library(parallel); library(SpRanger)
 
-print("Making AllGraphs")
+#source("R Code/00_Master Code.R")
+
+print("Getting All Network Characteristics")
 
 load("Output Files/AllSimGs.Rdata")
 load("Output Files/AllSims.Rdata")
@@ -27,13 +29,14 @@ AllDegrees <- map(AllPredNetwork, "Degree") %>% bind_cols()
 AllPredDegrees <- data.frame(AllPredDegree = apply(AllDegrees, 1, mean),
                              Sp = rownames(AllSims[[1]]))
 
-Hosts <- left_join(Hosts, AllPredDegrees, by = "Sp", all.x = T)
+# Hosts <- left_join(Hosts, AllPredDegrees, by = "Sp")
+# GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
 
 Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
   dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order)
 Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
 
-Panth1 <- left_join(Panth1, AllPredDegrees, by.x = "Sp", by.y = "Host", all.x = T)
+Panth1 <- left_join(Panth1, AllPredDegrees, by = "Sp")
 
 load("data/FullPolygons.Rdata")
 
@@ -57,7 +60,7 @@ InNames <- lapply(hOrderList[[1]], function(a) V(a)$name) %>% unlist
 InDegDF <- data.frame(InDegree = InDegrees,
                       Sp = InNames)
 
-Panth1 <- left_join(Panth1, InDegDF, by = "Sp", all.x = T)
+Panth1 <- left_join(Panth1, InDegDF, by = "Sp")
 Panth1$OutDegree <- with(Panth1, AllPredDegree-InDegree)
 
 save(Panth1, file = "Output Files/Panth1.Rdata")
