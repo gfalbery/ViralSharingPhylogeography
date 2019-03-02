@@ -6,8 +6,17 @@ library(ggplot2); library(ggregplot); library(colorspace)
 # 1.	Panel: Relationships/model outputs from: 
 # Space and phylogeny; phylogeny and viral sharing; space and viral sharing for all data
 
+load("Output Files/FitList.Rdata")
+
 ggplot(FinalHostMatrix, aes(Space, Phylo)) + geom_point()
 
+ggplot(FitList[[1]], aes(Space, Fit)) + 
+  facet_wrap(~Phylo2) +
+  geom_line()
+
+FitList[[1]] %>% #filter(Space == mean(DataList[[1]]$Space)) %>% 
+                        #DietSim == mean(DataList[[Resps[r]]]$DietSim)) %>% 
+  ggplot(aes(Phylo2, Fit)) + geom_point()
 
 
 # 2.	Predicted degree centrality with and without random effect for ~
@@ -117,5 +126,8 @@ Panth1 %>% group_by(hOrder) %>%
             OutDegree = mean(OutDegree)) %>%
   gather(key = "Metric", value = "Degree", contains("Degree"))
 
+# Correlation between mean rank of focal host predictions and the proportion of links they're present for
 
+ggplot(GAMValidSummary, aes(log10(MeanRank), MeanCount1)) + geom_point() + 
+  geom_smooth(method = lm)
 

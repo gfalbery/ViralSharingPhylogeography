@@ -17,57 +17,9 @@ print("Start Validating!")
 
 a = 1
 
-GAMValidation <- list()
+AllSims <- rep(0, 100)
 
-for(a in a:length(VirusAssocs)){
-  
-  print(names(VirusAssocs)[a])
-  
-  pHosts <- VirusAssocs[[a]]
-  
-  pHosts <- intersect(pHosts, AllMammals)
-  
-  pHosts2 <- intersect(pHosts, rownames(AllSums))
-  
-  if(length(pHosts2)>1){
-    
-    FocalNet <- AllSums[pHosts2,]
-    
-    ValidEst <- list()
-    
-    for(b in pHosts2){
-      
-      pHosts4 <- setdiff(pHosts2, b)
-      
-      pHosts3 <- setdiff(colnames(FocalNet), pHosts4)
-      
-      Estimates <- FocalNet[pHosts4, pHosts3]/length(AllSims)
-      
-      if(is.null(dim(Estimates))) Estimates <- rbind(Estimates, Estimates)
-      
-      Ests <- data.frame(Sp = names(sort(colSums(Estimates), decreasing = T)),
-                         Count = sort(colSums(Estimates), decreasing = T)/nrow(Estimates)) %>%
-        mutate(Focal = ifelse(Sp==b, 1, 0),
-               Iteration = b)
-      
-      rownames(Ests) <- Ests$Sp
-      
-      ValidEst[[b]] <- Ests
-      
-    }
-    
-    ValidEst
-    
-    GAMValidation[[names(VirusAssocs)[a]]] <- ValidEst
-    
-  } else {
-    
-    GAMValidation[[names(VirusAssocs)[a]]] <- NA 
-    
-    print("Hosts Not Found!")
-    
-  }
-}
+GAMValidation <- Validate(VirusAssocs)
 
 GAMValid <- GAMValidation %>% lapply(function(a){
   
@@ -111,9 +63,14 @@ save(GAMValid, file = "Output Files/GAMValidation.Rdata")
     
     No = KeepPredictions,
     
-    MeanRank = sapply(GAMValid[KeepPredictions], function(a) mean(FocalRank(a)))
+    MeanRank = sapply(GAMValid[KeepPredictions], function(a) mean(FocalRank(a))),
     
-  ) %>% slice(order(MeanRank))
+    MeanCount = sapply(GAMValid[KeepPredictions], function(a) mean(a$Count)),
+    MeanCount1 = sapply(GAMValid[KeepPredictions], function(a) mean(a[a$Focal==1,]$Count)),
+    MeanCount0 = sapply(GAMValid[KeepPredictions], function(a) mean(a[a$Focal==0,]$Count))
+    
+  ) %>% slice(order(MeanRank)) %>%
+    mutate(CountDiff = MeanCount1 - MeanCount0)
   
   ValidSummary <- data.frame(
     
