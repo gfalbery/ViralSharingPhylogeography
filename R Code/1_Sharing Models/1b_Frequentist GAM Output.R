@@ -1,8 +1,7 @@
 
 # Rscript "R Code/1_Sharing Models/1b_Frequentist GAM Output.R" ####
 
-if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else 
-  source("R Code/00_Master Code.R")
+if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
 
 library(mgcv); library(tidyverse); library(ggregplot)
 
@@ -78,18 +77,24 @@ for(r in 1:length(BAMList)){
                                                         PhyloQ = cut(Phylo2, quantile(Phylo2, 0:10/10),include.lowest = T, labels = 1:10))
   
   FitPredictions  <- predict.gam(BAMList[[1]], 
-                                 type = "terms",
                                  newdata = FitList[[Resps[r]]])
   
-  FitPredictions <- FitPredictions %>% as.data.frame() %>% 
-    mutate(Intercept = attr(FitPredictions,"constant"),
-           Spp = median(SpCoef))
+  #FitPredictions <- FitPredictions %>% as.data.frame() %>% 
+  #  mutate(Intercept = attr(FitPredictions,"constant"))
   
-  FitList[[Resps[r]]][,"Fit"] <- logistic(rowSums(FitPredictions))
+  FitList[[Resps[r]]][,"Fit"] <- logistic(FitPredictions)
   
 }
 
 save(FitList, file = "Output Files/FitList.Rdata")
+
+r=1
+
+FitList[["VirusBinary"]] %>% filter(Phylo2 == mean(scale(DataList[[Resps[r]]]$Phylo2))) %>%
+  ggplot(aes(Space, Fit)) + geom_line()
+
+FitList[["VirusBinary"]] %>% filter(Space == last(SpaceRange)) %>%
+  ggplot(aes(Phylo2, Fit)) + geom_line()
 
 tiff("Figures/Model Predictions.jpeg", units = "mm", width = 200, height = 150, res = 300)
 

@@ -63,7 +63,7 @@ load("Output Files/GridDegreeSum4.Rdata")
 
 PlotGrids <- GridDegree2
 
-PlotGrids %>% filter(Metric == "AllPredDegree") %>% filter(Degree<420 & Degree>175) %>%
+PlotGrids %>% filter(Metric == "AllPredDegree") %>% mutate(Degree = ifelse(Degree>320, 320, Degree)) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
   coord_fixed() +  
@@ -73,7 +73,7 @@ PlotGrids %>% filter(Metric == "AllPredDegree") %>% filter(Degree<420 & Degree>1
   scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
   ggsave("Figures/All Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
-PlotGrids %>% filter(Metric == "InDegree") %>% filter(Degree<250 & Degree>25) %>%
+PlotGrids %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>200, 200, ifelse(Degree<30,40,Degree))) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
   coord_fixed() +  
@@ -83,7 +83,7 @@ PlotGrids %>% filter(Metric == "InDegree") %>% filter(Degree<250 & Degree>25) %>
   scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
   ggsave("Figures/In Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
-PlotGrids %>% filter(Metric == "OutDegree") %>% filter(Degree<265 & Degree>110) %>%
+PlotGrids %>% filter(Metric == "OutDegree")  %>% mutate(Degree = ifelse(Degree>170, 170, ifelse(Degree<110,110,Degree))) %>%
   ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
   coord_fixed() +  

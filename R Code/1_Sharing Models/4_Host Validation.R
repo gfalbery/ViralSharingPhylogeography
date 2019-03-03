@@ -17,8 +17,6 @@ print("Start Validating!")
 
 a = 1
 
-AllSims <- rep(0, 100)
-
 GAMValidation <- Validate(VirusAssocs)
 
 GAMValid <- GAMValidation %>% lapply(function(a){
