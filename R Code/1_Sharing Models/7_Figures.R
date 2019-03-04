@@ -64,7 +64,9 @@ load("Output Files/GridDegreeSum4.Rdata")
 PlotGrids <- GridDegree2
 
 PlotGrids %>% filter(Metric == "AllPredDegree") %>% mutate(Degree = ifelse(Degree>320, 320, Degree)) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
+  ggplot(aes(x, y, fill = Degree, colour = Degree)) + 
+  geom_tile(fill = "grey", colour = "grey") +
+  geom_tile(aes(alpha = log(Density))) +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
   coord_fixed() +  
   lims(x = c(80, 720)) +
@@ -74,7 +76,9 @@ PlotGrids %>% filter(Metric == "AllPredDegree") %>% mutate(Degree = ifelse(Degre
   ggsave("Figures/All Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
 PlotGrids %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>200, 200, ifelse(Degree<30,40,Degree))) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
+  ggplot(aes(x, y, fill = Degree, colour = Degree)) + 
+  geom_tile(fill = "grey", colour = "grey") +
+  geom_tile(aes(alpha = log(Density))) +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
   coord_fixed() +  
   lims(x = c(80, 720)) +
@@ -84,7 +88,9 @@ PlotGrids %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>20
   ggsave("Figures/In Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
 PlotGrids %>% filter(Metric == "OutDegree")  %>% mutate(Degree = ifelse(Degree>170, 170, ifelse(Degree<110,110,Degree))) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + geom_tile() +
+  ggplot(aes(x, y, fill = Degree, colour = Degree)) + 
+  geom_tile(fill = "grey", colour = "grey") +
+  geom_tile(aes(alpha = log(Density))) +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
   coord_fixed() +  
   lims(x = c(80, 720)) +

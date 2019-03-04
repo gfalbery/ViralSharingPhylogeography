@@ -39,16 +39,18 @@ for(r in 1:length(Resps)){
   
   Formula = as.formula(paste0(Resps[r], 
                               " ~ ",
-                              #"t2(Space, scale(Phylo2)) + 
-                              "s(Space) + s(scale(Phylo2)) + s(DietSim) + 
-                              MinCites + Domestic + 
-                              Spp"))
+                              "t2(Space, scale(Phylo2)) + ",
+                              #"s(Space) + s(scale(Phylo2))  + "
+                              "s(DietSim) + ",
+                              "MinCites + Domestic +",
+                              "Spp"))
   
   Formula2 = as.formula(paste0(Resps[r], 
                                " ~ ",
-                               #t2(Space, scale(Phylo2)) + 
-                               "s(Space) + s(scale(Phylo2)) + s(DietSim) + 
-                               MinCites + Domestic"))
+                               "t2(Space, scale(Phylo2)) + ",
+                               #"s(Space) + s(scale(Phylo2))  + "
+                               "s(DietSim) + ",
+                               "MinCites + Domestic"))
   
   BAMList[[Resps[r]]] <- bam(Formula,
                              data = DataList[[Resps[r]]], 

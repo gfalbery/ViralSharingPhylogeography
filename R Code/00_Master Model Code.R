@@ -18,8 +18,8 @@ if(file.exists("Output Files/BAMList.Rdata")) load("Output Files/BAMList.Rdata")
   source(paste0(CodeRoot2,"1a_Frequentist GAMs.R"))
 
 #print("Known Network Simulation!")
-#source(paste0(CodeRoot2,"2_Simulating Known Network.R"))
-#source(paste0(CodeRoot2,"2b_Known Network Characteristics.R"))
+source(paste0(CodeRoot2,"2_Simulating Known Network.R"))
+source(paste0(CodeRoot2,"2b_Known Network Characteristics.R"))
 
 print("All Mammal Simulation!")
 source(paste0(CodeRoot2,"3_Simulating Whole Network.R"))

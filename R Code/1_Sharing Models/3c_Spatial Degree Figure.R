@@ -35,9 +35,13 @@ FullRangedf2 <- FullRangedf %>% left_join(Panth1[,c("Sp","AllPredDegree", "InDeg
 GridDegree <- FullRangedf2 %>% group_by(x,y) %>% 
   summarise_at(vars(ends_with("Degree")), function(a) mean(a, na.rm = T))
 
+PopDegree <- FullRangedf2 %>% group_by(x,y) %>% 
+  summarise(Density = n())
+
 #save(GridDegree, file = "Output Files/GridDegree.Rdata")
 
-GridDegree2 <- gather(GridDegree, key = "Metric", value = "Degree", ends_with("Degree"))
+GridDegree2 <- gather(GridDegree, key = "Metric", value = "Degree", ends_with("Degree")) %>% 
+  left_join(PopDegree, by = c("x","y"))
 
 save(GridDegree2, file = "Output Files/GridDegree2.Rdata")
 

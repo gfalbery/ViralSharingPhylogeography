@@ -3,7 +3,7 @@
 
 # Rscript "R Code/1_Sharing Models/3_Simulating Whole Network.R"
 
-source("R Code/00_Master Code.R")
+# source("R Code/00_Master Code.R")
 
 library(MCMCglmm); library(tidyverse); library(Matrix); library(parallel); library(mgcv)
 
