@@ -12,30 +12,9 @@ Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
 DataList <- PPList <- FitList <- list()
 
-for(r in 1){
+for(r in 1:length(BAMList)){
   
   print(Resps[r])
-  
-  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r])) %>% droplevels
-  
-  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
-  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
-  
-  DataList[[Resps[r]]] <- DataList[[Resps[r]]] %>% slice(order(Sp, Sp2))
-  
-  MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
-  MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix
-  
-  SppMatrix = MZ1 + MZ2
-  
-  DataList[[Resps[[r]]]]$Spp <- SppMatrix
-  DataList[[Resps[[r]]]]$Cites <- rowSums(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1))
-  DataList[[Resps[[r]]]]$MinCites <- apply(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1),1,min)
-  DataList[[Resps[[r]]]]$Domestic <- ifelse(rowSums(cbind(2- DataList[[Resps[r]]]$hDom %>% as.factor %>% as.numeric,
-                                                          2- DataList[[Resps[r]]]$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
-  
-  PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), diag(nlevels(DataList[[Resps[r]]]$Sp))))
-  
   
   # Model Checking ####
   
@@ -43,21 +22,22 @@ for(r in 1){
   
   SpCoefNames <- names(BAMList[[Resps[r]]]$coef)[substr(names(BAMList[[Resps[r]]]$coef),1,5)=="SppSp"]
   SpCoef <- BAMList[[Resps[r]]]$coef[SpCoefNames]
-  qplot(SpCoef)
-  
+
   # Effects ####
   
   SpaceRange <- seq(from = min(DataList[[Resps[r]]]$Space),
                     to = max(DataList[[Resps[r]]]$Space),
-                    length = 100) %>% c(mean(DataList[[Resps[r]]]$Space))
+                    length = 100) %>% 
+    c(mean(DataList[[Resps[r]]]$Space))
   
   PhyloRange <- seq(from = min(DataList[[Resps[r]]]$Phylo),
                     to = max(DataList[[Resps[r]]]$Phylo),
-                    length = 100)  %>% c(mean(DataList[[Resps[r]]]$Phylo))
+                    length = 100)  %>% 
+    c(mean(DataList[[Resps[r]]]$Phylo))
   
-  DietRange <- #seq(from = min(DataList[[Resps[r]]]$DietSim),
-    #     to = max(DataList[[Resps[r]]]$DietSim),
-    #     length = 10)  %>% 
+  DietRange <- seq(from = min(DataList[[Resps[r]]]$DietSim),
+                   to = max(DataList[[Resps[r]]]$DietSim),
+                   length = 10)  %>% 
     c(mean(DataList[[Resps[r]]]$DietSim))
   
   FitList[[Resps[r]]] <- expand.grid(Space = SpaceRange,
@@ -78,8 +58,8 @@ for(r in 1){
   #FitPredictions <- FitPredictions %>% as.data.frame() %>% 
   #  mutate(Intercept = attr(FitPredictions,"constant"))
   
-  #FitList[[Resps[r]]][,"Fit"] <- logistic(FitPredictions)
-  FitList[[Resps[r]]][,"Fit"] <- FitPredictions
+  #FitList[[Resps[r]]][,"Fit"] <- FitPredictions
+  FitList[[Resps[r]]][,"Fit"] <- logistic(FitPredictions)
   
 }
 
@@ -98,29 +78,21 @@ FitList[["VirusBinary"]] %>% filter(Space == SpaceRange[10]) %>%
 FitList[["VirusBinary"]] %>% filter(Space == last(SpaceRange)) %>%
   ggplot(aes(Phylo, Fit)) + geom_line()
 
-FitList[["VirusBinary"]] %>% filter(Phylo == SpaceRange[10]) %>%
-  ggplot(aes(Phylo, Fit)) + geom_line()
+FitList[["VirusBinary"]] %>% filter(Phylo == last(PhyloRange)) %>%
+  ggplot(aes(Space, Fit)) + geom_line()
 
 tiff("Figures/Model Predictions.jpeg", units = "mm", width = 200, height = 150, res = 300)
 
 list(
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo, Fit, colour = Space)) + 
-    geom_line(aes(group = as.factor(Space), lty = as.factor(Mean)), alpha = 0.3),
+  ggplot(FitList[["VirusBinary"]], aes(Phylo, Fit, colour = Space)) + 
+    geom_line(aes(group = as.factor(Space)), alpha = 0.3) +
+    geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
   
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Space, Fit, colour = Phylo)) + 
-    geom_line(aes(group = as.factor(Phylo), lty = as.factor(Mean)), alpha = 0.3)
+  ggplot(FitList[["VirusBinary"]], aes(Space, Fit, colour = Phylo)) + 
+    geom_line(aes(group = as.factor(Phylo)), alpha = 0.3) +
+    geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Space), alpha = 0.01)
   
 ) %>% arrange_ggplot2
 
 dev.off()
 
-list(
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo, Estimate, colour = Space)) + 
-    geom_line(aes(group = as.factor(Space)), alpha = 0.3) +
-    geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
-  
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Space, Estimate, colour = Phylo)) + 
-    geom_line(aes(group = as.factor(Phylo)), alpha = 0.3) +
-    geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Space), alpha = 0.01)
-  
-) %>% arrange_ggplot2

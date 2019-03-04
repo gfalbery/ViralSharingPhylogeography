@@ -39,51 +39,41 @@ for(r in 1:length(BAMList)){
                                                           2- FinalHostMatrix$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
   
   PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), diag(nlevels(DataList[[Resps[r]]]$Sp))))
-}
-
-Covar <- c("s(Space)", 
-           "s(scale(Phylo2))",
-           "s(DietSim)",
-           "MinCites", 
-           "Domestic",
-           "Spp")
-
-Formula = as.formula(paste0(Resps[1], 
-                            " ~ ",
-                            paste(Covar, collapse = " + ")))
-
-DevList$FullModel <- bam(Formula,
-                         data = DataList[[Resps[1]]], 
-                         family = binomial(),
-                         paraPen = PPList[[Resps[1]]])
-
-r = 1
-
-for(r in 1:length(Covar)){
   
-  print(Covar[r])
   
-  TestCovar <- setdiff(Covar, Covar[r])
+  Covar <- c(#"s(Space)", 
+    #"s(scale(Phylo))",
+    "t2(Space,Phylo)",
+    "s(DietSim)",
+    "MinCites", 
+    "Domestic",
+    "Spp")
   
-  Formula = as.formula(paste0(Resps[1], 
+  Formula = as.formula(paste0(Resps[r], 
                               " ~ ",
-                              paste(TestCovar, collapse = " + ")))
+                              paste(Covar, collapse = " + ")))
   
-  DevList[[Covar[r]]] <- bam(Formula,
-                             data = DataList[[Resps[1]]], 
-                             family = binomial(),
-                             paraPen = PPList[[Resps[1]]])
+  DevList[[Resps[r]]]$FullModel <- bam(Formula,
+                                       data = DataList[[Resps[1]]], 
+                                       family = binomial(),
+                                       paraPen = PPList[[Resps[1]]])
   
+  for(s in 1:length(Covar)){
+    
+    print(Covar[s])
+    
+    TestCovar <- setdiff(Covar, Covar[s])
+    
+    Formula = as.formula(paste0(Resps[r], 
+                                " ~ ",
+                                paste(TestCovar, collapse = " + ")))
+    
+    DevList[[Resps[r]]][[Covar[s]]] <- bam(Formula,
+                                           data = DataList[[Resps[r]]], 
+                                           family = binomial(),
+                                           paraPen = PPList[[Resps[r]]])
+    
+  }
 }
 
 save(DevList, file = "Output Files/DevList.Rdata")
-
-OrigDev = deviance(DevList$FullModel)
-RemoveDev = sapply(DevList[2:length(DevList)], deviance)
-
-DevExplained = (RemoveDev - OrigDev)
-
-DevExplained/sum(DevExplained)
-
-
-

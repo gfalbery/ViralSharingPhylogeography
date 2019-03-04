@@ -3,8 +3,8 @@
 
 # Rscript "R Code/1_Sharing Models/1a_Frequentist GAMs.R"
 
-#if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else 
-source("R Code/00_Master Code.R")
+if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else 
+  source("R Code/00_Master Code.R")
 
 library(mgcv); library(tidyverse)
 
@@ -12,7 +12,7 @@ Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
 BAMList <- BAMList2 <- DataList <- PPList <- list()
 
-for(r in 1){
+for(r in 1:length(Resps)){
   
   print(Resps[r])
   
