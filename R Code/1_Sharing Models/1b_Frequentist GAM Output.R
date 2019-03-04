@@ -51,33 +51,28 @@ for(r in 1){
                     to = max(DataList[[Resps[r]]]$Space),
                     length = 100) %>% c(mean(DataList[[Resps[r]]]$Space))
   
-  PhyloRange <- seq(from = min(scale(DataList[[Resps[r]]]$Phylo2)),
-                    to = max(scale(DataList[[Resps[r]]]$Phylo2)),
-                    length = 100)  %>% c(mean(scale(DataList[[Resps[r]]]$Phylo2)))
+  PhyloRange <- seq(from = min(DataList[[Resps[r]]]$Phylo),
+                    to = max(DataList[[Resps[r]]]$Phylo),
+                    length = 100)  %>% c(mean(DataList[[Resps[r]]]$Phylo))
   
   DietRange <- #seq(from = min(DataList[[Resps[r]]]$DietSim),
-              #     to = max(DataList[[Resps[r]]]$DietSim),
-              #     length = 10)  %>% 
+    #     to = max(DataList[[Resps[r]]]$DietSim),
+    #     length = 10)  %>% 
     c(mean(DataList[[Resps[r]]]$DietSim))
   
   FitList[[Resps[r]]] <- expand.grid(Space = SpaceRange,
-                                     Phylo2 = PhyloRange,
+                                     Phylo = PhyloRange,
                                      DietSim = DietRange,
                                      MinCites = mean(DataList[[Resps[r]]]$MinCites),
                                      Domestic = 0
-  ) %>% mutate(
-    
-    Mean = ifelse(Space == mean(DataList[[Resps[r]]]$Space) | 
-                    Phylo2 == mean(scale(DataList[[Resps[r]]]$Phylo2)), 1, 0)
-    
   )
   
   FitList[[Resps[r]]]$Spp <- matrix(0 , nrow = nrow(FitList[[Resps[r]]]), ncol = length(SpCoef))# %>% as("dgCMatrix")
   
   FitList[[Resps[r]]] <- FitList[[Resps[r]]] %>% mutate(SpaceQ = cut(Space, quantile(Space, 0:10/10),include.lowest = T, labels = 1:10),
-                                                        PhyloQ = cut(Phylo2, quantile(Phylo2, 0:10/10),include.lowest = T, labels = 1:10))
+                                                        PhyloQ = cut(Phylo, quantile(Phylo, 0:10/10),include.lowest = T, labels = 1:10))
   
-  FitPredictions  <- predict.gam(DevList[[1]], 
+  FitPredictions  <- predict.gam(BAMList[[1]], 
                                  newdata = FitList[[Resps[r]]])
   
   #FitPredictions <- FitPredictions %>% as.data.frame() %>% 
@@ -92,37 +87,40 @@ save(FitList, file = "Output Files/FitList.Rdata")
 
 r=1
 
-FitList[["VirusBinary"]] %>% filter(Phylo2 == last(PhyloRange)) %>%
+FitList[["VirusBinary"]] %>% filter(Phylo == last(PhyloRange)) %>%
   ggplot(aes(Space, Fit)) + geom_line() +
   lims(y = c(0,1))
 
 FitList[["VirusBinary"]] %>% filter(Space == SpaceRange[10]) %>%
-  ggplot(aes(Phylo2, Fit)) + geom_line() +
+  ggplot(aes(Phylo, Fit)) + geom_line() +
   lims(y = c(0,1))
 
-FitList[["VirusBinary"]] %>% filter(Space == SpaceRange[10]) %>%
-  ggplot(aes(Phylo2, Fit)) + geom_line()
+FitList[["VirusBinary"]] %>% filter(Space == last(SpaceRange)) %>%
+  ggplot(aes(Phylo, Fit)) + geom_line()
+
+FitList[["VirusBinary"]] %>% filter(Phylo == SpaceRange[10]) %>%
+  ggplot(aes(Phylo, Fit)) + geom_line()
 
 tiff("Figures/Model Predictions.jpeg", units = "mm", width = 200, height = 150, res = 300)
 
 list(
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo2, Fit, colour = Space)) + 
+  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo, Fit, colour = Space)) + 
     geom_line(aes(group = as.factor(Space), lty = as.factor(Mean)), alpha = 0.3),
   
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Space, Fit, colour = Phylo2)) + 
-    geom_line(aes(group = as.factor(Phylo2), lty = as.factor(Mean)), alpha = 0.3)
+  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Space, Fit, colour = Phylo)) + 
+    geom_line(aes(group = as.factor(Phylo), lty = as.factor(Mean)), alpha = 0.3)
   
 ) %>% arrange_ggplot2
 
 dev.off()
 
 list(
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo2, Estimate, colour = Space)) + 
+  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Phylo, Estimate, colour = Space)) + 
     geom_line(aes(group = as.factor(Space)), alpha = 0.3) +
-    geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Phylo2), alpha = 0.01),
+    geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
   
-  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Space, Estimate, colour = Phylo2)) + 
-    geom_line(aes(group = as.factor(Phylo2)), alpha = 0.3) +
+  ggplot(GAMPredDF %>% filter(DietSim==0), aes(Space, Estimate, colour = Phylo)) + 
+    geom_line(aes(group = as.factor(Phylo)), alpha = 0.3) +
     geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Space), alpha = 0.01)
   
 ) %>% arrange_ggplot2

@@ -122,6 +122,8 @@ if(file.exists("~/LargeFiles/OverList2.Rdata")) load("~/LargeFiles/OverList2.Rda
   
 }
 
+print("Doing Overlap!")
+
 if(file.exists("~/LargeFiles/Full Range Overlap.Rdata")) load("~/LargeFiles/FullRangeOverlap.Rdata") else{
   
   FullRangeAdj1 <- PairsWisely(FullMammalRanges)

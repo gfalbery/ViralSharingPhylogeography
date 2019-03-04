@@ -113,7 +113,7 @@ FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
 remove(HostMatrixdf)
 
-FinalHostMatrix$Phylo2 <- FinalHostMatrix$Phylo
+FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 
@@ -126,10 +126,14 @@ FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %
 
 #FinalHostMatrix$Eaten <- ifelse(FinalHostMatrix$Carnivore==FinalHostMatrix$Carnivore.Sp2,0,1)
 
-Remove1 <- FinalHostMatrix %>% group_by(Sp) %>% summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp)
-Remove2 <- FinalHostMatrix %>% group_by(Sp2) %>% summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp2)
+Remove1 <- FinalHostMatrix %>% group_by(Sp) %>% dplyr::summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp)
+Remove2 <- FinalHostMatrix %>% group_by(Sp2) %>% dplyr::summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp2)
 
-RemoveSp <- intersect(Remove1$Sp, Remove2$Sp2)
+Remove3 <- which(table(c((FinalHostMatrix %>% filter(Phylo < 0.25) %>% select(Sp, Sp2))$Sp %>% as.character(),
+                         (FinalHostMatrix %>% filter(Phylo < 0.25) %>% select(Sp, Sp2))$Sp2 %>% as.character()))>20) %>% 
+  names
+
+RemoveSp <- union(intersect(Remove1$Sp, Remove2$Sp2), Remove3)
 
 FinalHostMatrix <- FinalHostMatrix %>% filter(!Sp%in%RemoveSp&!Sp2%in%RemoveSp)
 
@@ -137,3 +141,5 @@ FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMa
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 
 FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2))
+
+

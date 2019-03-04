@@ -4,7 +4,7 @@
 # Rscript "R Code/1_Sharing Models/1a_Frequentist GAMs.R"
 
 #if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else 
-#source("R Code/00_Master Code.R")
+source("R Code/00_Master Code.R")
 
 library(mgcv); library(tidyverse)
 
@@ -12,7 +12,7 @@ Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
 BAMList <- BAMList2 <- DataList <- PPList <- list()
 
-for(r in 1:length(Resps)){
+for(r in 1){
   
   print(Resps[r])
   
@@ -39,16 +39,16 @@ for(r in 1:length(Resps)){
   
   Formula = as.formula(paste0(Resps[r], 
                               " ~ ",
-                              "t2(Space, scale(Phylo2)) + ",
-                              #"s(Space) + s(scale(Phylo2))  + "
+                              "t2(Space, Phylo) + ",
+                              #"s(Space) + s(Phylo)  + "
                               "s(DietSim) + ",
                               "MinCites + Domestic +",
                               "Spp"))
   
   Formula2 = as.formula(paste0(Resps[r], 
                                " ~ ",
-                               "t2(Space, scale(Phylo2)) + ",
-                               #"s(Space) + s(scale(Phylo2))  + "
+                               "t2(Space, Phylo) + ",
+                               #"s(Space) + s(Phylo)  + "
                                "s(DietSim) + ",
                                "MinCites + Domestic"))
   
