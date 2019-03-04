@@ -37,19 +37,19 @@ BarGraph(Panth1, "hOrder", "AllPredDegree", order = T, text = "N") +
   theme(legend.position = "none") + 
   labs(x = "Order", y = "Degree Centrality", title = "All Links") +  
   scale_fill_discrete_sequential(palette = AlberPalettes[1]) +
-  ggsave("Figures/AllPredDegree.jpeg", units = "mm", height= 120, width = 200)
+  ggsave("Figures/AllPredDegree.jpeg", units = "mm", height = 120, width = 200)
 
 BarGraph(Panth1, "hOrder", "InDegree", order = T, text = "N") + 
   theme(legend.position = "none") + 
   labs(x = "Order", y = "Degree Centrality", title = "Within-Order Links") +  
   scale_fill_discrete_sequential(palette = AlberPalettes[2]) +
-  ggsave("Figures/InDegree.jpeg", units = "mm", height= 120, width = 200)
+  ggsave("Figures/InDegree.jpeg", units = "mm", height = 120, width = 200)
 
 BarGraph(Panth1, "hOrder", "OutDegree", order = T, text = "N") + 
   theme(legend.position = "none") + 
   labs(x = "Order", y = "Degree Centrality", title = "Out-of-Order Links") +  
   scale_fill_discrete_sequential(palette = AlberPalettes[3]) +
-  ggsave("Figures/OutDegree.jpeg", units = "mm", height= 120, width = 200)
+  ggsave("Figures/OutDegree.jpeg", units = "mm", height = 120, width = 200)
 
 
 
