@@ -63,9 +63,6 @@ FinalHostNames <- reduce(list(
 
 FHN <- FinalHostNames; length(FHN)
 
-HostThemselves <- # Removing diagonals, as they're uninformative
-  which(upper.tri(HostAdj[FHN,FHN], diag = T)&lower.tri(HostAdj[FHN,FHN], diag  = T))
-
 UpperHosts <- # Removing diagonals, as they're uninformative
   which(upper.tri(HostAdj[FHN,FHN], diag = T))
 
@@ -142,4 +139,54 @@ FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHost
 
 FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2))
 
+# Let's try this a second time ####
 
+FHN <- levels(FinalHostMatrix$Sp)
+
+HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
+                           Space = c(RangeAdj[FHN, FHN]),
+                           Phylo = c(tSTMatrix[FHN, FHN]),
+                           Sp = as.character(rep(FHN, each = length(FHN))),
+                           Sp2 = as.character(rep(FHN, length(FHN)))
+)
+
+HostMatrixdf$Sp <- as.character(HostMatrixdf$Sp)
+HostMatrixdf$Sp2 <- as.character(HostMatrixdf$Sp2)
+
+HostMatrixVar <- c("hOrder", "hFamily", "hDom", "hAllZACites", "hDiseaseZACites"
+                   #"LongMean", "LatMean")
+)
+
+HostMatrixdf[,HostMatrixVar] <- Hosts[HostMatrixdf$Sp, HostMatrixVar]
+HostMatrixdf[,paste0(HostMatrixVar,".Sp2")] <- Hosts[HostMatrixdf$Sp2, HostMatrixVar]
+
+HostMatrixdf$Cites <- log(HostMatrixdf$hAllZACites + 1)
+HostMatrixdf$TotalCites <- log(HostMatrixdf$hAllZACites + HostMatrixdf$hAllZACites.Sp2 + 1)
+HostMatrixdf$MinCites <- apply(HostMatrixdf[,c("hAllZACites", "hAllZACites.Sp2")],1, function(a) min(a, na.rm = T))
+
+HostMatrixdf$DCites <- log(HostMatrixdf$hDiseaseZACites + 1)
+HostMatrixdf$MinDCites <- apply(HostMatrixdf[,c("hDiseaseZACites", "hDiseaseZACites.Sp2")],1, function(a) min(a, na.rm = T))
+HostMatrixdf$TotalDCites <- log(HostMatrixdf$hDiseaseZACites + HostMatrixdf$hAllZACites.Sp2 + 1)
+
+HostMatrixdf$DomDom <- paste(HostMatrixdf$hDom, HostMatrixdf$hDom.Sp2)
+HostMatrixdf$DomDom <- ifelse(HostMatrixdf$DomDom == "domestic wild", "wild domestic", HostMatrixdf$DomDom) %>%
+  factor(levels = c("wild wild", "domestic domestic", "wild domestic"))
+
+UpperHosts <- # Removing diagonals and 
+  which(upper.tri(HostAdj[FHN,FHN], diag = T))
+
+FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
+
+remove(HostMatrixdf)
+
+FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
+FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
+FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
+
+FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
+  mutate(DietSim = 1 - DietSim)
+
+FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+
+FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2))

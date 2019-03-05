@@ -10,8 +10,6 @@ load("Output Files/BAMList2.Rdata")
 
 Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
-DataList <- PPList <- FitList <- list()
-
 for(r in 1:length(BAMList)){
   
   print(Resps[r])
@@ -58,14 +56,11 @@ for(r in 1:length(BAMList)){
   #FitPredictions <- FitPredictions %>% as.data.frame() %>% 
   #  mutate(Intercept = attr(FitPredictions,"constant"))
   
-  #FitList[[Resps[r]]][,"Fit"] <- FitPredictions
   FitList[[Resps[r]]][,"Fit"] <- logistic(FitPredictions)
   
 }
 
 save(FitList, file = "Output Files/FitList.Rdata")
-
-r=1
 
 FitList[["VirusBinary"]] %>% filter(Phylo == last(PhyloRange)) %>%
   ggplot(aes(Space, Fit)) + geom_line() +
@@ -75,10 +70,12 @@ FitList[["VirusBinary"]] %>% filter(Space == SpaceRange[10]) %>%
   ggplot(aes(Phylo, Fit)) + geom_line() +
   lims(y = c(0,1))
 
-FitList[["VirusBinary"]] %>% filter(Space == last(SpaceRange)) %>%
+FitList[["VirusBinary"]] %>% filter(Space == last(unique(FitList[["VirusBinary"]]$Space))&
+                                      DietSim == last(unique(FitList[["VirusBinary"]]$DietSim))) %>%
   ggplot(aes(Phylo, Fit)) + geom_line()
 
-FitList[["VirusBinary"]] %>% filter(Phylo == last(PhyloRange)) %>%
+FitList[["VirusBinary"]] %>% filter(Phylo == last(unique(FitList[["VirusBinary"]]$Phylo))&
+                                      DietSim == last(unique(FitList[["VirusBinary"]]$DietSim))) %>%
   ggplot(aes(Space, Fit)) + geom_line()
 
 tiff("Figures/Model Predictions.jpeg", units = "mm", width = 200, height = 150, res = 300)

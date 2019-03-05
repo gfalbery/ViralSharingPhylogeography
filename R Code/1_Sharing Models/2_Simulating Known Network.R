@@ -3,40 +3,14 @@
 
 # Rscript "R Code/1_Sharing Models/2_Simulating Known Network.R"
 
-library(rstan); library(reskew); library(ggregplot); library(parallel); library(igraph);
+library(ggregplot); library(parallel); library(igraph);
 library(mgcv); library(tidyverse)
 
-if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
+#if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
 
 load("Output Files/BAMList.Rdata")
 
-FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
-FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
-
 Resps <- c("VirusBinary")#,"RNA","DNA","Vector","NVector")
-
-DataList <- list()
-
-for(r in 1:length(Resps)){
-  
-  print(Resps[r])
-  
-  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r]))
-  
-  DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
-  DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
-  
-  MZ1 <- model.matrix( ~ Sp - 1, data = DataList[[Resps[r]]]) %>% as.matrix
-  MZ2 <- model.matrix( ~ Sp2 - 1, data = DataList[[Resps[r]]]) %>% as.matrix
-  
-  SppMatrix = MZ1 + MZ2
-  
-  DataList[[Resps[[r]]]]$Spp <- SppMatrix
-  DataList[[Resps[[r]]]]$Cites <- rowSums(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1))
-  DataList[[Resps[[r]]]]$MinCites <- apply(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1),1,min)
-  DataList[[Resps[[r]]]]$Domestic <- ifelse(rowSums(cbind(2- FinalHostMatrix$hDom %>% as.factor %>% as.numeric,
-                                                          2- FinalHostMatrix$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
-}
 
 # Doing the simulating with random effects #####
 
@@ -73,14 +47,14 @@ FinalHostMatrix$PredVirus1Q <- cut(FinalHostMatrix$PredVirus1,
 SimNets1 <- mclapply(1:length(PredList1), function(i){
   
   AssMat <- matrix(NA, 
-                   nrow = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)), 
-                   ncol = length(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
+                   nrow = nlevels(DataList[[1]]$Sp), 
+                   ncol = nlevels(DataList[[1]]$Sp))
   
   AssMat[lower.tri(AssMat)] <- round(PredList1[[i]])
   AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
   diag(AssMat) <- 0
-  dimnames(AssMat) <- list(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2),
-                           union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2))
+  dimnames(AssMat) <- list(levels(DataList[[1]]$Sp),
+                           levels(DataList[[1]]$Sp))
   
   as(AssMat, "dgCMatrix")
   
@@ -93,8 +67,6 @@ SimGraphs1 <- mclapply(1:length(PredList1), function(i){
 }, mc.cores = 10)
 
 # Doing the simulating with random effects #####
-
-PredList1b <- list()
 
 SpCoefNames <- names(BAMList[[1]]$coef)[substr(names(BAMList[[1]]$coef),1,5)=="SppSp"]
 SpCoef <- BAMList[[1]]$coef[SpCoefNames]

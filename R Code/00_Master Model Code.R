@@ -17,12 +17,12 @@ CodeRoot2 <- "R Code/1_Sharing Models/"
 if(file.exists("Output Files/BAMList.Rdata")) load("Output Files/BAMList.Rdata") else 
   source(paste0(CodeRoot2,"1a_Frequentist GAMs.R"))
 
-source(paste0(CodeRoot2,"1b_Frequentist GAM Output.R"))
-source(paste0(CodeRoot2,"1c_Frequentist GAM Deviance Contributions.R"))
+#source(paste0(CodeRoot2,"1b_Frequentist GAM Output.R"))
+#source(paste0(CodeRoot2,"1c_Frequentist GAM Deviance Contributions.R"))
 
 #print("Known Network Simulation!")
-source(paste0(CodeRoot2,"2_Simulating Known Network.R"))
-source(paste0(CodeRoot2,"2b_Known Network Characteristics.R"))
+#source(paste0(CodeRoot2,"2_Simulating Known Network.R"))
+#source(paste0(CodeRoot2,"2b_Known Network Characteristics.R"))
 
 print("All Mammal Simulation!")
 source(paste0(CodeRoot2,"3_Simulating Whole Network.R"))

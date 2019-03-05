@@ -28,15 +28,24 @@ PredDegrees1 <- map(PredNetwork1, "Degree") %>% bind_cols()
 PredDegrees1b <- map(PredNetwork1b, "Degree") %>% bind_cols()
 
 PredDegrees <- data.frame(PredDegree1 = apply(PredDegrees1, 1, mean),
-                          PredDegree1b = apply(PredDegrees1b, 1, mean),
+                          #PredDegree1b = apply(PredDegrees1b, 1, mean),
                           Sp = names(PredNetwork1[[1]]$Degree))
 
-Hosts <- Hosts %>% #select(-c("PredDegree1","PredDegree1b")) %>%
-                            left_join(PredDegrees, by = "Sp")
+Hosts <- Hosts %>% # select(-c("PredDegree1")) %>% #,"PredDegree1b")) %>%
+  left_join(PredDegrees, by = "Sp")
 
-ggplot(Hosts, aes(Degree, PredDegree1)) + geom_point() +
+ggplot(Hosts, aes(Degree, PredDegree1)) + 
+  geom_point(alpha = 0.5, colour = AlberColours[2]) +
   coord_fixed() +
+  labs(x = "Observed Degree", y = "Predicted Degree", title = "With Random Effects") +
   ggsave("SIFigures/Degree.PredDegree1.jpeg", units = "mm", width = 100, height = 100)
+
+ggplot(Hosts, aes(Degree, PredDegree1b)) + 
+  geom_point(alpha = 0.5, colour = AlberColours[2]) +
+  coord_fixed() +
+  labs(x = "Observed Degree", y = "Predicted Degree", title = "No Random Effects") +
+  lims(x = c(0, max(Hosts$Degree, na.rm = T)), y = c(0, max(Hosts$Degree, na.rm = T))) +
+  ggsave("SIFigures/Degree.PredDegree1b.jpeg", units = "mm", width = 100, height = 100)
 
 GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
 
