@@ -9,6 +9,8 @@
 load("Output Files/BAMList.Rdata")
 #load("Output Files/BAMList2.Rdata")
 
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
+
 library(mgcv); library(tidyverse)
 
 TensorDevList <- DevOutput <- list()
@@ -18,11 +20,11 @@ for(r in 1:length(BAMList)){
   print(Resps[r])
   
   Covar <- c(#"ti(Space, Phylo)", 
-             #"s(Space)", 
-             #"s(Phylo)",
-             "t2(Space, Phylo)",
-             "s(DietSim)",
-             "MinCites", "Domestic", "Spp")
+    #"s(Space)", 
+    #"s(Phylo)",
+    "t2(Space, Phylo)",
+    "s(DietSim)",
+    "MinCites", "Domestic", "Spp")
   
   Formula <- as.formula(paste0(Resps[r], " ~ ", paste(Covar, collapse = " + ")))
   
@@ -49,13 +51,16 @@ for(r in 1:length(BAMList)){
   }
   
   OrigDev <- TensorDevList[[Resps[r]]]$FullModel %>% deviance
+  
   RemoveDevs <- sapply(TensorDevList[[Resps[r]]][2:length(TensorDevList[[Resps[r]]])], deviance)
   
-  DevOutput <- round(((RemoveDevs - OrigDev)/sum(RemoveDevs - OrigDev)) * summary(TensorDevList[[Resps[r]]]$FullModel)$dev.expl, 3)
-  
+  DevOutput[[Resps[r]]] <- 
+    round(((RemoveDevs - OrigDev)/sum(RemoveDevs - OrigDev)), 3)
   
 }
 
 save(TensorDevList, DevOutput, file = "Output Files/TensorDevList.Rdata")
 
+load("Output Files/TensorDevList.Rdata")
 
+DevOutput <- list()

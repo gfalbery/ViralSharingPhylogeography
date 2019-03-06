@@ -17,7 +17,7 @@ for(r in 1:length(Resps)){
   
   print(Resps[r])
   
-  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!NARows(FinalHostMatrix, Resps[r])) %>% droplevels
+  DataList[[Resps[r]]] <- FinalHostMatrix[!NARows(FinalHostMatrix, Resps[r]),] %>% droplevels
   
   DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
   DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
@@ -38,10 +38,10 @@ for(r in 1:length(Resps)){
   PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), 
                                         diag(nlevels(DataList[[Resps[r]]]$Sp))))
   
-  Covar <- c("t2(Space, Phylo)",
-             #"ti(Space, Phylo)",
-             #"s(Space)",
-             #"s(Phylo)",
+  Covar <- c(#"t2(Space, Phylo)",
+             "ti(Space, Phylo)",
+             "s(Space)",
+             "s(Phylo)",
              "s(DietSim)",
              "MinCites",
              "Domestic",
@@ -55,7 +55,8 @@ for(r in 1:length(Resps)){
   BAMList[[Resps[r]]] <- bam(Formula,
                              data = DataList[[Resps[r]]], 
                              family = binomial(),
-                             paraPen = PPList[[Resps[r]]])
+                             paraPen = PPList[[Resps[r]]], select = T
+                             )
   
 }
 

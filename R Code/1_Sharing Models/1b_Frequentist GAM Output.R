@@ -56,7 +56,7 @@ for(r in 1:length(BAMList)){
                                  newdata = FitList[[Resps[r]]])
   
   FitList[[Resps[r]]][,"Fit"] <- logistic(FitPredictions)
-  
+
   print("Getting posterior uncertainty!")
   
   # Posterior Uncertainty Simulation #### https://www.fromthebottomoftheheap.net/2014/06/16/simultaneous-confidence-intervals-for-derivatives/
@@ -135,7 +135,7 @@ for(r in 1:length(BAMList)){
   
 }
 
-save(FitList, file = "Output Files/FitList.Rdata")
+save(FitList, PostList, DrawList, file = "Output Files/FitList.Rdata")
 
 
 

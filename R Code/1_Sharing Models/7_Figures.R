@@ -211,23 +211,19 @@ ggplot(DrawList[["VirusBinary"]]$Phylo,
   ggsave("SIFigures/GAMDataDraws_Phylo.jpeg", 
          units = "mm", width = 100, height = 100, dpi = 300)
 
-# No. hosts versus predictability ####
-
-ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + 
-  geom_point() +
-  geom_smooth(colour = "black", fill = NA) + 
-  stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black") +
-  #geom_text(aes(label = Virus)) +
-  labs(x = "log10(Number of Hosts)", y = "log10(Mean Rank of Focal Host)") +
-  ggsave("SIFigures/HostNo_Prediction.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
-
-# Correlations among degree measures ####
+# Species-level Correlations among degree predictions ####
 
 jpeg("SIFigures/DegreePairs.jpeg", units = "mm", width = 200, height = 200, res = 300)
 
 GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
 
 dev.off()
+
+# Order-level Correlations among degree predictions ####
+
+BarBarGraph(Hosts, "hOrder", "Degree", "AllPredDegree") +
+  ggtitle("Order-Level Predictions Do Not Correlate") +
+  ggsave("SIFigures/OrderDegreePredicts.jpeg", units = "mm", height = 120, width = 125, dpi = 300)
 
 # Numbers of species versus centrality ####
 
@@ -270,7 +266,6 @@ OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + geom_point() +
                                                      "InDegree" = "Within-Order Links")))  +
   ggsave("SIFigures/log_NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
- 
 hComboList %>% group_by(Iteration, Group) %>%
   summarise(HostNo = n(),
             Degree = sum(Degree)) %>% spread(value = c("HostNo"), key = c("Group")) %>%
@@ -279,11 +274,44 @@ hComboList %>% group_by(Iteration, Group) %>%
             `2` = sum(`2`, na.rm = T),
             Degree = mean(Degree)) %>% bind_cols(Combos) %>%
   ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
-  geom_point() + facet_wrap(~Order2)
+  geom_point() +
+  labs(x = "log(Order 1 Hosts) + log(Order 2 Hosts)", 
+       y = "log(Predicted Links + 1)",
+       title = "Scaling of between-order links") +
+  ggsave("SIFigures/BetweenOrderScaling.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
+
+# No. hosts versus predictability ####
+
+ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + 
+  geom_point() +
+  geom_smooth(colour = "black", fill = NA) + 
+  stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black") +
+  #geom_text(aes(label = Virus)) +
+  labs(x = "log10(Number of Hosts)", y = "log10(Mean Rank of Focal Host)") +
+  ggsave("SIFigures/HostNo_Prediction.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
 
 # Correlation between mean rank of focal host predictions and the proportion of links they're present for
 
 ggplot(ValidSummary, aes(log10(MeanRank), MeanCount1)) + geom_point() + 
   geom_smooth(method = lm) +
   ggsave("SIFigures/Rank_Count.jpeg", units = "mm", height = 100, width = 100)
+
+# RNA Viruses are harder to predict ####
+
+BarGraph(ValidSummary, "vDNAoRNA", "MeanRank", text = "N") +
+  scale_fill_manual(values = c(AlberColours[[1]], AlberColours[[2]])) +
+  theme(legend.position = "none") +
+  ggsave("SIFigures/RNA_DNA_Prediction.jpeg", units = "mm", height = 100, width = 100)
+
+# No other viral traits matter ####
+
+jpeg("SIFigures/ViralTraits_Predictability.jpeg", units = "mm", width = 200, height = 200, res = 300)
+
+VirusCovar %>% 
+  lapply(function(a) BarGraph(ValidSummary, a, "MeanRank", text = "N")) %>% 
+  arrange_ggplot2(ncol = 3)
+
+dev.off()
+
+
 

@@ -108,8 +108,6 @@ UpperHosts <- # Removing diagonals and
 
 FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
-remove(HostMatrixdf)
-
 FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
@@ -176,8 +174,6 @@ UpperHosts <- # Removing diagonals and
   which(upper.tri(HostAdj[FHN,FHN], diag = T))
 
 FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
-
-remove(HostMatrixdf)
 
 FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)

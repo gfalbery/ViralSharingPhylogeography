@@ -36,7 +36,7 @@ save(GAMValid, file = "Output Files/GAMValidation.Rdata")
 
 {
   
-  #load("Output Files/GAMValidation.Rdata")
+  load("Output Files/GAMValidation.Rdata")
   
   KeepPredictions <- (1:length(GAMValid))[-which(sapply(GAMValid, function(a) any(is.na(a))))]
   
@@ -72,3 +72,15 @@ save(GAMValid, file = "Output Files/GAMValidation.Rdata")
 }
 
 save(ValidSummary, file = "Output Files/ValidSummary.Rdata")
+
+VirusCovar <- c("IsHoSa","IsHoSa.stringent",
+                #"vGenomeMinLength","vGenomeMaxLength","vGenomeAveLength","vWOKcites","vPubMedCites",
+                "vCytoReplicTF","vSegmentedTF","vVectorYNna","vSSoDS","vDNAoRNA","vEnvelope",
+                "IsZoonotic")
+
+ValidSummary <- VirusTraits %>% select(vVirusNameCorrected, VirusCovar) %>%
+  rename(Virus = vVirusNameCorrected) %>%
+  right_join(ValidSummary, by = "Virus")
+
+VirusCovar %>% lapply(function(a) BarGraph(ValidSummary, a, "MeanRank")) %>% arrange_ggplot2
+

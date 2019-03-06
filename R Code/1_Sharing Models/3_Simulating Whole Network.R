@@ -27,7 +27,7 @@ AllMammalMatrix <- data.frame(
 
 UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals,AllMammals], diag = T))
 
-AllMammaldf <- AllMammalMatrix[-UpperMammals,]; remove(AllMammalMatrix)
+AllMammaldf <- AllMammalMatrix[-UpperMammals,]
 
 N = nrow(AllMammaldf)
 
