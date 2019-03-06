@@ -67,6 +67,8 @@ ggplot(Hosts, aes(Degree, AllPredDegree)) + geom_point() +
 
 # 3.	Mammal order level centrality (bar plots)
 
+load("Output Files/Panth1.Rdata")
+
 BarGraph(Panth1, "hOrder", "AllPredDegree", order = T, text = "N") + 
   theme(legend.position = "none") + 
   labs(x = "Order", y = "Degree Centrality", title = "All Links") +  
