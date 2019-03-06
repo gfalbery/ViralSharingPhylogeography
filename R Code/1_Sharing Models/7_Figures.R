@@ -256,6 +256,21 @@ Panth1 %>% group_by(hOrder) %>%
             InDegree = mean(InDegree),
             OutDegree = mean(OutDegree)) %>% lm(log(InDegree+1) ~ log(Number+1), data = .)
 
+OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + geom_point() + 
+  coord_fixed() + geom_smooth() +
+  facet_wrap(~Metric, labeller = labeller(Metric = c("AllPredDegree" = "All Links",
+                                                     "OutDegree" = "Out-of-Order Links",
+                                                     "InDegree" = "Within-Order Links")))
+ 
+hComboList %>% group_by(Iteration, Group) %>%
+  summarise(HostNo = n(),
+            Degree = sum(Degree)) %>% spread(value = c("HostNo"), key = c("Group")) %>%
+  group_by(Iteration) %>%
+  summarise(`1` = sum(`1`, na.rm = T), 
+            `2` = sum(`2`, na.rm = T),
+            Degree = mean(Degree)) %>% bind_cols(Combos) %>%
+  ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
+  geom_point() + facet_wrap(~Order2)
 
 # Correlation between mean rank of focal host predictions and the proportion of links they're present for
 

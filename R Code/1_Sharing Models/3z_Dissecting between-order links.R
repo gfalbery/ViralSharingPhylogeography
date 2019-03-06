@@ -6,76 +6,82 @@ library(igraph); library(tidyverse); library(ggregplot); library(parallel); libr
 
 #source("R Code/00_Master Code.R")
 
+load("Output Files/AllSums.Rdata")
+load("Output Files/AllSims.Rdata")
 load("Output Files/AllSimGs.Rdata")
-load("Output Files/hComboList.Rdata")
 load("Output Files/Panth1.Rdata")
 
 Combos <- t(combn(levels(Panth1$hOrder),2)) %>% as.data.frame() %>%
   rename(Order1 = V1, Order2 = V2)
 
+hComboList <- list()
 
-hComboList <- mclapply(1:length(AllSimGs), function(i){
+for(i in 1:nrow(Combos)){
   
-  a <- AllSimGs[[i]]
+  print(i)
   
-  lapply(t(Combos) %>% as.data.frame(), function(x){
-    
-    distances(a, v = V(a)[Panth1$hOrder == as.character(x[1])], 
-              to = V(a)[Panth1$hOrder == as.character(x[2])])
-    
-  })
+  a = Combos[i,] %>% unlist
   
-}, mc.cores = 10)
-
-
-save(hComboList, file = "Output Files/hComboList.Rdata")
-
-stop()
-
-hComboList <- mclapply(1:length(AllSimGs), function(i){
-  lapply(t(Combos) %>% as.data.frame(), function(x) induced_subgraph(AllSimGs[[i]], 
-                                                                     as.character(Panth1$hOrder) == x))
-}, mc.cores = 10)
-
-Degrees <- lapply(hComboList, function(a) lapply(a, function(b) length(which(b==1))))
-
-Degrees2 <- lapply(1:nrow(Combos), function(a) map(Degrees, a) %>% unlist)
-
-MeanDegrees <- sapply(Degrees2, function(a) mean(colSums(a)))
-
-DegreeScaling <- data.frame(
+  b1 = Panth1$hOrder%in%a[1]
+  b2 = Panth1$hOrder%in%a[2]
   
-  Order1 = Combos$Order1,
-  Order2 = Combos$Order2,
+  FocalNet <- (AllSums[b1,b2]/length(AllSims)) %>% as.matrix
   
-  BetweenDegrees = sapply(Degrees2, mean)
+  hComboList[[i]] <- data.frame(Degree = c(rowSums(FocalNet), colSums(FocalNet)),
+                                Iteration = i,
+                                Sp = c(Panth1[b1,"Sp"], Panth1[b2,"Sp"]),
+                                Order = c(Panth1[b1,"hOrder"], Panth1[b2,"hOrder"]),
+                                Group = rep(1:2, c(length(b1[b1==T]),length(b2[b2==T]))))
   
-) %>%
-  left_join(Panth1 %>% group_by(hOrder) %>%
-              summarise(Number = n()),
-            by = c(Order1 = "hOrder")) %>% 
-  left_join(Panth1 %>% group_by(hOrder) %>%
-              summarise(Number = n()),
-            by = c(Order2 = "hOrder"), 
-            suffix = c(".1", ".2"))
+}
 
-list(
-  
-  ggplot(DegreeScaling, aes(log(Number.1), log(BetweenDegrees+1), colour = log(Number.2))) + geom_point(),
-  
-  ggplot(DegreeScaling, aes(log(Number.2), log(BetweenDegrees+1), colour = log(Number.1))) + geom_point()
-  
-) %>% arrange_ggplot2
+hComboList <- hComboList %>% bind_rows()
 
-ggplot(DegreeScaling2, aes(log(Number.2) + log(Number.1), log(BetweenDegrees+1))) + geom_point()
+hUniteList <- list()
 
-DegreeScaling2 = bind_rows(DegreeScaling,
-                           DegreeScaling %>% mutate(OrderA = Order2,
-                                                    OrderB = Order1) %>%
-                             mutate(Order1 = OrderA,
-                                    Order2 = OrderB))
+for(i in levels(Panth1$hOrder)){
+  
+  print(i)
+  
+  b1 = Panth1$hOrder == i
+  
+  FocalNet <- (AllSums[b1,b1]/length(AllSims)) %>% as.matrix
+  
+  hUniteList[[i]] <- data.frame(Degree = c(rowSums(FocalNet)),
+                                Iteration = i,
+                                Sp = c(Panth1[b1,"Sp"]),
+                                Order = c(Panth1[b1,"hOrder"]))
+  
+}
 
-ggplot(DegreeScaling2, aes(log(Number.2) + log(Number.1), log(BetweenDegrees+1))) + 
+hUniteList <- hUniteList %>% bind_rows()
+
+OutDegrees <- hComboList %>% group_by(Sp) %>% summarise(OutDegree = sum(Degree))
+InDegrees <- hUniteList %>% group_by(Sp) %>% summarise(InDegree = sum(Degree))
+AllDegrees <- OutDegrees %>% left_join(InDegrees) %>%
+  mutate(AllPredDegree = OutDegree + InDegree)
+
+OrderLevelLinks <- Panth1 %>% dplyr::select(-c("AllPredDegree", "InDegree", "OutDegree")) %>%
+  left_join(AllDegrees, by = "Sp") %>%
+  group_by(hOrder) %>%
+  summarise(HostNumber = n(),
+            OutDegree = mean(OutDegree),
+            InDegree = mean(InDegree),
+            AllPredDegree = mean(AllPredDegree)) %>%
+  gather(key = "Metric", value = "Degree", contains("Degree"))
+
+OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + geom_point() + 
+  coord_fixed() + geom_smooth() +
+  facet_wrap(~Metric)
+
+hComboList %>% group_by(Iteration, Group) %>%
+  summarise(HostNo = n(),
+            Degree = sum(Degree)) %>% spread(value = c("HostNo"), key = c("Group")) %>%
+  group_by(Iteration) %>%
+  summarise(`1` = sum(`1`, na.rm = T), 
+            `2` = sum(`2`, na.rm = T),
+            Degree = mean(Degree)) %>% bind_cols(Combos) %>%
+  ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
   geom_point() + facet_wrap(~Order2)
 
 
