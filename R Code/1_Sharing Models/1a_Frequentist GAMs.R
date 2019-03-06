@@ -32,38 +32,25 @@ for(r in 1:length(Resps)){
   DataList[[Resps[[r]]]]$Spp <- SppMatrix
   DataList[[Resps[[r]]]]$Cites <- rowSums(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1))
   DataList[[Resps[[r]]]]$MinCites <- apply(log(DataList[[Resps[r]]][,c("hDiseaseZACites","hDiseaseZACites.Sp2")] + 1),1,min)
-  DataList[[Resps[[r]]]]$Domestic <- ifelse(rowSums(cbind(2- FinalHostMatrix$hDom %>% as.factor %>% as.numeric,
-                                                          2- FinalHostMatrix$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
+  DataList[[Resps[[r]]]]$Domestic <- ifelse(rowSums(cbind(2- DataList[[Resps[r]]]$hDom %>% as.factor %>% as.numeric,
+                                                          2- DataList[[Resps[r]]]$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
   
   PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), 
                                         diag(nlevels(DataList[[Resps[r]]]$Sp))))
   
   Formula = as.formula(paste0(Resps[r], 
                               " ~ ",
-                              "t2(Space, Phylo) + ",
-                              #"s(Space) + s(Phylo)  + "
+                              "ti(Space, Phylo) + ",
+                              "s(Space) + s(Phylo)  + ",
                               "s(DietSim) + ",
                               "MinCites + Domestic +",
                               "Spp"))
-  
-  Formula2 = as.formula(paste0(Resps[r], 
-                               " ~ ",
-                               "t2(Space, Phylo) + ",
-                               #"s(Space) + s(Phylo)  + "
-                               "s(DietSim) + ",
-                               "MinCites + Domestic"))
   
   BAMList[[Resps[r]]] <- bam(Formula,
                              data = DataList[[Resps[r]]], 
                              family = binomial(),
                              paraPen = PPList[[Resps[r]]])
   
-  BAMList2[[Resps[r]]] <- bam(Formula2,
-                              data = DataList[[Resps[r]]], 
-                              family = binomial())
-  
 }
 
 save(DataList, PPList, BAMList, file = "Output Files/BAMList.Rdata")
-save(DataList, PPList, BAMList2, file = "Output Files/BAMList2.Rdata")
-

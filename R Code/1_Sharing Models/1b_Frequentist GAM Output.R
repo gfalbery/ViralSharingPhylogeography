@@ -14,6 +14,8 @@ FitList <- PostList <- DrawList <- list()
 
 for(r in 1:length(BAMList)){
   
+  Model <- BAMList[[Resps[r]]]
+  
   print(Resps[r])
   
   # Model Checking ####
