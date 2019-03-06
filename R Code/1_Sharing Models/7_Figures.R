@@ -179,10 +179,12 @@ list(PredHostPlot("Andes_virus", focal = 0), PredHostPlot("Andes_virus", focal =
 
 ggplot(PostList[["VirusBinary"]]$Space, aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
   labs(x = "Space", y = "Model Estimate", title = "Posterior Draw Estimates") +
+  scale_colour_discrete_sequential(palette = AlberPalettes[2]) +
   ggsave("SIFigures/GAMPosteriors_Space.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
 ggplot(PostList[["VirusBinary"]]$Phylo, aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
   labs(x = "Phylo", y = "Model Estimate", title = "Posterior Draw Estimates") +
+  scale_colour_discrete_sequential(palette = AlberPalettes[1]) +
   ggsave("SIFigures/GAMPosteriors_Phylo.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
 # Model description: data draws ####
@@ -257,10 +259,14 @@ Panth1 %>% group_by(hOrder) %>%
             OutDegree = mean(OutDegree)) %>% lm(log(InDegree+1) ~ log(Number+1), data = .)
 
 OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + geom_point() + 
-  coord_fixed() + geom_smooth() +
+  coord_fixed() + 
+  geom_smooth(colour = "black", fill = NA) + 
+  stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black") +
   facet_wrap(~Metric, labeller = labeller(Metric = c("AllPredDegree" = "All Links",
                                                      "OutDegree" = "Out-of-Order Links",
-                                                     "InDegree" = "Within-Order Links")))
+                                                     "InDegree" = "Within-Order Links")))  +
+  ggsave("SIFigures/log_NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
+
  
 hComboList %>% group_by(Iteration, Group) %>%
   summarise(HostNo = n(),

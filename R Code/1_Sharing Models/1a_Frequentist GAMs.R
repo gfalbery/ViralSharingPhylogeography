@@ -38,13 +38,19 @@ for(r in 1:length(Resps)){
   PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), 
                                         diag(nlevels(DataList[[Resps[r]]]$Sp))))
   
+  Covar <- c("t2(Space, Phylo)",
+             #"ti(Space, Phylo)",
+             #"s(Space)",
+             #"s(Phylo)",
+             "s(DietSim)",
+             "MinCites",
+             "Domestic",
+             "Spp")
+  
   Formula = as.formula(paste0(Resps[r], 
                               " ~ ",
-                              "ti(Space, Phylo) + ",
-                              "s(Space) + s(Phylo)  + ",
-                              "s(DietSim) + ",
-                              "MinCites + Domestic +",
-                              "Spp"))
+                              paste(Covar, collapse = " + ")
+  ))
   
   BAMList[[Resps[r]]] <- bam(Formula,
                              data = DataList[[Resps[r]]], 

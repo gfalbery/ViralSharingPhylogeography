@@ -20,8 +20,8 @@ for(r in 1:length(BAMList)){
   
   # Model Checking ####
   
-  SpCoefNames <- names(BAMList[[Resps[r]]]$coef)[substr(names(BAMList[[Resps[r]]]$coef),1,5)=="SppSp"]
-  SpCoef <- BAMList[[Resps[r]]]$coef[SpCoefNames]
+  SpCoefNames <- names(Model$coef)[substr(names(Model$coef),1,5)=="SppSp"]
+  SpCoef <- Model$coef[SpCoefNames]
   
   # Effects ####
   
@@ -52,7 +52,7 @@ for(r in 1:length(BAMList)){
   FitList[[Resps[r]]] <- FitList[[Resps[r]]] %>% mutate(SpaceQ = cut(Space, quantile(Space, 0:10/10),include.lowest = T, labels = 1:10),
                                                         PhyloQ = cut(Phylo, quantile(Phylo, 0:10/10),include.lowest = T, labels = 1:10))
   
-  FitPredictions  <- predict.gam(BAMList[[1]], 
+  FitPredictions  <- predict.gam(Model, 
                                  newdata = FitList[[Resps[r]]])
   
   FitList[[Resps[r]]][,"Fit"] <- logistic(FitPredictions)
@@ -74,12 +74,12 @@ for(r in 1:length(BAMList)){
       
     }
     
-    lp <- predict(BAMList[[Resps[r]]], newdata = PredData, 
+    lp <- predict(Model, newdata = PredData, 
                   type = "lpmatrix") %>% 
       as.data.frame()
     
-    coefs <- coef(BAMList[[Resps[r]]])
-    vc <- vcov(BAMList[[Resps[r]]])
+    coefs <- coef(Model)
+    vc <- vcov(Model)
     
     sim <- mvrnorm(100, mu = coefs, Sigma = vc)
     
@@ -122,7 +122,7 @@ for(r in 1:length(BAMList)){
         
       }
       
-      lp[[j]] <- data.frame(Fit = predict(BAMList[[Resps[r]]], newdata = PredData),
+      lp[[j]] <- data.frame(Fit = predict(Model, newdata = PredData),
                             Iteration = as.factor(j),
                             i = PredData[,i])
       
