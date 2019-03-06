@@ -179,11 +179,13 @@ list(PredHostPlot("Andes_virus", focal = 0), PredHostPlot("Andes_virus", focal =
 
 ggplot(PostList[["VirusBinary"]]$Space, aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
   labs(x = "Space", y = "Model Estimate", title = "Posterior Draw Estimates") +
+  geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01) +
   scale_colour_discrete_sequential(palette = AlberPalettes[2]) +
   ggsave("SIFigures/GAMPosteriors_Space.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
 ggplot(PostList[["VirusBinary"]]$Phylo, aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
   labs(x = "Phylo", y = "Model Estimate", title = "Posterior Draw Estimates") +
+  geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01) +
   scale_colour_discrete_sequential(palette = AlberPalettes[1]) +
   ggsave("SIFigures/GAMPosteriors_Phylo.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
@@ -193,6 +195,7 @@ ggplot(DrawList[["VirusBinary"]]$Space,
        aes(i, Fit, colour = Iteration)) + 
   geom_line(alpha = 0.5) +
   theme(legend.position = "none") +
+  geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01) +
   labs(x = "Space", y = "Model Estimate", title = "Data Draw Estimates") +
   scale_colour_discrete_sequential(palette = AlberPalettes[2]) +
   ggsave("SIFigures/GAMDataDraws_Space.jpeg", 
@@ -202,11 +205,11 @@ ggplot(DrawList[["VirusBinary"]]$Phylo,
        aes(i, Fit, colour = Iteration)) + 
   geom_line(alpha = 0.5) +
   theme(legend.position = "none") +
+  geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01) +
   labs(x = "Phylo", y = "Model Estimate", title = "Data Draw Estimates") +
   scale_colour_discrete_sequential(palette = AlberPalettes[1]) +
   ggsave("SIFigures/GAMDataDraws_Phylo.jpeg", 
          units = "mm", width = 100, height = 100, dpi = 300)
-
 
 # No. hosts versus predictability ####
 

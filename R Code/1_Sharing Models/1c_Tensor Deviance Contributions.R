@@ -11,15 +11,16 @@ load("Output Files/BAMList.Rdata")
 
 library(mgcv); library(tidyverse)
 
-TensorDevList <- TensorDevList2 <- list()
+TensorDevList <- DevOutput <- list()
 
 for(r in 1:length(BAMList)){
   
   print(Resps[r])
   
-  Covar <- c("ti(Space, Phylo)", 
-             "s(Space)", 
-             "s(Phylo)",
+  Covar <- c(#"ti(Space, Phylo)", 
+             #"s(Space)", 
+             #"s(Phylo)",
+             "t2(Space, Phylo)",
              "s(DietSim)",
              "MinCites", "Domestic", "Spp")
   
@@ -46,15 +47,15 @@ for(r in 1:length(BAMList)){
                                                  paraPen = PPList[[Resps[r]]])
     
   }
+  
+  OrigDev <- TensorDevList[[Resps[r]]]$FullModel %>% deviance
+  RemoveDevs <- sapply(TensorDevList[[Resps[r]]][2:length(TensorDevList[[Resps[r]]])], deviance)
+  
+  DevOutput <- round(((RemoveDevs - OrigDev)/sum(RemoveDevs - OrigDev)) * summary(TensorDevList[[Resps[r]]]$FullModel)$dev.expl, 3)
+  
+  
 }
 
-save(TensorDevList, file = "Output Files/TensorDevList.Rdata")
-
-OrigDev <- TensorDevList[[1]]$FullModel %>% deviance
-RemoveDevs <- sapply(TensorDevList[[Resps[r]]][2:length(TensorDevList[[Resps[r]]])], deviance)
-
-round(((RemoveDevs - OrigDev)/sum(RemoveDevs - OrigDev)), 2)
-
-round(((RemoveDevs - OrigDev)/sum(RemoveDevs - OrigDev)) * summary(TensorDevList[[Resps[r]]]$FullModel)$dev.expl, 2)
+save(TensorDevList, DevOutput, file = "Output Files/TensorDevList.Rdata")
 
 

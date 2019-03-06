@@ -17,7 +17,7 @@ for(r in 1:length(Resps)){
   
   print(Resps[r])
   
-  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!is.na(Resps[r])) %>% droplevels
+  DataList[[Resps[r]]] <- FinalHostMatrix %>% filter(!NARows(FinalHostMatrix, Resps[r])) %>% droplevels
   
   DataList[[Resps[r]]]$Sp <- factor(DataList[[Resps[r]]]$Sp, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
   DataList[[Resps[r]]]$Sp2 <- factor(DataList[[Resps[r]]]$Sp2, levels = sort(union(DataList[[Resps[r]]]$Sp,DataList[[Resps[r]]]$Sp2)))
