@@ -21,7 +21,7 @@ AllMammalMatrix <- data.frame(
   Sp = as.character(rep(AllMammals,each = length(AllMammals))),
   Sp2 = as.character(rep(AllMammals,length(AllMammals))),
   Space = c(FullRangeAdj1[AllMammals,AllMammals]),
-  Phylo2 = scale(c(tFullSTMatrix[AllMammals,AllMammals])),
+  Phylo = c(tFullSTMatrix[AllMammals,AllMammals]),
   DietSim = c(tVD[AllMammals,AllMammals])
 )
 

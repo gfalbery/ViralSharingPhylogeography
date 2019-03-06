@@ -8,16 +8,50 @@ library(ggplot2); library(ggregplot); library(colorspace)
 
 load("Output Files/FitList.Rdata")
 
-ggplot(FinalHostMatrix, aes(Space, Phylo)) + geom_point()
+ggplot(FinalHostMatrix, aes(Space, Phylo)) + 
+  geom_point(alpha = 0.1, colour = AlberColours[1]) +
+  coord_fixed() +
+  geom_smooth(colour = "black", se = F) +
+  ggsave("Figures/Space_Phylo.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
-ggplot(FitList[[1]], aes(Space, Fit)) + 
-  facet_wrap(~Phylo2) +
-  geom_line()
+FitList[["VirusBinary"]] %>% 
+  filter(Phylo == last(PhyloRange)) %>%
+  filter(DietSim == last(DietRange)) %>%
+  ggplot(aes(Space, Fit)) + geom_line() +
+  lims(y = c(0,1)) +
+  labs(y = "Predicted Viral Sharing", x = "Geographic Overlap") +
+  ggsave("Figures/Phylo Predictions.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
-FitList[[1]] %>% #filter(Space == mean(DataList[[1]]$Space)) %>% 
-                        #DietSim == mean(DataList[[Resps[r]]]$DietSim)) %>% 
-  ggplot(aes(Phylo2, Fit)) + geom_point()
+FitList[["VirusBinary"]] %>% 
+  filter(Space == last(SpaceRange)) %>%
+  filter(DietSim == last(DietRange)) %>%
+  ggplot(aes(Phylo, Fit)) + geom_line() +
+  lims(y = c(0,1)) +
+  labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity") +
+  ggsave("Figures/Space Predictions.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
+jpeg("Figures/Model Predictions.jpeg", units = "mm", width = 300, height = 150, res = 300)
+
+list(
+  FitList[["VirusBinary"]] %>% filter(!Space == last(unique(FitList[["VirusBinary"]]$Space))&
+                                        DietSim == last(unique(FitList[["VirusBinary"]]$DietSim))) %>%
+    
+    ggplot(aes(Phylo, Fit, colour = Space)) + 
+    geom_line(aes(group = as.factor(Space)), alpha = 0.3) +
+    labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity") +
+    geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
+  
+  FitList[["VirusBinary"]] %>% filter(!Phylo == last(unique(FitList[["VirusBinary"]]$Phylo))&
+                                        DietSim == last(unique(FitList[["VirusBinary"]]$DietSim))) %>%
+    
+    ggplot(aes(Space, Fit, colour = Phylo)) + 
+    geom_line(aes(group = as.factor(Phylo)), alpha = 0.3) +
+    labs(y = "Predicted Viral Sharing", x = "Geographic Overlap") +
+    geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01)
+  
+) %>% arrange_ggplot2
+
+dev.off()
 
 # 2.	Predicted degree centrality with and without random effect for ~
 # 700 known viral hosts (possibly supplemental)
@@ -105,7 +139,33 @@ PlotGrids %>% filter(Metric == "OutDegree")  %>% mutate(Degree = ifelse(Degree>1
 
 # 6.	Panel of maps: Illustrative maps of host ranges for mammal species from host predictions (currently unidentified) for specific viruses, e.g. CCHFV; Nipah virus; Ebola; etc. (supplement will list out probability of being a host for all viruses)
 
-PredHostPlot("Crimean-congo_haemorrhagic_fever_virus", focal = c(1,0), facet = T)
+PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
+         Focal = c(1), 
+         Facet = F,
+         Validate = F) + 
+  theme_void() + theme(plot.title = element_text(hjust=0.5)) +
+  ggtitle("CCHF Known Hosts") +
+  ggsave("Figures/CCHF_Known.jpeg", units = "mm", width = 250, height = 150)
+
+PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
+         Focal = c(0), 
+         Facet = F,
+         Validate = F, Threshold = 15) + 
+  theme_void() + theme(plot.title = element_text(hjust=0.5)) +
+  #ggtitle("CCHF Model Success") +
+  ggsave("Figures/CCHF_Predicted.jpeg", units = "mm", width = 250, height = 150)
+
+PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
+         Focal = c(1,0), 
+         Facet = T,
+         Validate = T)[[2]] + 
+  ggtitle("CCHF Model Success") +
+  ggsave("Figures/CCHF_Success.jpeg", units = "mm", width = 100, height = 100)
+
+PredPlot(Virus = "Crimean-Congo_hemorrhagic_fever_virus", 
+         Focal = c(0), 
+         Validate = F,
+         Facet = F)
 
 list(PredHostPlot("Andes_virus", focal = 0), PredHostPlot("Andes_virus", focal = 1)) %>% 
   arrange_ggplot2
@@ -115,13 +175,54 @@ list(PredHostPlot("Andes_virus", focal = 0), PredHostPlot("Andes_virus", focal =
 
 # Supplementary? #####
 
+# Model description: posterior draws ####
+
+ggplot(PostList[["VirusBinary"]]$Space, aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
+  labs(x = "Space", y = "Model Estimate", title = "Posterior Draw Estimates") +
+  ggsave("SIFigures/GAMPosteriors_Space.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
+
+ggplot(PostList[["VirusBinary"]]$Phylo, aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
+  labs(x = "Phylo", y = "Model Estimate", title = "Posterior Draw Estimates") +
+  ggsave("SIFigures/GAMPosteriors_Phylo.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
+
+# Model description: data draws ####
+
+ggplot(DrawList[["VirusBinary"]]$Space, 
+       aes(i, Fit, colour = Iteration)) + 
+  geom_line(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = "Space", y = "Model Estimate", title = "Data Draw Estimates") +
+  scale_colour_discrete_sequential(palette = AlberPalettes[2]) +
+  ggsave("SIFigures/GAMDataDraws_Space.jpeg", 
+         units = "mm", width = 100, height = 100, dpi = 300)
+
+ggplot(DrawList[["VirusBinary"]]$Phylo, 
+       aes(i, Fit, colour = Iteration)) + 
+  geom_line(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = "Phylo", y = "Model Estimate", title = "Data Draw Estimates") +
+  scale_colour_discrete_sequential(palette = AlberPalettes[1]) +
+  ggsave("SIFigures/GAMDataDraws_Phylo.jpeg", 
+         units = "mm", width = 100, height = 100, dpi = 300)
+
+
 # No. hosts versus predictability ####
 
-ggplot(GAMValidSummary, aes(log10(NHosts), log10(MeanRank))) + geom_smooth() + geom_text(aes(label = Virus))
+ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + 
+  geom_point() +
+  geom_smooth(colour = "black", fill = NA) + 
+  stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black") +
+  #geom_text(aes(label = Virus)) +
+  labs(x = "log10(Number of Hosts)", y = "log10(Mean Rank of Focal Host)") +
+  ggsave("SIFigures/HostNo_Prediction.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
 
 # Correlations among degree measures ####
 
+jpeg("SIFigures/DegreePairs.jpeg", units = "mm", width = 200, height = 200, res = 300)
+
 GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
+
+dev.off()
 
 # Numbers of species versus centrality ####
 
@@ -130,10 +231,35 @@ Panth1 %>% group_by(hOrder) %>%
             AllPredDegree = mean(AllPredDegree),
             InDegree = mean(InDegree),
             OutDegree = mean(OutDegree)) %>%
-  gather(key = "Metric", value = "Degree", contains("Degree"))
+  gather(key = "Metric", value = "Degree", contains("Degree")) %>%
+  ggplot(aes(Number, Degree)) + 
+  ggtitle("Order Size") + #coord_fixed() +
+  geom_point() + geom_smooth(method = lm, colour = "black") + facet_wrap(~Metric) +
+  labs(x = "Number of Mammals") +
+  ggsave("SIFigures/NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
+
+Panth1 %>% group_by(hOrder) %>%
+  summarise(Number = n(),
+            AllPredDegree = mean(AllPredDegree),
+            InDegree = mean(InDegree),
+            OutDegree = mean(OutDegree)) %>%
+  gather(key = "Metric", value = "Degree", contains("Degree")) %>%
+  ggplot(aes(log(Number), log(Degree))) + 
+  ggtitle("Order Size") + #coord_fixed() +
+  geom_point() + geom_smooth(method = lm, colour = "black") + facet_wrap(~Metric) +
+  labs(x = "Number of Mammals") +
+  ggsave("SIFigures/log_NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
+
+Panth1 %>% group_by(hOrder) %>%
+  summarise(Number = n(),
+            AllPredDegree = mean(AllPredDegree),
+            InDegree = mean(InDegree),
+            OutDegree = mean(OutDegree)) %>% lm(log(InDegree+1) ~ log(Number+1), data = .)
+
 
 # Correlation between mean rank of focal host predictions and the proportion of links they're present for
 
-ggplot(GAMValidSummary, aes(log10(MeanRank), MeanCount1)) + geom_point() + 
-  geom_smooth(method = lm)
+ggplot(ValidSummary, aes(log10(MeanRank), MeanCount1)) + geom_point() + 
+  geom_smooth(method = lm) +
+  ggsave("SIFigures/Rank_Count.jpeg", units = "mm", height = 100, width = 100)
 

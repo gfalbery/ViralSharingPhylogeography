@@ -3,12 +3,14 @@
 
 if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
 
-library(mgcv); library(tidyverse); library(ggregplot)
+library(mgcv); library(tidyverse); library(ggregplot); library(MASS)
 
 load("Output Files/BAMList.Rdata")
-load("Output Files/BAMList2.Rdata")
+#load("Output Files/BAMList2.Rdata")
 
 Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
+
+FitList <- PostList <- DrawList <- list()
 
 for(r in 1:length(BAMList)){
   
@@ -16,11 +18,9 @@ for(r in 1:length(BAMList)){
   
   # Model Checking ####
   
-  qplot(BAMList[[Resps[r]]]$coef)
-  
   SpCoefNames <- names(BAMList[[Resps[r]]]$coef)[substr(names(BAMList[[Resps[r]]]$coef),1,5)=="SppSp"]
   SpCoef <- BAMList[[Resps[r]]]$coef[SpCoefNames]
-
+  
   # Effects ####
   
   SpaceRange <- seq(from = min(DataList[[Resps[r]]]$Space),
@@ -53,43 +53,88 @@ for(r in 1:length(BAMList)){
   FitPredictions  <- predict.gam(BAMList[[1]], 
                                  newdata = FitList[[Resps[r]]])
   
-  #FitPredictions <- FitPredictions %>% as.data.frame() %>% 
-  #  mutate(Intercept = attr(FitPredictions,"constant"))
-  
   FitList[[Resps[r]]][,"Fit"] <- logistic(FitPredictions)
+  
+  print("Getting posterior uncertainty!")
+  
+  # Posterior Uncertainty Simulation #### https://www.fromthebottomoftheheap.net/2014/06/16/simultaneous-confidence-intervals-for-derivatives/
+  
+  for(i in c("Space", "Phylo")){
+    
+    print(i)
+    
+    PredData = FitList[[Resps[r]]] %>% filter(
+      DietSim == dplyr::last(unique(DietSim)))
+    
+    if(i == "Space") PredData <- PredData %>% filter(Phylo == last(unique(Phylo))) else{
+      
+      PredData <- PredData %>% filter(Space == last(unique(Space)))
+      
+    }
+    
+    lp <- predict(BAMList[[Resps[r]]], newdata = PredData, 
+                  type = "lpmatrix") %>% 
+      as.data.frame()
+    
+    coefs <- coef(BAMList[[Resps[r]]])
+    vc <- vcov(BAMList[[Resps[r]]])
+    
+    sim <- mvrnorm(100, mu = coefs, Sigma = vc)
+    
+    want <- lp %>% colnames
+    
+    lp <- lp %>% as.matrix #%>% logistic
+    
+    fits <- lp[, want] %*% t(sim[, want]) %>% as.data.frame() %>%
+      mutate(i = PredData[,i])
+    
+    PostList[[Resps[r]]][[i]] <- gather(fits, key = "Draw", value = "Fit", -i) %>%
+      mutate(Fit = logistic(Fit))
+    
+  }
+  
+  DrawList[[Resps[r]]] <- list()
+  
+  for(i in c("Space", "Phylo")){
+    
+    print(i)
+    
+    lp = list()
+    
+    for(j in 1:100){
+      
+      print(j)
+      
+      PredData = FitList[[Resps[r]]] %>% filter(
+        DietSim == dplyr::last(unique(DietSim)))
+      
+      if(i == "Space"){
+        
+        PredData <- PredData %>% filter(Phylo == last(unique(Phylo))) %>%
+          mutate(Phylo = sample(DataList[[Resps[r]]]$Phylo, 1))
+        
+      } else {
+        
+        PredData <- PredData %>% filter(Space == last(unique(Space))) %>%
+          mutate(Space = sample(DataList[[Resps[r]]]$Space, 1))
+        
+      }
+      
+      lp[[j]] <- data.frame(Fit = predict(BAMList[[Resps[r]]], newdata = PredData),
+                            Iteration = as.factor(j),
+                            i = PredData[,i])
+      
+    }
+    
+    DrawList[[Resps[r]]][[i]] <- lp %>% bind_rows() %>% as.data.frame() %>%
+      mutate(Fit = logistic(Fit))
+    
+  }
   
 }
 
 save(FitList, file = "Output Files/FitList.Rdata")
 
-FitList[["VirusBinary"]] %>% filter(Phylo == last(PhyloRange)) %>%
-  ggplot(aes(Space, Fit)) + geom_line() +
-  lims(y = c(0,1))
 
-FitList[["VirusBinary"]] %>% filter(Space == SpaceRange[10]) %>%
-  ggplot(aes(Phylo, Fit)) + geom_line() +
-  lims(y = c(0,1))
 
-FitList[["VirusBinary"]] %>% filter(Space == last(unique(FitList[["VirusBinary"]]$Space))&
-                                      DietSim == last(unique(FitList[["VirusBinary"]]$DietSim))) %>%
-  ggplot(aes(Phylo, Fit)) + geom_line()
-
-FitList[["VirusBinary"]] %>% filter(Phylo == last(unique(FitList[["VirusBinary"]]$Phylo))&
-                                      DietSim == last(unique(FitList[["VirusBinary"]]$DietSim))) %>%
-  ggplot(aes(Space, Fit)) + geom_line()
-
-tiff("Figures/Model Predictions.jpeg", units = "mm", width = 200, height = 150, res = 300)
-
-list(
-  ggplot(FitList[["VirusBinary"]], aes(Phylo, Fit, colour = Space)) + 
-    geom_line(aes(group = as.factor(Space)), alpha = 0.3) +
-    geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
-  
-  ggplot(FitList[["VirusBinary"]], aes(Space, Fit, colour = Phylo)) + 
-    geom_line(aes(group = as.factor(Phylo)), alpha = 0.3) +
-    geom_rug(data = DataList[[Resps[r]]], inherit.aes = F, aes(x = Space), alpha = 0.01)
-  
-) %>% arrange_ggplot2
-
-dev.off()
 

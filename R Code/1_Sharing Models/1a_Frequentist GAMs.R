@@ -9,7 +9,7 @@ if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata")
 
 library(mgcv); library(tidyverse)
 
-Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")[1]
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
 BAMList <- BAMList2 <- DataList <- PPList <- list()
 
