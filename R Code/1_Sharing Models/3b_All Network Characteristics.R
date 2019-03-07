@@ -3,7 +3,7 @@
 
 # Rscript "R Code/1_Sharing Models/3b_All Network Characteristics.R"
 
-library(igraph); library(tidyverse); library(ggregplot); library(parallel); library(SpRanger)
+library(igraph); library(tidyverse); library(ggregplot); library(parallel); library(SpRanger); library(Matrix)
 
 #source("R Code/00_Master Code.R")
 

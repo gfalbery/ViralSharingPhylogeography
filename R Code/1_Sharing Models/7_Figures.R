@@ -3,7 +3,6 @@
 
 library(ggplot2); library(ggregplot); library(colorspace)
 
-
 # Figure 1_ space and phylogeny ####
 
 load("Output Files/FitList.Rdata")
@@ -14,23 +13,7 @@ ggplot(FinalHostMatrix, aes(Space, Phylo)) +
   geom_smooth(colour = "black", se = F) +
   ggsave("Figures/Space_Phylo.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
 
-FitList[["VirusBinary"]] %>% 
-  filter(Phylo == last(PhyloRange)) %>%
-  filter(DietSim == last(DietRange)) %>%
-  ggplot(aes(Space, Fit)) + geom_line() +
-  lims(y = c(0,1)) +
-  labs(y = "Predicted Viral Sharing", x = "Geographic Overlap") +
-  ggsave("Figures/Phylo Predictions.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
-
-FitList[["VirusBinary"]] %>% 
-  filter(Space == last(SpaceRange)) %>%
-  filter(DietSim == last(DietRange)) %>%
-  ggplot(aes(Phylo, Fit)) + geom_line() +
-  lims(y = c(0,1)) +
-  labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity") +
-  ggsave("Figures/Space Predictions.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
-
-jpeg("Figures/Model Predictions.jpeg", units = "mm", width = 300, height = 150, res = 300)
+jpeg("Figures/Model Predictions.jpeg", units = "mm", width = 300, height = 150, res = 600)
 
 list(
   FitList[["VirusBinary"]] %>% filter(!Space == last(unique(FitList[["VirusBinary"]]$Space))&
@@ -39,6 +22,8 @@ list(
     ggplot(aes(Phylo, Fit, colour = Space)) + 
     geom_line(aes(group = as.factor(Space)), alpha = 0.3) +
     labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity") +
+    scale_colour_continuous_sequential(palette = AlberPalettes[1]) +
+    theme(legend.position = "top") +
     geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
   
   FitList[["VirusBinary"]] %>% filter(!Phylo == last(unique(FitList[["VirusBinary"]]$Phylo))&
@@ -47,6 +32,8 @@ list(
     ggplot(aes(Space, Fit, colour = Phylo)) + 
     geom_line(aes(group = as.factor(Phylo)), alpha = 0.3) +
     labs(y = "Predicted Viral Sharing", x = "Geographic Overlap") +
+    scale_colour_continuous_sequential(palette = AlberPalettes[2]) +
+    theme(legend.position = "top") +
     geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01)
   
 ) %>% arrange_ggplot2
@@ -77,7 +64,7 @@ Panth1 %>% group_by(hOrder) %>%
                     ymax = CentreDegree + se), width = 0.1) +
   scale_x_discrete(labels = c("Unobserved", "HP3", "EID", "Both")) +
   scale_colour_manual(values = c("grey", AlberColours[[2]], AlberColours[[1]], AlberColours[[3]])) +
-  ggsave("Figures/Order_ObsYN_Scale_Sina.jpeg", units = "mm", height = 150, width = 150, dpi = 300)
+  ggsave("Figures/Order_ObsYN_Scale_Sina.jpeg", units = "mm", height = 150, width = 150, dpi = 600)
 
 # Figure 3.	Mammal order level centrality #####
 
@@ -227,9 +214,28 @@ ggplot(DrawList[["VirusBinary"]]$Phylo,
 
 # Species-level Correlations among degree predictions ####
 
+ggplot(Hosts, aes(Degree, PredDegree1, colour = Sp)) + 
+  geom_point(alpha = 0.5) +
+  coord_fixed() +
+  theme(legend.position = "none") +
+  labs(x = "Observed Degree", y = "Predicted Degree", title = "With Random Effects") +
+  lims(x = c(0, max(Hosts$Degree, na.rm = T)), y = c(0, max(Hosts$Degree, na.rm = T))) +
+  scale_colour_discrete_sequential(palette = AlberPalettes[2]) +
+  ggsave("SIFigures/Degree.PredDegree1.jpeg", units = "mm", width = 100, height = 100)
+
+ggplot(Hosts, aes(Degree, PredDegree1b, colour = Sp)) + 
+  geom_point(alpha = 0.5) +
+  coord_fixed() +
+  theme(legend.position = "none") +
+  labs(x = "Observed Degree", y = "Predicted Degree", title = "No Random Effects") +
+  lims(x = c(0, max(Hosts$Degree, na.rm = T)), y = c(0, max(Hosts$Degree, na.rm = T))) +
+  scale_colour_discrete_sequential(palette = AlberPalettes[2]) +
+  ggsave("SIFigures/Degree.PredDegree1b.jpeg", units = "mm", width = 100, height = 100)
+
 jpeg("SIFigures/DegreePairs.jpeg", units = "mm", width = 200, height = 200, res = 300)
 
-GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = wrap("smooth", colour = AlberColours[2])))
+GGally::ggpairs(Hosts %>% select(contains("Degree")), 
+                lower = list(continuous = wrap("smooth", colour = AlberColours[2])))
 
 dev.off()
 
@@ -237,7 +243,7 @@ dev.off()
 
 BarBarGraph(Hosts, "hOrder", "Degree", "AllPredDegree") +
   ggtitle("Order-Level Predictions Do Not Correlate") +
-  ggsave("SIFigures/OrderDegreePredicts.jpeg", units = "mm", height = 120, width = 125, dpi = 300)
+  ggsave("SIFigures/OrderDegreePredicts.jpeg", units = "mm", height = 150, width = 150, dpi = 300)
 
 # Species in the observed dataset have higher predicted centrality across all mammals ####
 
@@ -245,20 +251,15 @@ Panth1 %>%
   filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>%
   BarGraph(., "hOrder", "AllPredDegree", "Obs", text = "N", order = T) +
   labs(fill = "Observed") +
-  ggtitle("Species in the observed dataset have higher predicted centrality across all mammals") +
+  ggtitle("Species in the HP3 dataset have higher predicted centrality across all mammals") +
   #scale_x_discrete(limits = ) +
   ggsave("SIFigures/Order_ObsYN.jpeg", units = "mm", height = 100, width = 200)
-
-Panth1 %>% 
-  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>%
-  ggplot(aes(hOrder, AllPredDegree, colour = as.factor(Obs))) + 
-  ggforce::geom_sina(position = position_dodge(w = 0.5))
 
 Panth1 %>% 
   filter(hOrder %in% (Panth1 %>% filter(EIDObs==1) %>% droplevels)$hOrder) %>%
   BarGraph(., "hOrder", "AllPredDegree", "EIDObs", text = "N", order = T) +
   labs(fill = "Observed") +
-  ggtitle("Species in the observed dataset have higher predicted centrality across all mammals") +
+  ggtitle("Species in the EID dataset have higher predicted centrality across all mammals") +
   #scale_x_discrete(limits = ) +
   ggsave("SIFigures/Order_EIDObsYN.jpeg", units = "mm", height = 100, width = 200)
 
