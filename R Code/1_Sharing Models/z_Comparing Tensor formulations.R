@@ -107,7 +107,7 @@ for(r in 1:length(Resps)){
   
 }
 
-save(TryList, file = "Output File/TryList.Rdata")
+save(TryList, file = "Output Files/TryList.Rdata")
 
 sapply(TryList[[Resps[r]]], AIC)
 
@@ -161,5 +161,5 @@ for(s in 1:length(TryList)){
   TryFitList[[Resps[r]]][[Tries[s]]][,"Fit"] <- logistic(FitPredictions)
 }
 
-save(TryFitList, file = "TryFitList.Rdata")
+save(TryFitList, file = "Output Files/TryFitList.Rdata")
 

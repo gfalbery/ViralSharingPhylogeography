@@ -7,6 +7,8 @@ AssocsTraits %>% filter(Host%in%FHN) %>% dim
 
 length(FHN)
 
+#nrow(FinalHostMatrix)
+
 DevOutput$VirusBinary["Phylo"]
 DevOutput$VirusBinary["Space"]
 
@@ -17,6 +19,8 @@ DevOutput$VirusBinary["Domestic"]
 
 length(AllMammals)
 length(intersect(FHN,AllMammals))
+
+table(Panth1$Obs, Panth1$EIDObs)
 
 Panth1 %>% 
   group_by(hOrder) %>% 

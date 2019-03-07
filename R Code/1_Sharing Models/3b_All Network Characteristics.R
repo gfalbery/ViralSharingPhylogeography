@@ -107,4 +107,31 @@ for(z in c("Method1", "Method2")){
 
 Panth1$OutDegree <- with(Panth1, AllPredDegree-InDegree)
 
+EIDSpecies <- read.csv("data/EID/SpeciesInteractions_EID2.csv", header = T)
+
+#EIDSpecies #<- EIDSpecies %>% filter(Sequences.count>0)
+
+EIDSpecies <- EIDSpecies %>% mutate(Carrier = str_replace(Carrier, " ", "_"))
+
+substr(EIDSpecies$Carrier,1,1) = toupper(substr(EIDSpecies$Carrier,1,1))
+
+Panth1 <- Panth1 %>% mutate(Obs = ifelse(Sp %in% FHN, 1, 0),
+                            ZoonoticHost = ifelse(Sp %in% Hosts[Hosts$hZoonosisCount>0,"Sp"], 1, 0)) %>%
+  mutate(EIDObs = ifelse(Sp %in% EIDSpecies$Carrier, 1, 0)) %>%
+  mutate(JustEID = ifelse(EIDObs==1&Obs==0, 1, 0)) 
+
 save(Panth1, file = "Output Files/Panth1.Rdata")
+
+
+scale_this <- function(x){
+  (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
+}
+
+
+Panth1 %>% group_by(hOrder) %>%
+  mutate(ScalePredDegree = scale_this(AllPredDegree)) %>% right_join(Panth1, by = "Sp") %>%
+  mutate(CentredDegree = )
+
+
+
+

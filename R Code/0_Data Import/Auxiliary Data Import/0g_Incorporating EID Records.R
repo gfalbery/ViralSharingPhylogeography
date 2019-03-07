@@ -13,6 +13,11 @@ EveryLower <- function(a){
 EIDLocation <- EIDLocation %>% filter(Sequences.count>0)
 EIDSpecies <- EIDSpecies %>% filter(Sequences.count>0)
 
+EIDSpecies <- EIDSpecies %>% mutate(Carrier = str_replace(Carrier, " ", "_"))
+
+substr(EIDSpecies$Carrier,1,1) = toupper(substr(EIDSpecies$Carrier,1,1))
+
+
 EIDLocation$Country <- sapply(EIDLocation$Country, EveryLower)
 WorldMap2 <- WorldMap %>% group_by(Country) %>%summarise(LongMean = mean(long), LatMean = mean(lat))
 WorldMap2$Country <- sapply(WorldMap2$Country, EveryLower)

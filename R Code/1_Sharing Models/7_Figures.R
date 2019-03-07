@@ -3,8 +3,8 @@
 
 library(ggplot2); library(ggregplot); library(colorspace)
 
-# 1.	Panel: Relationships/model outputs from: 
-# Space and phylogeny; phylogeny and viral sharing; space and viral sharing for all data
+
+# Figure 1_ space and phylogeny ####
 
 load("Output Files/FitList.Rdata")
 
@@ -53,19 +53,9 @@ list(
 
 dev.off()
 
-# 2.	Predicted degree centrality with and without random effect for ~
-# 700 known viral hosts (possibly supplemental)
+# Figure 2.	Predicted degree centrality #####
 
-ggplot(Hosts, aes(Degree, PredDegree1)) + geom_point() +
-  geom_smooth()
-
-ggplot(Hosts, aes(Degree, PredDegree1b)) + geom_point() +
-  geom_smooth()
-
-ggplot(Hosts, aes(Degree, AllPredDegree)) + geom_point() +
-  geom_smooth()
-
-# 3.	Mammal order level centrality (bar plots)
+# Figure 3.	Mammal order level centrality #####
 
 load("Output Files/Panth1.Rdata")
 
@@ -88,7 +78,7 @@ BarGraph(Panth1, "hOrder", "OutDegree", order = T, text = "N") +
   ggsave("Figures/OutDegree.jpeg", units = "mm", height = 120, width = 200)
 
 
-# 4.	Gridcell level centrality measure (map), to see if overlaps w species diversity (optional)
+# Figure 4.	Gridcell level centrality measure #####
 
 load("Output Files/GridDegree2.Rdata")
 load("Output Files/GridDegree4.Rdata")
@@ -225,6 +215,54 @@ BarBarGraph(Hosts, "hOrder", "Degree", "AllPredDegree") +
   ggtitle("Order-Level Predictions Do Not Correlate") +
   ggsave("SIFigures/OrderDegreePredicts.jpeg", units = "mm", height = 120, width = 125, dpi = 300)
 
+# Species in the observed dataset have higher predicted centrality across all mammals ####
+
+Panth1 %>% 
+  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>%
+  BarGraph(., "hOrder", "AllPredDegree", "Obs", text = "N", order = T) +
+  labs(fill = "Observed") +
+  ggtitle("Species in the observed dataset have higher predicted centrality across all mammals") +
+  #scale_x_discrete(limits = ) +
+  ggsave("SIFigures/Order_ObsYN.jpeg", units = "mm", height = 100, width = 200)
+
+Panth1 %>% 
+  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>%
+  ggplot(aes(hOrder, AllPredDegree, colour = as.factor(Obs))) + 
+  ggforce::geom_sina(position = position_dodge(w = 0.5))
+
+Panth1 %>% 
+  filter(hOrder %in% (Panth1 %>% filter(EIDObs==1) %>% droplevels)$hOrder) %>%
+  BarGraph(., "hOrder", "AllPredDegree", "EIDObs", text = "N", order = T) +
+  labs(fill = "Observed") +
+  ggtitle("Species in the observed dataset have higher predicted centrality across all mammals") +
+  #scale_x_discrete(limits = ) +
+  ggsave("SIFigures/Order_EIDObsYN.jpeg", units = "mm", height = 100, width = 200)
+
+Panth1 %>% 
+  filter(hOrder %in% (Panth1 %>% filter(EIDObs==1) %>% droplevels)$hOrder) %>%
+  ggplot(aes(hOrder, AllPredDegree, colour = as.factor(EIDObs))) + 
+  ggforce::geom_sina(position = position_dodge(w = 0.5))
+
+Panth1 %>% group_by(hOrder) %>%
+  mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
+  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% group_by(Obs) %>%
+  summarise(CentreDegree = mean(ScalePredDegree),
+            sd = sd(ScalePredDegree),
+            N = n()) %>% mutate(se = sd/(N^0.5)) %>% ggplot(aes(as.factor(Obs), CentreDegree, fill = as.factor(Obs))) + geom_col(colour = "black") + 
+  geom_errorbar(aes(ymin = CentreDegree-se, ymax = CentreDegree+se), width = 0.1)  +
+  theme(legend.position = "none") +
+  labs(x = "Observed Data", y = "Within-order scaled degree (SD)") +
+  ggsave("Figures/Order_ObsYN_Scale.jpeg", units = "mm", height = 100, width = 100)
+
+Panth1 %>% group_by(hOrder) %>%
+  mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
+  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% 
+  ggplot(aes(as.factor(Obs), ScalePredDegree, colour = as.factor(Obs))) + 
+  geom_sina() +  
+  labs(x = "Observed Data", y = "Within-order scaled degree (SD)") +
+  theme(legend.position = "none") +
+  ggsave("Figures/Order_ObsYN_Scale_Sina.jpeg", units = "mm", height = 100, width = 100)
+
 # Numbers of species versus centrality ####
 
 Panth1 %>% group_by(hOrder) %>%
@@ -301,7 +339,7 @@ BarGraph(ValidSummary, "vDNAoRNA", "MeanRank", text = "N") +
   theme(legend.position = "none") +
   ggsave("SIFigures/RNA_DNA_Prediction.jpeg", units = "mm", height = 100, width = 100)
 
-# No other viral traits matter ####
+# No other viral traits matter for prediction ####
 
 jpeg("SIFigures/ViralTraits_Predictability.jpeg", units = "mm", width = 200, height = 200, res = 300)
 

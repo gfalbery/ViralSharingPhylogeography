@@ -50,11 +50,13 @@ AssocsTraits <- merge(AssocsTraits, HostTraits, by.x = "Host", by.y = "hHostName
 AssocsTraits$Domestic <- ifelse(AssocsTraits$Host%in%Domestics,1,0)
 AssocsTraits$Wildlife <- ifelse(AssocsTraits$Host%in%Wildlife,1,0)
 
+ZoonoticViruses <- AssocsBase %>% filter(Host == "Homo_sapiens") %>% select(Virus)
+
 Hosts <- Hosts %>% 
   mutate(
     Domestic = ifelse(Sp %in% Domestics, 1, 0),
     Wildlife = ifelse(Sp %in% Wildlife, 1, 0),
-    #hZoonosisCount = c(table(AssocsTraits[AssocsTraits$Virus%in%ZoonoticViruses,"Host"])),
+    hZoonosisCount = c(table(AssocsTraits[AssocsTraits$Virus%in%ZoonoticViruses$Virus,"Host"])),
     Records = c(table(AssocsTraits$Host))
   )
 
