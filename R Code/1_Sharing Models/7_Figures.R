@@ -88,8 +88,6 @@ BarGraph(Panth1, "hOrder", "OutDegree", order = T, text = "N") +
   ggsave("Figures/OutDegree.jpeg", units = "mm", height = 120, width = 200)
 
 
-
-
 # 4.	Gridcell level centrality measure (map), to see if overlaps w species diversity (optional)
 
 load("Output Files/GridDegree2.Rdata")
@@ -217,7 +215,7 @@ ggplot(DrawList[["VirusBinary"]]$Phylo,
 
 jpeg("SIFigures/DegreePairs.jpeg", units = "mm", width = 200, height = 200, res = 300)
 
-GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
+GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = wrap("smooth", colour = AlberColours[2])))
 
 dev.off()
 
@@ -268,19 +266,17 @@ OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + geom_point() +
                                                      "InDegree" = "Within-Order Links")))  +
   ggsave("SIFigures/log_NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
-hComboList %>% group_by(Iteration, Group) %>%
-  summarise(HostNo = n(),
-            Degree = sum(Degree)) %>% spread(value = c("HostNo"), key = c("Group")) %>%
-  group_by(Iteration) %>%
-  summarise(`1` = sum(`1`, na.rm = T), 
-            `2` = sum(`2`, na.rm = T),
-            Degree = mean(Degree)) %>% bind_cols(Combos) %>%
-  ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
-  geom_point() +
+OrderPairs %>%
+  ggplot(aes(log(`1`) + log(`2`), log(Degree+1), colour = MisspentEuth)) + 
+  coord_fixed() +
+  geom_point(alpha = 0.6) +
   labs(x = "log(Order 1 Hosts) + log(Order 2 Hosts)", 
        y = "log(Predicted Links + 1)",
-       title = "Scaling of between-order links") +
+       title = "Scaling of between-order links",
+       colour = "Eutherian Orders") +
+  scale_colour_manual(values = c(AlberColours[[3]], AlberColours[[2]],AlberColours[[1]])) +
   ggsave("SIFigures/BetweenOrderScaling.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
+
 
 # No. hosts versus predictability ####
 
@@ -310,7 +306,10 @@ BarGraph(ValidSummary, "vDNAoRNA", "MeanRank", text = "N") +
 jpeg("SIFigures/ViralTraits_Predictability.jpeg", units = "mm", width = 200, height = 200, res = 300)
 
 VirusCovar %>% 
-  lapply(function(a) BarGraph(ValidSummary, a, "MeanRank", text = "N")) %>% 
+  lapply(function(a){
+    BarGraph(ValidSummary, a, "MeanRank", text = "N") +
+      theme(legend.position = "none")
+  }) %>% 
   arrange_ggplot2(ncol = 3)
 
 dev.off()

@@ -82,6 +82,50 @@ hComboList %>% group_by(Iteration, Group) %>%
             `2` = sum(`2`, na.rm = T),
             Degree = mean(Degree)) %>% bind_cols(Combos) %>%
   ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
-  geom_point() + facet_wrap(~Order2)
+  geom_point() + ggrepel::geom_label_repel(aes(label = paste(Order1,Order2))) #+ facet_wrap(~Order2)
+
+hComboList %>% group_by(Iteration, Group) %>%
+  summarise(HostNo = n(),
+            Degree = sum(Degree)) %>% spread(value = c("HostNo"), key = c("Group")) %>%
+  group_by(Iteration) %>%
+  summarise(`1` = sum(`1`, na.rm = T), 
+            `2` = sum(`2`, na.rm = T),
+            Degree = mean(Degree)) %>% bind_cols(Combos) %>%
+  ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
+  geom_point() + 
+  geom_abline(formula = y ~ x)
+
+OrderPairs <- hComboList %>% group_by(Iteration, Group) %>%
+  summarise(HostNo = n(),
+            Degree = sum(Degree)) %>% spread(value = c("HostNo"), key = c("Group")) %>%
+  group_by(Iteration) %>%
+  summarise(`1` = sum(`1`, na.rm = T), 
+            `2` = sum(`2`, na.rm = T),
+            Degree = mean(Degree)) %>% bind_cols(Combos) %>%
+  mutate(OrderSizes = log(`1`) + log(`2`)) %>%
+  mutate(Bif1 = ifelse(OrderSizes<4, NA, ifelse(log(Degree+1) > OrderSizes-3.55, 1, 0))) 
+
+OrderPairs %>%
+  ggplot(aes(log(`1`) + log(`2`), log(Degree+1), colour = Bif1)) + 
+  geom_point() + 
+  geom_abline()
+
+(OrderPairs %>%
+  filter(Bif1==0) %>% select(Order2))$Order2
+  
+NonEuthOrders <- (OrderLevelLinks %>% filter(Degree<150&Metric=="AllPredDegree"))$hOrder
+
+
+OrderPairs <- OrderPairs %>% mutate(Order1Euth = ifelse(Order1%in%NonEuthOrders, 0, 1),
+                                    Order2Euth = ifelse(Order2%in%NonEuthOrders, 0, 1)) %>%
+  mutate(MisspentEuth = as.factor(Order1Euth + Order2Euth))
+
+OrderPairs %>%
+  ggplot(aes(log(`1`) + log(`2`), log(Degree+1), colour = MisspentEuth)) + 
+  coord_fixed() +
+  geom_point()
+
+OrderPairs %>% filter(Bif1==1&BothEutherians==0)
+
 
 
