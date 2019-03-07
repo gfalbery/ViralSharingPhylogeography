@@ -53,7 +53,31 @@ list(
 
 dev.off()
 
-# Figure 2.	Predicted degree centrality #####
+# Figure 2.	Observed hosts have higher Predicted degree centrality #####
+
+Errordf <- Panth1 %>% group_by(hOrder) %>%
+  mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
+  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% group_by(Obs) %>%
+  summarise(CentreDegree = mean(ScalePredDegree),
+            sd = sd(ScalePredDegree),
+            N = n()) %>% mutate(se = sd/(N^0.5))
+
+Panth1 %>% group_by(hOrder) %>%
+  mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
+  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% 
+  ggplot(aes(as.factor(Subset), ScalePredDegree, colour = as.factor(Subset))) + 
+  #geom_violin() +
+  geom_sina(aes(alpha = as.factor(Subset))) + scale_alpha_manual(values = c(0.3,1,1,1)) +
+  labs(x = "Host dataset", y = "Within-order scaled degree (SD)") +
+  theme(legend.position = "none") +
+  geom_point(data = Errordf, colour = "black", aes(y = CentreDegree)) + 
+  geom_errorbar(data = Errordf, inherit.aes = F, 
+                aes(x = as.factor(Subset), 
+                    ymin = CentreDegree - se,
+                    ymax = CentreDegree + se), width = 0.1) +
+  scale_x_discrete(labels = c("Unobserved", "HP3", "EID", "Both")) +
+  scale_colour_manual(values = c("grey", AlberColours[[2]], AlberColours[[1]], AlberColours[[3]])) +
+  ggsave("Figures/Order_ObsYN_Scale_Sina.jpeg", units = "mm", height = 150, width = 150, dpi = 300)
 
 # Figure 3.	Mammal order level centrality #####
 
@@ -254,14 +278,49 @@ Panth1 %>% group_by(hOrder) %>%
   labs(x = "Observed Data", y = "Within-order scaled degree (SD)") +
   ggsave("Figures/Order_ObsYN_Scale.jpeg", units = "mm", height = 100, width = 100)
 
+# Bats specifically ####
+
 Panth1 %>% group_by(hOrder) %>%
   mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
-  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% 
-  ggplot(aes(as.factor(Obs), ScalePredDegree, colour = as.factor(Obs))) + 
-  geom_sina() +  
-  labs(x = "Observed Data", y = "Within-order scaled degree (SD)") +
+  filter(hOrder == "Chiroptera") %>% droplevels %>%
+  ggplot(aes(as.factor(Subset), ScalePredDegree, colour = as.factor(Subset))) + 
+  #geom_violin() +
+  geom_sina() +
+  labs(x = "Host dataset", y = "Within-order scaled degree (SD)") +
+  ggtitle("Non-central bats are poorly sampled") +
   theme(legend.position = "none") +
-  ggsave("Figures/Order_ObsYN_Scale_Sina.jpeg", units = "mm", height = 100, width = 100)
+  scale_x_discrete(labels = c("Unobserved", "HP3", "EID", "Both")) +
+  scale_colour_manual(values = c("grey", AlberColours[[2]], AlberColours[[1]], AlberColours[[3]])) +
+  ggsave("SIFigures/ObservedBatCentrality.jpeg", units = "mm", height = 100, width = 150)
+
+Panth1 %>% group_by(hOrder) %>%
+  mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
+  filter(hOrder == "Chiroptera") %>% droplevels %>% 
+  filter(!MSW05_Family %in% c("Craseonycteridae", "Furipteridae", "Noctilionidae", "Thyropteridae")) %>%
+  ggplot(aes(as.factor(Subset), ScalePredDegree, colour = as.factor(Subset))) + 
+  geom_sina() +
+  labs(x = "Host dataset", y = "Within-order scaled degree (SD)") +
+  theme(legend.position = "none") +
+  ggtitle("Non-central families of bats are poorly sampled") +
+  scale_x_discrete(labels = c("Unobserved", "HP3", "EID", "Both")) +
+  scale_colour_manual(values = c("grey", AlberColours[[2]], AlberColours[[1]], AlberColours[[3]])) +
+  facet_wrap(~MSW05_Family) +
+  ggsave("SIFigures/ObservedBatFamilyCentrality.jpeg", units = "mm", height = 100, width = 200)
+
+# Rodents Specifically ####
+
+Panth1 %>% group_by(hOrder) %>%
+  mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
+  filter(hOrder == "Rodentia") %>% droplevels %>%
+  ggplot(aes(as.factor(Subset), ScalePredDegree, colour = as.factor(Subset))) + 
+  #geom_violin() +
+  geom_sina() +
+  labs(x = "Host dataset", y = "Within-order scaled degree (SD)") +
+  ggtitle("Rodents are evenly sampled") +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("Unobserved", "HP3", "EID", "Both")) +
+  scale_colour_manual(values = c("grey", AlberColours[[2]], AlberColours[[1]], AlberColours[[3]])) +
+  ggsave("SIFigures/ObservedRodentCentrality.jpeg", units = "mm", height = 100, width = 150)
 
 # Numbers of species versus centrality ####
 
