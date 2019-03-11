@@ -66,6 +66,10 @@ Panth1 %>% group_by(hOrder) %>%
   scale_colour_manual(values = c("grey", AlberColours[[2]], AlberColours[[1]], AlberColours[[3]])) +
   ggsave("Figures/Order_ObsYN_Scale_Sina.jpeg", units = "mm", height = 150, width = 150, dpi = 600)
 
+Hosts %>% filter(!Sp%in%Remove3) %>% BarGraph("AnyZoo", "AllPredDegree", text = "N") + 
+  labs(x = "Zoonotic Host", y = "Predicted links") + 
+  ggsave("Figures/Zoonosis_PredictedLinks.jpeg", units = "mm", width = 100, height = 100, dpi = 600)
+
 # Figure 3.	Mammal order level centrality #####
 
 load("Output Files/Panth1.Rdata")
@@ -211,6 +215,29 @@ ggplot(DrawList[["VirusBinary"]]$Phylo,
   scale_colour_discrete_sequential(palette = AlberPalettes[1]) +
   ggsave("SIFigures/GAMDataDraws_Phylo.jpeg", 
          units = "mm", width = 100, height = 100, dpi = 300)
+
+# Model Description: Diet Similarity Effects ####
+
+Resps %>% lapply(function(a){
+  
+  ggplot(PostList[[a]]$Diet, aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
+    labs(x = "Phylo", y = "Model Estimate", title = "Posterior Draw Estimates") +
+    geom_rug(data = DataList[[a]], inherit.aes = F, aes(x = DietSim), alpha = 0.01) +
+    scale_colour_discrete_sequential(palette = "Turku")
+  
+}) %>% arrange_ggplot2(nrow = 1)
+
+# Model Description: Diet Similarity Effects ####
+
+Resps %>% lapply(function(a){
+  
+  ggplot(PostList[[a]]$Diet, aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
+    labs(x = "Phylo", y = "Model Estimate", title = "Posterior Draw Estimates") +
+    geom_rug(data = DataList[[a]], inherit.aes = F, aes(x = DietSim), alpha = 0.01) +
+    ggtitle(a) +
+    scale_colour_discrete_sequential(palette = "Turku")
+  
+}) %>% arrange_ggplot2(nrow = 1)
 
 # Species-level Correlations among degree predictions ####
 
@@ -411,6 +438,18 @@ VirusCovar %>%
   arrange_ggplot2(ncol = 3)
 
 dev.off()
+
+# Simple Presentation stuff ####
+
+ggtree(chiroptera, aes(color = group, alpha = group)) +
+  scale_colour_manual(values = c("black", "red", "blue")) +
+  scale_alpha_manual(values = c(0.01,0.5,1)) +
+  ggsave("Tree.jpeg", units = "mm", width = 100, height = 200, dpi = 300)
+
+
+
+
+
 
 
 

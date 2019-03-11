@@ -14,7 +14,7 @@ print("Start Validating!")
 
 a = 1
 
-GAMValidation <- Validate(VirusAssocs)
+GAMValidation <- Validate(VirusAssocs, AllSums)
 
 GAMValid <- GAMValidation %>% lapply(function(a){
   
@@ -67,7 +67,7 @@ save(GAMValid, file = "Output Files/GAMValidation.Rdata")
     mutate(CountDiff = MeanCount1 - MeanCount0)
   
   ValidSummary %>% summarise(mean(MeanRank), 
-                                median(MeanRank))
+                             median(MeanRank))
   
 }
 
@@ -79,8 +79,12 @@ VirusCovar <- c("IsHoSa","IsHoSa.stringent",
                 "IsZoonotic")
 
 ValidSummary <- VirusTraits %>% select(vVirusNameCorrected, VirusCovar) %>%
-  rename(Virus = vVirusNameCorrected) %>%
+  dplyr::rename(Virus = vVirusNameCorrected) %>%
   right_join(ValidSummary, by = "Virus")
 
-VirusCovar %>% lapply(function(a) BarGraph(ValidSummary, a, "MeanRank")) %>% arrange_ggplot2
+VirusCovar %>% lapply(function(a){
+  
+  BarGraph(ValidSummary, "vDNAoRNA", "MeanRank", a, text = "N") + theme(legend.position = "none")
+  
+}) %>% arrange_ggplot2
 

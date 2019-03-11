@@ -1,5 +1,7 @@
 # Creating exhaustive mammal spatial data ####
 
+# Rscript "R Code/Spatial.R"
+
 library(sf); library(fasterize); library(Matrix);library(ggplot2);
 library(ggregplot); library(raster); library(tidyverse); library(igraph); 
 library(maptools); library(SpRanger)
@@ -17,7 +19,7 @@ if(file.exists("~/LargeFiles/MammalRanges1.Rdata")) load("~/LargeFiles/MammalRan
   
   mammal_shapes$binomial = str_replace(mammal_shapes$binomial, " ", "_")
   mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
-  mammal_raster_full <- raster(mammal_shapes, res = 20000)
+  mammal_raster_full <- raster(mammal_shapes, res = 25000)
   
   print("Fasterising!")
   
@@ -39,7 +41,7 @@ if(file.exists("~/LargeFiles/MammalRanges2.Rdata")) load("~/LargeFiles/MammalRan
   mammal_shapes2 <- mammal_shapes2[order(mammal_shapes2$binomial),]
   #mammal_shapes_red2 <- mammal_shapes2[!mammal_shapes2$binomial%in%names(FullMammalRanges),]
   
-  mammal_raster_full2 <- raster(mammal_shapes2, res = 20000) # NB units differ from Mercator!
+  mammal_raster_full2 <- raster(mammal_shapes2, res = 25000) # NB units differ from Mercator!
   
   print("Fasterising!")
   

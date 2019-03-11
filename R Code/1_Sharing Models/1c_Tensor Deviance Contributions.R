@@ -50,6 +50,8 @@ for(r in 1:length(BAMList)){
     
   }
   
+  DevOutput[[Resps[r]]] <- list()
+  
   OrigDev <- TensorDevList[[Resps[r]]]$FullModel %>% deviance
   
   RemoveDevs <- sapply(TensorDevList[[Resps[r]]][2:length(TensorDevList[[Resps[r]]])], deviance)
@@ -63,4 +65,8 @@ save(TensorDevList, DevOutput, file = "Output Files/TensorDevList.Rdata")
 
 load("Output Files/TensorDevList.Rdata")
 
-DevOutput <- list()
+
+
+
+
+

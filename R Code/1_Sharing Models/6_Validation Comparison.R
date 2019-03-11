@@ -3,18 +3,20 @@
 
 library(tidyverse)
 
-VirusTypeList <- list(which(Viruses$vVectorYNna=="Y"&Viruses$vDNAoRNA=="RNA"),
-                      which(Viruses$vVectorYNna=="N"&Viruses$vDNAoRNA=="RNA"),
-                      which(Viruses$vDNAoRNA=="DNA"))
+SubVirusTraits <- VirusTraits %>% filter(vVirusNameCorrected %in% names(VirusAssocs))
 
-load("ModelValidation.Rdata")
-VectorValid <- readRDS("VectorModelValidation.rds")
-NVectorValid <- readRDS("NVectorModelValidation.rds")
-DNAValid <- readRDS("DNAModelValidation.rds")
+VirusTypeList <- list(which(SubVirusTraits$vDNAoRNA=="RNA"),
+                      which(SubVirusTraits$vVectorYNna=="Y"&SubVirusTraits$vDNAoRNA=="RNA"),
+                      which(SubVirusTraits$vVectorYNna=="N"&SubVirusTraits$vDNAoRNA=="RNA"),
+                      which(SubVirusTraits$vDNAoRNA=="DNA"))
 
-KeepPredictions2 <- list((1:length(VectorValid))[-which(sapply(VectorValid, function(a) any(is.na(a))))],
-                        (1:length(NVectorValid))[-which(sapply(NVectorValid, function(a) any(is.na(a))))],
-                        (1:length(DNAValid))[-which(sapply(DNAValid, function(a) any(is.na(a))))])
+
+SubGroupValidList <- lapply(VirusAssocs, function(a) Validate())
+  
+  
+  KeepPredictions2 <- list((1:length(VectorValid))[-which(sapply(VectorValid, function(a) any(is.na(a))))],
+                           (1:length(NVectorValid))[-which(sapply(NVectorValid, function(a) any(is.na(a))))],
+                           (1:length(DNAValid))[-which(sapply(DNAValid, function(a) any(is.na(a))))])
 
 VectorValidSummary <- data.frame(
   

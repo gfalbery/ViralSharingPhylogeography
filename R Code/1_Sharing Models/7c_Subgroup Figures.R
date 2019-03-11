@@ -34,6 +34,20 @@ Resps[2:5] %>% lapply(function(a){
 
 dev.off()
 
+jpeg("SIFigures/SubGroup_Diet.jpeg", units = "mm", width = 150, height = 150, res = 300)
+
+Resps[2:5] %>% lapply(function(a){
+  
+  PostList[[a]]$Diet %>% 
+    ggplot(aes(i, Fit, colour = Draw)) + geom_line(alpha = 0.3) + theme(legend.position = "none") +
+    labs(x = "Diet Similarity", y = "Model Estimate", title = Translate[a]) +
+    geom_rug(data = DataList[[a]], inherit.aes = F, aes(x = DietSim), alpha = 0.01) +
+    scale_colour_discrete_sequential(palette = "Dark mint")
+  
+}) %>% arrange_ggplot2(ncol = 2)
+
+dev.off()
+
 jpeg("SIFigures/SubGroup_Space_Lims.jpeg", units = "mm", width = 150, height = 150, res = 300)
 
 Resps[2:5] %>% lapply(function(a){

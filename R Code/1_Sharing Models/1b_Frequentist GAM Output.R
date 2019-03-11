@@ -56,7 +56,7 @@ for(r in 1:length(BAMList)){
                                  newdata = FitList[[Resps[r]]])
   
   FitList[[Resps[r]]][,"Fit"] <- logistic(FitPredictions)
-
+  
   print("Getting posterior uncertainty!")
   
   # Posterior Uncertainty Simulation #### https://www.fromthebottomoftheheap.net/2014/06/16/simultaneous-confidence-intervals-for-derivatives/
@@ -138,5 +138,35 @@ for(r in 1:length(BAMList)){
 save(FitList, PostList, DrawList, file = "Output Files/FitList.Rdata")
 
 
-
-
+for(r in 1:length(BAMList)){
+  
+  Model <- BAMList[[Resps[r]]]
+  
+  print(Resps[r])
+  
+  PredData = FitList[[Resps[r]]]
+  
+  PredData <- PredData %>% filter(Space == dplyr::last(unique(Space)),
+                                  Phylo == dplyr::last(unique(Phylo)))
+  
+  
+  lp <- predict(Model, newdata = PredData, 
+                type = "lpmatrix") %>% 
+    as.data.frame()
+  
+  coefs <- coef(Model)
+  vc <- vcov(Model)
+  
+  sim <- mvrnorm(100, mu = coefs, Sigma = vc)
+  
+  want <- lp %>% colnames
+  
+  lp <- lp %>% as.matrix #%>% logistic
+  
+  fits <- lp[, want] %*% t(sim[, want]) %>% as.data.frame() %>%
+    mutate(i = PredData[,"DietSim"])
+  
+  PostList[[Resps[r]]][["Diet"]] <- gather(fits, key = "Draw", value = "Fit", -i) %>%
+    mutate(Fit = logistic(Fit))
+  
+}
