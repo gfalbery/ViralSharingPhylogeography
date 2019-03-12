@@ -43,6 +43,7 @@ list(
          y = "Phylogenetic Relatedness") +
     ggtitle("Tensor Field") +
     #geom_point(data = DataList[[1]], alpha = 0.3) +
+    lims(y = c(0,1)) +
     theme(legend.position = "bottom") +
     scale_fill_continuous_sequential(palette = "Greens 2"),
   
@@ -52,6 +53,7 @@ list(
          y = "Phylogenetic Relatedness") +
     ggtitle("Data Distribution") +
     scale_fill_continuous_sequential(palette = "Greens 2", begin = 0.2) +
+    lims(y = c(0,1)) +
     theme(legend.position = "bottom") +
     geom_hex(aes(fill = stat(log10(count))))
   

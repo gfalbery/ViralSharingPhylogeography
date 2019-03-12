@@ -185,4 +185,5 @@ FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 
-FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2))
+FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2)) %>%
+  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo)))

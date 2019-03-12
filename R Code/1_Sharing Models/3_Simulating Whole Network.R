@@ -3,13 +3,28 @@
 
 # Rscript "R Code/1_Sharing Models/3_Simulating Whole Network.R"
 
-# source("R Code/00_Master Code.R")
+#source("R Code/00_Master Code.R")
 
 library(MCMCglmm); library(tidyverse); library(Matrix); library(parallel); library(mgcv)
 
 tFullSTMatrix <- 1 - (FullSTMatrix - min(FullSTMatrix))/max(FullSTMatrix)
 
-AllMammals <- intersect(rownames(FullSTMatrix), rownames(FullRangeAdj1))
+NonEutherians <- c("Diprotodontia",
+                   "Dasyuromorphia",
+                   "Paucituberculata",
+                   "Didelphimorphia",
+                   "Microbiotheria",
+                   "Peramelemorphia", 
+                   "Notoryctemorphia",
+                   "Monotremata")
+
+Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
+  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order)
+Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
+
+NonEutherianSp <- Panth1[Panth1$hOrder%in%NonEutherians,"Sp"]
+
+AllMammals <- intersect(rownames(FullSTMatrix), rownames(FullRangeAdj1)) %>% setdiff(NonEutherianSp)
 
 AllMammals <- sort(AllMammals)
 
@@ -18,9 +33,10 @@ AllMammalMatrix <- data.frame(
   Sp2 = as.character(rep(AllMammals,length(AllMammals))),
   Space = c(FullRangeAdj1[AllMammals,AllMammals]),
   Phylo = c(tFullSTMatrix[AllMammals,AllMammals])
-)
+) %>% 
+  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo))) %>% droplevels
 
-UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals,AllMammals], diag = T))
+UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals, AllMammals], diag = T))
 
 AllMammaldf <- AllMammalMatrix[-UpperMammals,]
 
@@ -69,9 +85,6 @@ if(file.exists("Output Files/AllPredList.Rdata")) load("Output Files/AllPredList
   
   AllPredictions[,"Intercept"] <- AllIntercept
   
-  #Remove <- which(table(lapply(2:21, function(i) Divisions[[i-1]]:Divisions[[i]]) %>% unlist)>1)
-  #AllPredictions <- AllPredictions[-Remove,]
-  
   AllPredList <- parallel::mclapply(1:100, function(x){ # to do something non-specific
     
     AllPredictions[,"Spp"] <- sample(SpCoef, N, replace = T) + 
@@ -100,8 +113,8 @@ if(file.exists("Output Files/AllSims.Rdata")) load("Output Files/AllSims.Rdata")
   AllSims <- parallel::mclapply(1:length(AllPredList), function(i){
     
     AssMat <- matrix(NA, 
-                     nrow = length(union(AllMammaldf$Sp,AllMammaldf$Sp2)), 
-                     ncol = length(union(AllMammaldf$Sp,AllMammaldf$Sp2)))
+                     nrow = length(AllMammals), 
+                     ncol = length(AllMammals))
     
     AssMat[lower.tri(AssMat)] <- round(AllPredList[[i]])
     AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
@@ -134,8 +147,8 @@ if(file.exists("Output Files/AllSums.Rdata")) load("Output Files/AllSums.Rdata")
   AllPredSums <- apply(AllPredDF,1,sum)
   
   AssMat <- matrix(NA, 
-                   nrow = 4276, #length(union(AllMammaldf$Sp,AllMammaldf$Sp2)), 
-                   ncol = 4276) #length(union(AllMammaldf$Sp,AllMammaldf$Sp2)))
+                   nrow = length(AllMammals), #length(union(AllMammaldf$Sp,AllMammaldf$Sp2)), 
+                   ncol = length(AllMammals)) #length(union(AllMammaldf$Sp,AllMammaldf$Sp2)))
   
   AssMat[lower.tri(AssMat)] <- AllPredSums
   AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]

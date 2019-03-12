@@ -29,14 +29,14 @@ if(file.exists("Output Files/FitList.Rdata")) load("Output Files/FitList.Rdata")
     
     # Effects ####
     
-    SpaceRange <- seq(from = min(DataList[[Resps[r]]]$Space),
-                      to = max(DataList[[Resps[r]]]$Space),
-                      length = 100) %>% 
+    SpaceRange <- seq(from = 0,
+                      to = 1,
+                      length = 101) %>% 
       c(mean(DataList[[Resps[r]]]$Space))
     
-    PhyloRange <- seq(from = min(DataList[[Resps[r]]]$Phylo),
-                      to = max(DataList[[Resps[r]]]$Phylo),
-                      length = 100)  %>% 
+    PhyloRange <- seq(from = 0,
+                      to = 1,
+                      length = 101)  %>% 
       c(mean(DataList[[Resps[r]]]$Phylo))
     
     FitList[[Resps[r]]] <- expand.grid(Space = SpaceRange,
@@ -45,16 +45,16 @@ if(file.exists("Output Files/FitList.Rdata")) load("Output Files/FitList.Rdata")
                                        Domestic = 0
     ) %>%
       mutate(SpaceQuantile = ifelse(Space == last(unique(Space)), "1.5%",
-                                    ifelse(Space == first(unique(Space)), "0%",
-                                           ifelse(Space == unique(Space)[25], "25%",
-                                                  ifelse(Space == unique(Space)[50], "50%", NA)))),
+                                    ifelse(Space == 0, "0%",
+                                           ifelse(Space == 0.25, "25%",
+                                                  ifelse(Space == 0.5, "50%", NA)))),
              
-             PhyloQuantile = ifelse(Phylo == last(unique(Phylo)), "0.32",
-                                    ifelse(Phylo == first(unique(Phylo)), "0.42",
-                                           ifelse(Phylo == unique(Phylo)[25], "0.48",
-                                                  ifelse(Phylo == unique(Phylo)[50], "0.65", NA)))))
+             PhyloQuantile = ifelse(Phylo == last(unique(Phylo)), "0.1",
+                                    ifelse(Phylo == 0, "0",
+                                           ifelse(Phylo == 0.25, "0.25",
+                                                  ifelse(Phylo == 0.5, "0.5", NA)))))
     
-    FitList[[Resps[r]]]$Spp <- matrix(0 , nrow = nrow(FitList[[Resps[r]]]), ncol = length(SpCoef))# %>% as("dgCMatrix")
+    FitList[[Resps[r]]]$Spp <- matrix(0 , nrow = nrow(FitList[[Resps[r]]]), ncol = length(SpCoef))
     
     FitPredictions  <- predict.gam(Model, 
                                    newdata = FitList[[Resps[r]]], 
