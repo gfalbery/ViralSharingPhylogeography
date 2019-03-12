@@ -10,55 +10,65 @@ VirusTypeList <- list(which(SubVirusTraits$vDNAoRNA=="RNA"),
                       which(SubVirusTraits$vVectorYNna=="N"&SubVirusTraits$vDNAoRNA=="RNA"),
                       which(SubVirusTraits$vDNAoRNA=="DNA"))
 
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
-SubGroupValidList <- lapply(VirusAssocs, function(a) Validate())
-  
-  
-  KeepPredictions2 <- list((1:length(VectorValid))[-which(sapply(VectorValid, function(a) any(is.na(a))))],
-                           (1:length(NVectorValid))[-which(sapply(NVectorValid, function(a) any(is.na(a))))],
-                           (1:length(DNAValid))[-which(sapply(DNAValid, function(a) any(is.na(a))))])
+load("Output Files/SubSums.Rdata")
 
-VectorValidSummary <- data.frame(
-  
-  Virus = names(VirusAssocs)[VirusTypeList[[1]]][KeepPredictions2[[1]]],
-  
-  NHosts = map(VectorValid[KeepPredictions2[[1]]], "Focal") %>% 
-    sapply(function(a) which(a=="1") %>% length),
-  
-  No = KeepPredictions2[[1]],
-  
-  MeanRank = sapply(VectorValid[KeepPredictions2[[1]]], function(a) mean(FocalRank(a)))
-  
-) %>% slice(order(MeanRank)) %>% merge(ValidSummary, by = "Virus", suffixes = c(".Spec",".Gen"), all.x = T)
+SubGroupValidList <- lapply(1:4, function(a) Validate(VirusAssocs[VirusTypeList[[a]]], SubSums[[a]]))
 
-NVectorValidSummary <- data.frame(
+SubGroupValid <- lapply(SubGroupValidList, function(a){
   
-  Virus = names(VirusAssocs)[VirusTypeList[[2]]][KeepPredictions2[[2]]],
+  lapply(a, function(b){
+    
+    if(!is.null(names(b[[1]]))){
+      
+      c = b %>% bind_rows %>% as.data.frame()
+      
+      d = c %>% group_by(Sp, Focal) %>% 
+        dplyr::summarise(Count = mean(Count)) %>% 
+        slice(order(Count, decreasing = T)) %>%
+        mutate(Focal = factor(Focal))
+      
+    } else d = NA
+    
+    return(d)
+  })
   
-  NHosts = map(NVectorValid[KeepPredictions2[[2]]], "Focal") %>% sapply(function(a) which(a=="1") %>% length),
-  
-  No = KeepPredictions2[[2]],
-  
-  MeanRank = sapply(NVectorValid[KeepPredictions2[[2]]], function(a) mean(FocalRank(a)))
-  
-) %>% slice(order(MeanRank)) %>% merge(ValidSummary, by = "Virus", suffixes = c(".Spec",".Gen"), all.x = T)
+})
 
-
-DNAValidSummary <- data.frame(
+SubGroupKeeps <- SubGroupValid %>% lapply(function(a){
   
-  Virus = names(VirusAssocs)[VirusTypeList[[3]]][KeepPredictions2[[3]]],
+  (1:length(a))[-which(sapply(a, function(b) any(is.na(b))))]
   
-  NHosts = map(DNAValid[KeepPredictions2[[3]]], "Focal") %>% sapply(function(a) which(a=="1") %>% length),
+})
+
+FocalRank <- function(x){
   
-  No = KeepPredictions2[[3]],
+  y <- x[x[,"Focal"]==1,"Count"]
+  z <- x[x[,"Focal"]==0,"Count"]
   
-  MeanRank = sapply(DNAValid[KeepPredictions2[[3]]], function(a) mean(FocalRank(a)))
+  (length(z$Count) + 2) - sapply(y$Count, function(a) rank(c(a,z$Count))[1])
   
-) %>% slice(order(MeanRank))%>% merge(ValidSummary, by = "Virus", suffixes = c(".Spec",".Gen"), all.x = T)
+}
 
-
-
-
+Valids <- lapply(1:4, function(a){
+  
+  data.frame(
+    
+    Virus = names(VirusAssocs)[SubGroupKeeps[[a]]],
+    
+    NHosts = map(SubGroupValid[[a]][SubGroupKeeps[[a]]], "Focal") %>% 
+      sapply(function(a) which(a=="1") %>% length),
+    
+    No = SubGroupKeeps[[a]],
+    
+    MeanRank = sapply(SubGroupValid[[a]][SubGroupKeeps[[a]]], function(a) mean(FocalRank(a))),
+    
+    Resp = Resps[(a+1)]
+    
+  ) %>% slice(order(MeanRank)) 
+  
+}) %>% bind_rows()
 
 
 
