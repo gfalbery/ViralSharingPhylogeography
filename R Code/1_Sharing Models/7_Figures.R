@@ -7,40 +7,59 @@ library(ggplot2); library(ggregplot); library(colorspace)
 
 load("Output Files/FitList.Rdata")
 
-ggplot(FinalHostMatrix, aes(Space, Phylo)) + 
-  geom_point(alpha = 0.1, colour = AlberColours[1]) +
-  coord_fixed() +
-  geom_smooth(colour = "black", se = F) +
-  ggsave("Figures/Space_Phylo.jpeg", units = "mm", width = 100, height = 100, dpi = 300)
-
-jpeg("Figures/Model Predictions.jpeg", units = "mm", width = 300, height = 150, res = 600)
+jpeg("Figures/Model Predictions.jpeg", units = "mm", width = 200, height = 200, res = 600)
 
 list(
-  FitList[["VirusBinary"]] %>% filter(!Space == last(unique(FitList[["VirusBinary"]]$Space))&
-                                        DietSim == last(unique(FitList[["VirusBinary"]]$DietSim))) %>%
-    
-    ggplot(aes(Phylo, Fit, colour = Space)) + 
-    geom_line(aes(group = as.factor(Space)), alpha = 0.3) +
-    labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity") +
-    scale_colour_continuous_sequential(palette = AlberPalettes[1]) +
-    theme(legend.position = "top") +
+  FitList[["VirusBinary"]] %>% 
+    filter(!is.na(SpaceQuantile)) %>%
+    ggplot(aes(Phylo, Fit, colour = paste(SpaceQuantile, "Overlap"))) + 
+    geom_line(aes(group = as.factor(Space))) +
+    geom_line(aes(group = as.factor(Space), y = Lower), lty = 2) +
+    geom_line(aes(group = as.factor(Space), y = Upper), lty = 2) +
+    labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity", colour = NULL) +
+    lims(y = c(0,1)) +
+    scale_color_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+    theme(legend.position = c(0.25, 0.8), legend.background = element_rect(colour = "dark grey")) +
     geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
   
-  FitList[["VirusBinary"]] %>% filter(!Phylo == last(unique(FitList[["VirusBinary"]]$Phylo))&
-                                        DietSim == last(unique(FitList[["VirusBinary"]]$DietSim))) %>%
-    
-    ggplot(aes(Space, Fit, colour = Phylo)) + 
-    geom_line(aes(group = as.factor(Phylo)), alpha = 0.3) +
-    labs(y = "Predicted Viral Sharing", x = "Geographic Overlap") +
-    scale_colour_continuous_sequential(palette = AlberPalettes[2]) +
-    theme(legend.position = "top") +
-    geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01)
+  FitList[["VirusBinary"]] %>% 
+    filter(!is.na(PhyloQuantile)) %>%
+    ggplot(aes(Space, Fit, colour = paste(PhyloQuantile, "Relatedness"))) + 
+    geom_line(aes(group = as.factor(Phylo))) +
+    geom_line(aes(group = as.factor(Phylo), y = Lower), lty = 2) +
+    geom_line(aes(group = as.factor(Phylo), y = Upper), lty = 2) +
+    labs(y = "Predicted Viral Sharing", x = "Geographic Overlap", colour = NULL) +
+    lims(y = c(0,1)) +
+    scale_color_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+    theme(legend.position = c(0.25, 0.8), legend.background = element_rect(colour = "dark grey")) +
+    geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01),
   
-) %>% arrange_ggplot2
+  FitList[["VirusBinary"]] %>% 
+    filter(!Phylo == last(unique(Phylo)),
+           !Space == last(unique(Space))) %>%
+    ggplot(aes(Space, Phylo)) + 
+    geom_tile(aes(fill = Fit)) + 
+    labs(x = "Geographic Overlap", 
+         y = "Phylogenetic Relatedness") +
+    ggtitle("Tensor Field") +
+    #geom_point(data = DataList[[1]], alpha = 0.3) +
+    theme(legend.position = "bottom") +
+    scale_fill_continuous_sequential(palette = "Greens 2"),
+  
+  DataList$VirusBinary %>%
+    ggplot(aes(Space, Phylo)) + 
+    labs(x = "Geographic Overlap", 
+         y = "Phylogenetic Relatedness") +
+    ggtitle("Data Distribution") +
+    scale_fill_continuous_sequential(palette = "Greens 2", begin = 0.2) +
+    theme(legend.position = "bottom") +
+    geom_hex(aes(fill = stat(log10(count))))
+  
+) %>% arrange_ggplot2(ncol = 2)
 
 dev.off()
 
-# Figure 2.	Observed hosts have higher Predicted degree centrality #####
+# Figure 2.	Observed hosts have higher predicted degree centrality #####
 
 Errordf <- Panth1 %>% group_by(hOrder) %>%
   mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   

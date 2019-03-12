@@ -3,7 +3,7 @@
 
 library(igraph); library(tidyverse); library(ggregplot); library(parallel); library(SpRanger)
 
-source("R Code/0_Data Import/0a_EHA Data Import.R")
+#source("R Code/0_Data Import/0a_EHA Data Import.R")
 
 load("Output Files/KnownSimGraphs.Rdata")
 

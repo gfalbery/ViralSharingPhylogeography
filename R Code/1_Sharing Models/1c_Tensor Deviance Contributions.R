@@ -7,7 +7,6 @@
 #if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
 
 load("Output Files/BAMList.Rdata")
-#load("Output Files/BAMList2.Rdata")
 
 Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 

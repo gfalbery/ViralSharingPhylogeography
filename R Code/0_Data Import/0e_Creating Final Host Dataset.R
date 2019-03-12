@@ -44,7 +44,7 @@ names(NameReplace) <- AbsentHosts
 
 rownames(FullSTMatrix) <- colnames(FullSTMatrix) <- sapply(rownames(FullSTMatrix), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
 
-rownames(VD) <- colnames(VD) <- sapply(rownames(VD), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
+#rownames(VD) <- colnames(VD) <- sapply(rownames(VD), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
 
 # Going Ahead ####
 
@@ -58,7 +58,7 @@ tSTMatrix <- 1 - (STMatrix - min(STMatrix))/max(STMatrix)
 FinalHostNames <- reduce(list(
   rownames(RangeAdj), 
   colnames(STMatrix),
-  colnames(VD),
+  #colnames(VD),
   rownames(HostAdj)), intersect)
 
 FHN <- FinalHostNames; length(FHN)
@@ -112,8 +112,8 @@ FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 
-FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
-  mutate(DietSim = 1 - DietSim)
+#FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
+#  mutate(DietSim = 1 - DietSim)
 
 #FinalHostMatrix <- FinalHostMatrix %>% left_join(EltonTraits[,c("Scientific","Carnivore")], by = c("Sp" = "Scientific"))
 #FinalHostMatrix <- FinalHostMatrix %>% left_join(EltonTraits[,c("Scientific","Carnivore")], by = c("Sp2" = "Scientific"),
@@ -179,8 +179,8 @@ FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 
-FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
-  mutate(DietSim = 1 - DietSim)
+#FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
+#  mutate(DietSim = 1 - DietSim)
 
 FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))

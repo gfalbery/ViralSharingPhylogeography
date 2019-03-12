@@ -9,9 +9,9 @@ if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata")
 
 library(mgcv); library(tidyverse)
 
-Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")[1]
 
-BAMList <- BAMList2 <- DataList <- PPList <- list()
+BAMList <- DataList <- PPList <- list()
 
 for(r in 1:length(Resps)){
   
@@ -38,11 +38,11 @@ for(r in 1:length(Resps)){
   PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), 
                                         diag(nlevels(DataList[[Resps[r]]]$Sp))))
   
-  Covar <- c(#"t2(Space, Phylo)",
-             "ti(Space, Phylo)",
-             "s(Space)",
-             "s(Phylo)",
-             "s(DietSim)",
+  Covar <- c("t2(Space, Phylo)",
+             #"ti(Space, Phylo)",
+             #"s(Space)",
+             #"s(Phylo)",
+             #"s(DietSim)",
              "MinCites",
              "Domestic",
              "Spp")
