@@ -144,7 +144,8 @@ if(file.exists("Output Files/AllSums.Rdata")) load("Output Files/AllSums.Rdata")
   
   AllPredDF <- AllPredList %>% as.data.frame()
   
-  AllPredSums <- apply(AllPredDF,1,sum)
+  #AllPredSums <- apply(AllPredDF,1,sum)
+  AllPredSums <- logistic(rowSums(AllPredictions))
   
   AssMat <- matrix(NA, 
                    nrow = length(AllMammals), #length(union(AllMammaldf$Sp,AllMammaldf$Sp2)), 
@@ -154,8 +155,8 @@ if(file.exists("Output Files/AllSums.Rdata")) load("Output Files/AllSums.Rdata")
   AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
   diag(AssMat) <- 0
   
-  dimnames(AssMat) <- list(union(AllMammaldf$Sp,AllMammaldf$Sp2),
-                           union(AllMammaldf$Sp,AllMammaldf$Sp2))
+  dimnames(AssMat) <- list(AllMammals,
+                           AllMammals)
   
   AllSums <- as(AssMat, "dgCMatrix")
   

@@ -28,9 +28,7 @@ AllDegrees <- map(AllPredNetwork, "Degree") %>% bind_cols()
 
 AllPredDegree = apply(AllDegrees, 1, mean)
 
-Sp = rownames(AllSims[[1]])
-
-AllPredDegrees <- data.frame(AllPredDegree, Sp)
+AllPredDegrees <- data.frame(AllPredDegree, Sp = AllMammals)
 
 Hosts <- left_join(Hosts, AllPredDegrees, by = "Sp")
 # GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
@@ -126,12 +124,4 @@ save(Panth1, file = "Output Files/Panth1.Rdata")
 scale_this <- function(x){
   (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
 }
-
-
-Panth1 %>% group_by(hOrder) %>%
-  mutate(ScalePredDegree = scale_this(AllPredDegree)) %>% right_join(Panth1, by = "Sp") %>%
-  mutate(CentredDegree = )
-
-
-
 

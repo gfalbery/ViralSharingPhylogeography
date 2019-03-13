@@ -71,8 +71,13 @@ for(x in 1:length(WorldPolygons)) WorldPolygons[[x]]$group <- x
 
 WorldMap <- bind_rows(WorldPolygons) %>% dplyr::rename(long = V1, lat = V2)
 
+WorldMap <- WorldMap %>% group_by(Country, group) %>%  # getting rid of small places 
+  summarise(N = n()) %>% filter(N>10) %>% inner_join(WorldMap)
+
 CountryCentroids <- WorldMap %>% group_by(Country) %>% 
   summarise(long = mean(long), lat = mean(lat)) %>% data.frame
+
+save(WorldMap, file = "Output Files/WorldMap.Rdata")
 
 # THIS DATA FRAME TAKES A LOT OF MEMORY - convert to sparse matrix 
 # Or learn more raster methods before pub ####

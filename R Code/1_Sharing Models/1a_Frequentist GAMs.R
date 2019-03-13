@@ -7,7 +7,7 @@ if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata")
   source("R Code/00_Master Code.R")
 }
 
-library(mgcv); library(tidyverse)
+library(mgcv); library(tidyverse); library(ggregplot)
 
 Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")[1]
 
@@ -38,11 +38,8 @@ for(r in 1:length(Resps)){
   PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), 
                                         diag(nlevels(DataList[[Resps[r]]]$Sp))))
   
-  Covar <- c("t2(Space, Phylo)",
-             #"ti(Space, Phylo)",
-             #"s(Space)",
-             #"s(Phylo)",
-             #"s(DietSim)",
+  Covar <- c("s(Phylo, by = ordered(Gz))",
+             "t2(Phylo, Space, by = ordered(!Gz))",
              "MinCites",
              "Domestic",
              "Spp")
@@ -56,7 +53,7 @@ for(r in 1:length(Resps)){
                              data = DataList[[Resps[r]]], 
                              family = binomial(),
                              paraPen = PPList[[Resps[r]]], select = T
-                             )
+  )
   
 }
 

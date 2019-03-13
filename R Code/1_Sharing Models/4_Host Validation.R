@@ -5,7 +5,7 @@
 
 library(tidyverse); library(parallel); library(ggregplot); library(ape); library(SpRanger); library(Matrix)
 
-source("R Code/00_Master Code.R")
+# source("R Code/00_Master Code.R")
 
 load("Output Files/AllSims.Rdata")
 load("Output Files/AllSums.Rdata")
@@ -36,7 +36,7 @@ save(GAMValid, file = "Output Files/GAMValidation.Rdata")
 
 {
   
-  load("Output Files/GAMValidation.Rdata")
+  # load("Output Files/GAMValidation.Rdata")
   
   KeepPredictions <- (1:length(GAMValid))[-which(sapply(GAMValid, function(a) any(is.na(a))))]
   
@@ -78,7 +78,7 @@ VirusCovar <- c("IsHoSa","IsHoSa.stringent",
                 "vCytoReplicTF","vSegmentedTF","vVectorYNna","vSSoDS","vDNAoRNA","vEnvelope",
                 "IsZoonotic")
 
-ValidSummary <- VirusTraits %>% select(vVirusNameCorrected, VirusCovar) %>%
+ValidSummary <- VirusTraits %>% dplyr::select(vVirusNameCorrected, VirusCovar) %>%
   dplyr::rename(Virus = vVirusNameCorrected) %>%
   right_join(ValidSummary, by = "Virus")
 

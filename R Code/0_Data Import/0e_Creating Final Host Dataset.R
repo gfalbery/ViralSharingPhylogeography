@@ -175,12 +175,10 @@ UpperHosts <- # Removing diagonals and
 
 FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
-FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 
-#FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
-#  mutate(DietSim = 1 - DietSim)
+FinalHostMatrix$Gz <- as.numeric(FinalHostMatrix$Space==0)
 
 FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
