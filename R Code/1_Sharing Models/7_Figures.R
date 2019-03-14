@@ -1,7 +1,7 @@
 
 # Generating Figures ####
 
-library(ggplot2); library(ggregplot); library(colorspace)
+library(tidyverse); library(ggregplot); library(colorspace)
 library(cowplot)
 
 # Figure 1_ space and phylogeny ####
@@ -118,9 +118,9 @@ Panth1 %>% group_by(hOrder) %>%
   labs(x = "Host Order", y = "Predicted links") +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) +
   geom_errorbar(aes(ymin = Lower,
-                    ymax = Upper), width = 0.1) +
+                    ymax = Upper), width = 0.25) +
   scale_fill_discrete_sequential(palette = AlberPalettes[[1]]) +
-  geom_text(aes(label = N, y = Upper + max(Upper, na.rm = T)/50), size = 2.5) +
+  geom_text(aes(label = N, y = Upper + max(Upper, na.rm = T)/30), size = 2.5) +
   ggsave("Figures/AllPredDegree.jpeg", units = "mm", height = 120, width = 150)
 
 Panth1 %>% group_by(hOrder) %>%
@@ -139,7 +139,7 @@ Panth1 %>% group_by(hOrder) %>%
   geom_errorbar(aes(ymin = Lower,
                     ymax = Upper), width = 0.25) +
   scale_fill_discrete_sequential(palette = AlberPalettes[[2]]) +
-  geom_text(aes(label = N, y = Upper + max(Upper, na.rm = T)/50), size = 2.5) +
+  geom_text(aes(label = N, y = Upper + max(Upper, na.rm = T)/30), size = 2.5) +
   ggsave("Figures/InDegree.jpeg", units = "mm", height = 120, width = 150)
 
 
@@ -159,7 +159,7 @@ Panth1 %>% group_by(hOrder) %>%
   geom_errorbar(aes(ymin = Lower,
                     ymax = Upper), width = 0.25) +
   scale_fill_discrete_sequential(palette = AlberPalettes[[3]]) +
-  geom_text(aes(label = N, y = Upper + max(Upper, na.rm = T)/50), size = 2.5) +
+  geom_text(aes(label = N, y = Upper + max(Upper, na.rm = T)/30), size = 2.5) +
   ggsave("Figures/OutDegree.jpeg", units = "mm", height = 120, width = 150)
 
 
