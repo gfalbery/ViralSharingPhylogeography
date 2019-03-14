@@ -75,7 +75,7 @@ if(file.exists("Output Files/FitList.Rdata")) load("Output Files/FitList.Rdata")
       
       if(i == "Space") PredData <- PredData %>% filter(Phylo == last(unique(Phylo))) else{
         
-        PredData <- PredData %>% filter(Space == last(unique(Space)))
+        PredData <- PredData %>% filter(Space == 0)
         
       }
       

@@ -116,7 +116,7 @@ Panth1 %>% group_by(hOrder) %>%
   mutate(hOrder = factor(hOrder, levels = hOrder)) %>%
   ggplot(aes(hOrder, Mean, fill = hOrder)) +
   geom_col(colour = "black") +
-  labs(x = "Host Order", y = "Predicted links") +
+  labs(x = "Host Order", y = "Predicted links", title = "All Links") +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) +
   geom_errorbar(aes(ymin = Lower,
                     ymax = Upper), width = 0.25) +
@@ -135,7 +135,7 @@ Panth1 %>% group_by(hOrder) %>%
   mutate(hOrder = factor(hOrder, levels = hOrder)) %>%
   ggplot(aes(hOrder, Mean, fill = hOrder)) +
   geom_col(colour = "black") +
-  labs(x = "Host Order", y = "Predicted links") +
+  labs(x = "Host Order", y = "Predicted links", title = "Within-Order Links") +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) +
   geom_errorbar(aes(ymin = Lower,
                     ymax = Upper), width = 0.25) +
@@ -155,7 +155,7 @@ Panth1 %>% group_by(hOrder) %>%
   mutate(hOrder = factor(hOrder, levels = hOrder)) %>%
   ggplot(aes(hOrder, Mean, fill = hOrder)) +
   geom_col(colour = "black") +
-  labs(x = "Host Order", y = "Predicted links") +
+  labs(x = "Host Order", y = "Predicted links", title = "Out-of-Order Links") +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) +
   geom_errorbar(aes(ymin = Lower,
                     ymax = Upper), width = 0.25) +

@@ -16,7 +16,6 @@ a = 1
 
 GAMValid <- lapply(VirusAssocs, 
                    function(a){
-                     print(a)
                      NetworkValidate(a, AllSums)
                    })
 

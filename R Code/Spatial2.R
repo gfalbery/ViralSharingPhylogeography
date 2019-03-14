@@ -12,7 +12,7 @@ print(dim(OverList2))
 
 FullRangedf <- rbind(OverList1 %>% bind_rows() %>% mutate(Pass = 1), OverList2 %>% bind_rows() %>% mutate(Pass = 2))
 
-FullRangedf <- FullRangedf %>% slice(order(Pass, Host))
+FullRangedf <- FullRangedf %>% slice(order(Pass, Species))
 
 save(FullRangedf, file = "~/LargeFiles/FullRangedf.Rdata")
 
@@ -23,7 +23,7 @@ load("Output Files/Panth1.Rdata")
 print("Joining rangedf and Panth1")
 
 FullRangedf2 <- FullRangedf %>% left_join(Panth1[,c("Sp","AllPredDegree", "InDegree", "OutDegree")], 
-                                          by = c("Host" = "Sp")) %>%
+                                          by = c("Species" = "Sp")) %>%
   filter(!Host=="Ursus_maritimus")
 
 GridDegree <- FullRangedf2 %>% group_by(x,y) %>% 
