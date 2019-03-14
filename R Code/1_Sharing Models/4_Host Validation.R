@@ -5,7 +5,7 @@
 
 library(tidyverse); library(parallel); library(ggregplot); library(ape); library(SpRanger); library(Matrix)
 
-# source("R Code/00_Master Code.R")
+source("R Code/00_Master Code.R")
 
 load("Output Files/AllSims.Rdata")
 load("Output Files/AllSums.Rdata")
@@ -14,23 +14,11 @@ print("Start Validating!")
 
 a = 1
 
-GAMValidation <- Validate(VirusAssocs, AllSums)
-
-GAMValid <- GAMValidation %>% lapply(function(a){
-  
-  if(!is.null(names(a[[1]]))){
-    
-    b = a %>% bind_rows %>% as.data.frame()
-    
-    c = b %>% group_by(Sp, Focal) %>% 
-      dplyr::summarise(Count = mean(Count)) %>% 
-      slice(order(Count, decreasing = T)) %>%
-      mutate(Focal = factor(Focal))
-    
-  } else c = NA
-  
-  return(c)
-})
+GAMValid <- lapply(VirusAssocs, 
+                   function(a){
+                     print(a)
+                     NetworkValidate(a, AllSums)
+                   })
 
 save(GAMValid, file = "Output Files/GAMValidation.Rdata")
 
@@ -42,8 +30,8 @@ save(GAMValid, file = "Output Files/GAMValidation.Rdata")
   
   FocalRank <- function(x){
     
-    y <- x[x[,"Focal"]==1,"Count"]
-    z <- x[x[,"Focal"]==0,"Count"]
+    y <- x[x[,"Focal"]=="Observed","Count"]
+    z <- x[x[,"Focal"]=="Predicted","Count"]
     
     (length(z$Count) + 2) - sapply(y$Count, function(a) rank(c(a,z$Count))[1])
     
@@ -53,15 +41,15 @@ save(GAMValid, file = "Output Files/GAMValidation.Rdata")
     
     Virus = names(GAMValid)[KeepPredictions],
     
-    NHosts = map(GAMValid[KeepPredictions], "Focal") %>% sapply(function(a) which(a=="1") %>% length),
+    NHosts = map(GAMValid[KeepPredictions], "Focal") %>% sapply(function(a) which(a=="Observed") %>% length),
     
     No = KeepPredictions,
     
     MeanRank = sapply(GAMValid[KeepPredictions], function(a) mean(FocalRank(a))),
     
     MeanCount = sapply(GAMValid[KeepPredictions], function(a) mean(a$Count)),
-    MeanCount1 = sapply(GAMValid[KeepPredictions], function(a) mean(a[a$Focal==1,]$Count)),
-    MeanCount0 = sapply(GAMValid[KeepPredictions], function(a) mean(a[a$Focal==0,]$Count))
+    MeanCount1 = sapply(GAMValid[KeepPredictions], function(a) mean(a[a$Focal=="Observed",]$Count)),
+    MeanCount0 = sapply(GAMValid[KeepPredictions], function(a) mean(a[a$Focal=="Predicted",]$Count))
     
   ) %>% slice(order(MeanRank)) %>%
     mutate(CountDiff = MeanCount1 - MeanCount0)

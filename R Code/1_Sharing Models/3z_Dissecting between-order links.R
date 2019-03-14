@@ -25,7 +25,7 @@ for(i in 1:nrow(Combos)){
   b1 = Panth1$hOrder%in%a[1]
   b2 = Panth1$hOrder%in%a[2]
   
-  FocalNet <- (AllSums[b1,b2]/length(AllSims)) %>% as.matrix
+  FocalNet <- AllSums[b1,b2] %>% as.matrix
   
   hComboList[[i]] <- data.frame(Degree = c(rowSums(FocalNet), colSums(FocalNet)),
                                 Iteration = i,
@@ -45,7 +45,7 @@ for(i in levels(Panth1$hOrder)){
   
   b1 = Panth1$hOrder == i
   
-  FocalNet <- (AllSums[b1,b1]/length(AllSims)) %>% as.matrix
+  FocalNet <- AllSums[b1,b1] %>% as.matrix
   
   hUniteList[[i]] <- data.frame(Degree = c(rowSums(FocalNet)),
                                 Iteration = i,
@@ -102,23 +102,12 @@ OrderPairs <- hComboList %>% group_by(Iteration, Group) %>%
   summarise(`1` = sum(`1`, na.rm = T), 
             `2` = sum(`2`, na.rm = T),
             Degree = mean(Degree)) %>% bind_cols(Combos) %>%
-  mutate(OrderSizes = log(`1`) + log(`2`)) %>%
-  mutate(Bif1 = ifelse(OrderSizes<4, NA, ifelse(log(Degree+1) > OrderSizes-3.55, 1, 0))) 
+  mutate(OrderSizes = log(`1`) + log(`2`))
 
 OrderPairs %>%
-  ggplot(aes(log(`1`) + log(`2`), log(Degree+1), colour = Bif1)) + 
+  ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
   geom_point() + 
   geom_abline()
-
-(OrderPairs %>%
-  filter(Bif1==0) %>% select(Order2))$Order2
-  
-NonEuthOrders <- (OrderLevelLinks %>% filter(Degree<150&Metric=="AllPredDegree"))$hOrder
-
-
-OrderPairs <- OrderPairs %>% mutate(Order1Euth = ifelse(Order1%in%NonEuthOrders, 0, 1),
-                                    Order2Euth = ifelse(Order2%in%NonEuthOrders, 0, 1)) %>%
-  mutate(MisspentEuth = as.factor(Order1Euth + Order2Euth))
 
 OrderPairs %>%
   ggplot(aes(log(`1`) + log(`2`), log(Degree+1), colour = MisspentEuth)) + 

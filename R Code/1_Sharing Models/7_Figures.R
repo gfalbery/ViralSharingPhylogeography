@@ -1,12 +1,13 @@
 
 # Generating Figures ####
 
-library(tidyverse); library(ggregplot); library(colorspace)
-library(cowplot)
+library(tidyverse); library(ggregplot); library(colorspace); library(cowplot)
 
 # Figure 1_ space and phylogeny ####
 
 load("Output Files/FitList.Rdata")
+load("Output Files/BAMList.Rdata")
+
 plot_grid( FitList[["VirusBinary"]] %>% 
              filter(!is.na(SpaceQuantile)) %>%
              ggplot(aes(Phylo, Fit, colour = SpaceQuantile)) + 
@@ -61,7 +62,7 @@ plot_grid( FitList[["VirusBinary"]] %>%
              geom_hex(aes(fill = stat(log(count)))),
            
            nrow = 2, 
-           rel_heights = c(1,1.255), 
+           rel_heights = c(1,1.23), 
            labels = "AUTO") %>% 
   save_plot(filename = "Figures/Model Predictions.jpeg", 
             #units = "mm", width = 200, height = 200,
@@ -467,6 +468,8 @@ Panth1 %>% group_by(hOrder) %>%
   labs(x = "Number of Mammals") +
   ggsave("SIFigures/log_NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
+# Scaling of within- and between-order networks ####
+
 Panth1 %>% group_by(hOrder) %>%
   summarise(Number = n(),
             AllPredDegree = mean(AllPredDegree),
@@ -483,14 +486,12 @@ OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + geom_point() +
   ggsave("SIFigures/log_NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
 OrderPairs %>%
-  ggplot(aes(log(`1`) + log(`2`), log(Degree+1), colour = MisspentEuth)) + 
+  ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
   coord_fixed() +
   geom_point(alpha = 0.6) +
-  labs(x = "log(Order 1 Hosts) + log(Order 2 Hosts)", 
+  labs(x = "log(Order 1 Hosts*Order 2 Hosts)", 
        y = "log(Predicted Links + 1)",
-       title = "Scaling of between-order links",
-       colour = "Eutherian Orders") +
-  scale_colour_manual(values = c(AlberColours[[3]], AlberColours[[2]],AlberColours[[1]])) +
+       title = "Scaling of between-order links") +
   ggsave("SIFigures/BetweenOrderScaling.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
 
 
