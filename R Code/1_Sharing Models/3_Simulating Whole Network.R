@@ -7,39 +7,6 @@
 
 library(MCMCglmm); library(tidyverse); library(Matrix); library(parallel); library(mgcv)
 
-tFullSTMatrix <- 1 - (FullSTMatrix - min(FullSTMatrix))/max(FullSTMatrix)
-
-NonEutherians <- c("Diprotodontia",
-                   "Dasyuromorphia",
-                   "Paucituberculata",
-                   "Didelphimorphia",
-                   "Microbiotheria",
-                   "Peramelemorphia", 
-                   "Notoryctemorphia",
-                   "Monotremata")
-
-Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
-  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order)
-Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
-
-NonEutherianSp <- Panth1[Panth1$hOrder%in%NonEutherians,"Sp"]
-
-AllMammals <- intersect(rownames(FullSTMatrix), rownames(FullRangeAdj1)) %>% setdiff(NonEutherianSp)
-
-AllMammals <- sort(AllMammals)
-
-AllMammalMatrix <- data.frame(
-  Sp = as.character(rep(AllMammals,each = length(AllMammals))),
-  Sp2 = as.character(rep(AllMammals,length(AllMammals))),
-  Space = c(FullRangeAdj1[AllMammals,AllMammals]),
-  Phylo = c(tFullSTMatrix[AllMammals,AllMammals])
-) %>% 
-  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo))) %>% droplevels
-
-UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals, AllMammals], diag = T))
-
-AllMammaldf <- AllMammalMatrix[-UpperMammals,]
-
 N = nrow(AllMammaldf)
 
 load("~/Albersnet/Output Files/BAMList.Rdata")

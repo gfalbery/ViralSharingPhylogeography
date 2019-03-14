@@ -11,6 +11,12 @@ library(mgcv); library(tidyverse); library(ggregplot)
 
 Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")[1]
 
+Covar <- c("s(Phylo, by = ordered(Gz))",
+           "t2(Phylo, Space, by = ordered(!Gz))",
+           "MinCites",
+           "Domestic",
+           "Spp")
+
 BAMList <- DataList <- PPList <- list()
 
 for(r in 1:length(Resps)){
@@ -37,13 +43,7 @@ for(r in 1:length(Resps)){
   
   PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), 
                                         diag(nlevels(DataList[[Resps[r]]]$Sp))))
-  
-  Covar <- c("s(Phylo, by = ordered(Gz))",
-             "t2(Phylo, Space, by = ordered(!Gz))",
-             "MinCites",
-             "Domestic",
-             "Spp")
-  
+
   Formula = as.formula(paste0(Resps[r], 
                               " ~ ",
                               paste(Covar, collapse = " + ")

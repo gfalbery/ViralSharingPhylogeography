@@ -1,7 +1,7 @@
 
 # Rscript "R Code/Noamsweirdmodel.R"
 
-library(mgcv); library(tidyverse); library(ggregplot)
+library(mgcv); library(tidyverse); library(ggregplot); library(cowplot); library(colorspace)
 
 if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else{
   source("R Code/00_Master Code.R")

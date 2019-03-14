@@ -52,7 +52,8 @@ if(file.exists("Output Files/FitList.Rdata")) load("Output Files/FitList.Rdata")
              PhyloQuantile = ifelse(Phylo == last(unique(Phylo)), "0.1",
                                     ifelse(Phylo == 0, "0",
                                            ifelse(Phylo == 0.25, "0.25",
-                                                  ifelse(Phylo == 0.5, "0.5", NA)))))
+                                                  ifelse(Phylo == 0.5, "0.5", NA)))),
+             Gz = as.numeric(Space==0))
     
     FitList[[Resps[r]]]$Spp <- matrix(0 , nrow = nrow(FitList[[Resps[r]]]), ncol = length(SpCoef))
     
@@ -99,41 +100,46 @@ if(file.exists("Output Files/FitList.Rdata")) load("Output Files/FitList.Rdata")
       
     }
     
-    DrawList[[Resps[r]]] <- list()
+    Draw = F
     
-    for(i in c("Space", "Phylo")){
+    if(Draw == T){
       
-      print(i)
+      DrawList[[Resps[r]]] <- list()
       
-      lp = list()
-      
-      for(j in 1:100){
+      for(i in c("Space", "Phylo")){
         
-        print(j)
+        print(i)
         
-        PredData <- FitList[[Resps[r]]]
+        lp = list()
         
-        if(i == "Space"){
+        for(j in 1:100){
           
-          PredData <- PredData %>% filter(Phylo == last(unique(Phylo))) %>%
-            mutate(Phylo = sample(DataList[[Resps[r]]]$Phylo, 1))
+          print(j)
           
-        } else {
+          PredData <- FitList[[Resps[r]]]
           
-          PredData <- PredData %>% filter(Space == last(unique(Space))) %>%
-            mutate(Space = sample(DataList[[Resps[r]]]$Space, 1))
+          if(i == "Space"){
+            
+            PredData <- PredData %>% filter(Phylo == last(unique(Phylo))) %>%
+              mutate(Phylo = sample(DataList[[Resps[r]]]$Phylo, 1))
+            
+          } else {
+            
+            PredData <- PredData %>% filter(Space == last(unique(Space))) %>%
+              mutate(Space = sample(DataList[[Resps[r]]]$Space, 1))
+            
+          }
+          
+          lp[[j]] <- data.frame(Fit = predict(Model, newdata = PredData),
+                                Iteration = as.factor(j),
+                                i = PredData[,i])
           
         }
         
-        lp[[j]] <- data.frame(Fit = predict(Model, newdata = PredData),
-                              Iteration = as.factor(j),
-                              i = PredData[,i])
+        DrawList[[Resps[r]]][[i]] <- lp %>% bind_rows() %>% as.data.frame() %>%
+          mutate(Fit = logistic(Fit))
         
       }
-      
-      DrawList[[Resps[r]]][[i]] <- lp %>% bind_rows() %>% as.data.frame() %>%
-        mutate(Fit = logistic(Fit))
-      
     }
     
   }

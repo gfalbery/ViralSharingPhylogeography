@@ -61,7 +61,7 @@ if(file.exists("~/LargeFiles/FullValuedf1.Rdata")) load("~/LargeFiles/FullValued
   
   print("Saving!")
   
-  save(FullValuedf, file = "FullValuedf1.Rdata")
+  save(FullValuedf, file = "~/LargeFiles/FullValuedf1.Rdata")
 }
 
 if(file.exists("~/LargeFiles/OverList1.Rdata")) load("~/LargeFiles/OverList1.Rdata") else{
@@ -126,20 +126,15 @@ if(file.exists("~/LargeFiles/OverList2.Rdata")) load("~/LargeFiles/OverList2.Rda
 
 print("Doing Overlap!")
 
-if(file.exists("~/LargeFiles/FullRangeOverlap.Rdata")) load("~/LargeFiles/FullRangeOverlap.Rdata") else{
-  
-  FullRangeAdj1 <- PairsWisely(FullMammalRanges)
-  
-  save(FullRangeAdj1, file = "~/LargeFiles/FullRangeOverlap.Rdata")
-  
-}
+#if(file.exists("~/LargeFiles/FullRangeOverlap.Rdata")) load("~/LargeFiles/FullRangeOverlap.Rdata") else{
+#  
+#  FullRangeAdj1 <- PairsWisely(FullMammalRanges)
+#  
+#  save(FullRangeAdj1, file = "~/LargeFiles/FullRangeOverlap.Rdata")
+#  
+#}
 
-#FullValuedf4 <- reshape2::melt(FullValuedf3)
-#FullValuedf4$x <- rep(1:FullMammalRanges2[[1]]@ncols, FullMammalRanges2[[1]]@nrows)
-#FullValuedf4$y <- rep(FullMammalRanges2[[1]]@nrows:1, each = FullMammalRanges2[[1]]@ncols)
-#FullValuedf4$Pass <- 0
-
-FullRangedf <- rbind(OverList1, OverList2) %>% # This is where a load of them were lost #### %>% 
+FullRangedf <- rbind(OverList1 %>% bind_rows() %>% mutate(Pass = 1), OverList2 %>% bind_rows() %>% mutate(Pass = 2)) %>% # This is where a load of them were lost #### %>% 
   filter(!is.na(value)) %>% droplevels %>%
   dplyr::rename(Host = variable, Presence = value)
 

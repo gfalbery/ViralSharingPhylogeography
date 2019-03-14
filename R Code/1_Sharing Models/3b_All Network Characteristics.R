@@ -50,58 +50,27 @@ print("Dividing within- and between-order links")
 Panth1 <- Panth1 %>% slice(order(Panth1$Sp)) %>% 
   filter(Sp%in%V(AllSimGs[[1]])$name) %>% droplevels
 
-for(z in c("Method1", "Method2")){
+hOrderList <- mclapply(1:length(AllSimGs), function(i){
   
-  if(z == "Method1"){
-    
-    hOrderList <- mclapply(1:length(AllSimGs), function(i){
-      lapply(levels(Panth1$hOrder), function(x) induced_subgraph(AllSimGs[[i]], 
-                                                                 as.character(Panth1$hOrder) == x))
-    }, mc.cores = 10)
-    
-    InDegree <- lapply(hOrderList, function(a) lapply(a, function(b) degree(b)) %>% unlist) %>% bind_cols
-    InDegrees <- apply(InDegree, 1, mean)
-    InNames <- lapply(hOrderList[[1]], function(a) V(a)$name) %>% unlist
-    InDegDF <- data.frame(InDegree = InDegrees,
-                          Sp = InNames)
-    
-    Panth1 <- left_join(Panth1, InDegDF, by = "Sp")
-    
-  } else {
-    
-    hOrderList <- mclapply(levels(Panth1$hOrder), function(i){
-      
-      map(AllSimGs, function(j){
-        
-        distances(j, v = V(j)[Panth1$hOrder == as.character(i)], 
-                  to = V(j)[Panth1$hOrder == as.character(i)])
-        
-      }) %>% bind_cols()
-      
-    }, mc.cores = 10)
-    
-    hOrderList <- mclapply(1:length(AllSimGs), function(i){
-      
-      a <- AllSimGs[[i]]
-      
-      lapply(levels(Panth1$hOrder), function(x){
-        
-        distances(a, v = V(a)[Panth1$hOrder == as.character(x)], 
-                  to = V(a)[Panth1$hOrder == as.character(x)])
-        
-      })
-      
-    }, mc.cores = 10) %>% bind_rows()
-    
-    InDegrees <- lapply(hOrderList, function(a) lapply(a, function(b) rowSums(b==1)))
-    
-    InDegrees2 <- lapply(1:nlevels(Panth1$hOrder), 
-                         function(a) map(InDegrees, a)) #%>% bind_rows()
-    
-  }
+  a <- AllSimGs[[i]]
   
+  lapply(levels(Panth1$hOrder), function(x){
+    
+    distances(a, v = V(a)[Panth1$hOrder == as.character(x)], 
+              to = V(a)[Panth1$hOrder == as.character(x)])
+    
+  })
   
-}
+}, mc.cores = 10) #%>% bind_rows()
+
+InDegrees <- lapply(hOrderList, function(a) lapply(a, function(b) rowSums(b==1)))
+
+InDegrees2 <- lapply(InDegrees, unlist) %>% bind_cols %>% apply(1, mean)
+
+InDegrees2 <- data.frame(Sp = lapply(InDegrees, unlist)[[1]] %>% names,
+                         InDegree = InDegrees2)
+
+Panth1 <- Panth1 %>% left_join(InDegrees2)
 
 Panth1$OutDegree <- with(Panth1, AllPredDegree-InDegree)
 
