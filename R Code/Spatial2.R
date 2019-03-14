@@ -10,11 +10,7 @@ print(dim(OverList1))
 load("~/LargeFiles/OverList2.Rdata")
 print(dim(OverList2))
 
-FullRangedf <- rbind(OverList1 %>% bind_rows() %>% mutate(Pass = 1), OverList2 %>% bind_rows() %>% mutate(Pass = 2)) %>% # This is where a load of them were lost #### %>% 
-  filter(!is.na(value)) %>% droplevels %>%
-  dplyr::rename(Host = variable, Presence = value)
-
-FullRangedf$GridID <- with(FullRangedf, paste(x, y))
+FullRangedf <- rbind(OverList1 %>% bind_rows() %>% mutate(Pass = 1), OverList2 %>% bind_rows() %>% mutate(Pass = 2))
 
 FullRangedf <- FullRangedf %>% slice(order(Pass, Host))
 
