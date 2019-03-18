@@ -23,7 +23,7 @@ save(GAMValid, file = "Output Files/GAMValidation.Rdata")
 
 {
   
-  # load("Output Files/GAMValidation.Rdata")
+  load("Output Files/GAMValidation.Rdata")
   
   KeepPredictions <- (1:length(GAMValid))[-which(sapply(GAMValid, function(a) any(is.na(a))))]
   

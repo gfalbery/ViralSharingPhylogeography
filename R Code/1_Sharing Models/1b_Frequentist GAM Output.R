@@ -102,7 +102,7 @@ if(file.exists("Output Files/FitList.Rdata")) load("Output Files/FitList.Rdata")
     
     Draw = F
     
-    if(Draw == T){
+    if(Draw){
       
       DrawList[[Resps[r]]] <- list()
       

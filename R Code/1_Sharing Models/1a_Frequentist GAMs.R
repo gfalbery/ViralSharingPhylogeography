@@ -9,7 +9,7 @@ if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata")
 
 library(mgcv); library(tidyverse); library(ggregplot)
 
-Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")[1]
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
 Covar <- c("s(Phylo, by = ordered(Gz))",
            "t2(Phylo, Space, by = ordered(!Gz))",

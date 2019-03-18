@@ -48,7 +48,7 @@ ggplot(m1, aes(Sp, Sp2)) + geom_tile(aes(fill = log10(Links+1))) +
 
 dev.off()
 
-
+OrderHostOrder <- unique(Panth1 %>% mutate(Sp = factor(Sp, levels = PhyloHostOrder)) %>% slice(order(Sp)) %>% dplyr::select(hOrder))
 
 IntHN = intersect(OrderHostOrder, FHN)
 

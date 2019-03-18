@@ -287,6 +287,119 @@ ggplot(DrawList[["VirusBinary"]]$Phylo,
   ggsave("SIFigures/GAMDataDraws_Phylo.jpeg", 
          units = "mm", width = 100, height = 100, dpi = 300)
 
+# Subnetwork model outputs ####
+
+# Phylo ####
+
+lapply(2:5, function(a){
+  
+  FitList[[a]] %>% 
+    filter(!is.na(SpaceQuantile)) %>%
+    ggplot(aes(Phylo, Fit, colour = SpaceQuantile)) + 
+    geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = SpaceQuantile), alpha = 0.2, colour = NA) +
+    geom_line(aes(group = as.factor(Space))) +
+    labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity", 
+         colour = "Overlap", fill = "Overlap",
+         title = Resps[a]) +
+    lims(x = c(0,1), y = c(0,1)) +
+    coord_fixed() +
+    scale_color_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+    scale_fill_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+    theme(legend.position = c(0.1, 0.8), legend.background = element_rect(colour = "dark grey")) +
+    geom_rug(data = DataList[[a]], inherit.aes = F, aes(x = Phylo), alpha = 0.01)
+  
+  
+}) %>% plot_grid(plotlist = .) %>%   
+  save_plot(filename = "SIFigures/SubModels_Phylo.jpeg", 
+            #units = "mm", width = 200, height = 200,
+            ncol = 2, # we're saving a grid plot of 2 columns
+            nrow = 2, # and 2 rows
+            # each individual subplot should have an aspect ratio of 1.3
+            base_aspect_ratio = 1)
+
+
+# Space ####
+
+lapply(2:5, function(a){
+  
+  FitList[[a]] %>% 
+    filter(!is.na(PhyloQuantile)) %>%
+    ggplot(aes(Space, Fit, colour = PhyloQuantile)) + 
+    geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = PhyloQuantile), alpha = 0.2, colour = NA) +
+    geom_line(aes(group = as.factor(Phylo))) +
+    labs(y = "Predicted Viral Sharing", x = "Geographic Overlap", 
+         colour = "Relatedness", fill = "Relatedness",
+         title = Resps[a]) +
+    lims(x = c(0,1), y = c(0,1)) +
+    coord_fixed() +
+    scale_color_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+    scale_fill_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+    theme(legend.position = c(0.1, 0.8), legend.background = element_rect(colour = "dark grey")) +
+    geom_rug(data = DataList[[a]], inherit.aes = F, aes(x = Space), alpha = 0.01)
+  
+}) %>% plot_grid(plotlist = .) %>%   
+  save_plot(filename = "SIFigures/SubModels_Space.jpeg", 
+            #units = "mm", width = 200, height = 200,
+            ncol = 2, # we're saving a grid plot of 2 columns
+            nrow = 2, # and 2 rows
+            # each individual subplot should have an aspect ratio of 1.3
+            base_aspect_ratio = 1)
+
+
+
+# Tensor 
+
+lapply(2:5, function(a){
+  
+  FitList[[a]] %>% 
+    filter(!Phylo == last(unique(Phylo)),
+           !Space == last(unique(Space))) %>%
+    ggplot(aes(Space, Phylo)) + 
+    geom_tile(aes(fill = Fit)) + 
+    labs(x = "Geographic Overlap", 
+         y = "Phylogenetic Similarity",
+         fill = "Estimate",
+         title = Resps[a]) +
+    #ggtitle("Tensor Field") +
+    lims(x = c(0,1), y = c(0,1)) +
+    coord_fixed() +
+    theme(legend.position = "bottom") +
+    scale_fill_continuous_sequential(palette = "Greens 2", cmax = 20, end = 1)
+  
+}) %>% plot_grid(plotlist = .) %>%   
+  save_plot(filename = "SIFigures/SubModels_Tensor.jpeg", 
+            #units = "mm", width = 200, height = 200,
+            ncol = 2, # we're saving a grid plot of 2 columns
+            nrow = 2, # and 2 rows
+            # each individual subplot should have an aspect ratio of 1.3
+            base_aspect_ratio = 1)
+
+
+
+lapply(2:5, function(a){
+  
+  DataList[[a]] %>% 
+    ggplot(aes(Space, Phylo)) + 
+    labs(x = "Geographic Overlap", 
+         y = "Phylogenetic Similarity",
+         title = Resps[a]) +
+    #ggtitle("Data Distribution") +
+    scale_fill_continuous_sequential(palette = "purp", begin = 0.2) +
+    lims(x = c(0,1), y = c(0,1)) +
+    coord_fixed() +
+    theme(legend.position = "bottom") +
+    geom_hex(aes(fill = stat(log(count))))
+  
+}) %>% plot_grid(plotlist = .) %>%   
+  save_plot(filename = "SIFigures/SubModels_Distributions.jpeg", 
+            #units = "mm", width = 200, height = 200,
+            ncol = 2, # we're saving a grid plot of 2 columns
+            nrow = 2, # and 2 rows
+            # each individual subplot should have an aspect ratio of 1.3
+            base_aspect_ratio = 1)
+
+
+
 # Data Description: observed tiles of space:phylo with virusbinary fill #####
 
 FinalHostMatrix %>%
