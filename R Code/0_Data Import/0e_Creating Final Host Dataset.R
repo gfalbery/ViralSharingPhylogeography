@@ -68,6 +68,8 @@ UpperHosts <- # Removing diagonals, as they're uninformative
 
 HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            Space = c(RangeAdj[FHN, FHN]),
+                           SpaceA = c(RangeAdjA[FHN, FHN]),
+                           SpaceB = c(RangeAdjB[FHN, FHN]),
                            Phylo = c(tSTMatrix[FHN, FHN]),
                            Sp = as.character(rep(FHN, each = length(FHN))),
                            Sp2 = as.character(rep(FHN, length(FHN)))
@@ -143,6 +145,8 @@ FHN <- levels(FinalHostMatrix$Sp)
 
 HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            Space = c(RangeAdj[FHN, FHN]),
+                           SpaceA = c(RangeAdjA[FHN, FHN]),
+                           SpaceB = c(RangeAdjB[FHN, FHN]),
                            Phylo = c(tSTMatrix[FHN, FHN]),
                            Sp = as.character(rep(FHN, each = length(FHN))),
                            Sp2 = as.character(rep(FHN, length(FHN)))
@@ -184,7 +188,9 @@ FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMa
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 
 FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2)) %>%
-  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo)))
+  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo))) %>%
+  mutate(SpaceMax = ifelse(SpaceA<SpaceB, SpaceA, SpaceB),
+         SpaceMin = ifelse(SpaceA>SpaceB, SpaceA, SpaceB))
 
 
 # Simulating on the full network ####

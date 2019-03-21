@@ -400,7 +400,7 @@ lapply(2:5, function(a){
 
 
 
-# Data Description: observed tiles of space:phylo with virusbinary fill #####
+ # Data Description: observed tiles of space:phylo with virusbinary fill #####
 
 FinalHostMatrix %>%
   mutate(SpaceQuantile = cut(Space, breaks = c(0:10)/10, include.lowest = T),
@@ -624,6 +624,18 @@ ggplot(ValidSummary, aes(log10(MeanRank), MeanCount1)) + geom_point() +
   geom_smooth(method = lm) +
   ggsave("SIFigures/Rank_Count.jpeg", units = "mm", height = 100, width = 100)
 
+# Correlations among host range and predictability ####
+
+ValidSummary %>% 
+  ggplot(aes(HostRangeMean, log10(MeanRank))) +
+  geom_point(aes(colour = vFamily)) + 
+  geom_smooth(colour = "black", fill = NA, method = lm) +
+  stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black", method = lm) +
+  scale_colour_discrete_sequential(palette = AlberPalettes[[2]]) + 
+  ggpubr::stat_cor(aes(x = 0.9, y = 3.2)) +
+  ggsave("SIFigures/HostRange_Predictability.jpeg", units = "mm", 
+         width = 200, height = 100, dpi = 300)
+
 # RNA Viruses are harder to predict ####
 
 BarGraph(ValidSummary, "vDNAoRNA", "MeanRank", text = "N") +
@@ -643,6 +655,26 @@ VirusCovar %>%
   arrange_ggplot2(ncol = 3)
 
 dev.off()
+
+# Taxonomic patterns of predictability ####
+
+BarGraph(ValidSummary, "vFamily", "MeanRank", text = "N", order = T)
+
+summarise(Rank = median(MeanRank),
+          SE = )
+
+Errordf <- ValidSummary %>% group_by(vFamily) %>% 
+  summarise(MedianRank = median(MeanRank),
+            sd = sd(MeanRank),
+            N = n()) %>% mutate(se = sd/(N^0.5)) %>%
+  slice(order(MedianRank))
+
+vFamilyOrder <- Errordf$vFamily
+
+ggplot(ValidSummary, aes(vFamily, log10(MeanRank))) + geom_sina() + 
+  scale_x_discrete(limits = vFamilyOrder) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggsave("SIFigures/VirusTaxonomy_PredictionSuccess.jpeg", units = "mm", width = 150, height = 100, dpi = 300)
 
 # Simple Presentation stuff ####
 

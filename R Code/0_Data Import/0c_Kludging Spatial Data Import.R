@@ -129,12 +129,16 @@ if(!file.exists("data/RangeOverlap.Rdata")){
   RangeB = matrix(rep(diag(RangeOverlap), each = nrow(RangeOverlap)), nrow(RangeOverlap))
   
   RangeAdj <- RangeOverlap/(RangeA + RangeB - RangeOverlap) # Weighted evenly
+  RangeAdjA <- RangeOverlap/(RangeA) # Weighted evenly
+  RangeAdjB <- RangeOverlap/(RangeB) # Weighted evenly
   
   save(RangeAdj, file = "data/RangeOverlap.Rdata")
+  save(RangeAdjA, file = "data/RangeOverlapA.Rdata")
+  save(RangeAdjB, file = "data/RangeOverlapB.Rdata")
   
   remove(MammalRanges, MammalRanges2)
   
-} else load("data/RangeOverlap.Rdata")
+} else load("data/RangeOverlap.Rdata"); load("data/RangeOverlapA.Rdata"); load("data/RangeOverlapB.Rdata")
 
 Hosts[Hosts$Sp%in%rownames(RangeAdj),"S.Greg1"] <- rowSums(RangeAdj[as.character(Hosts[Hosts$Sp%in%rownames(RangeAdj),"Sp"]),])
 
@@ -183,6 +187,59 @@ Hosts <- merge(Hosts, HostCentroids, all.x = T, by.x = "Sp", by.y = "Host")
 # Making Viral Associations and Polygons ####
 
 VirusAssocs <- apply(M, 1, function(a) names(a[a>0]))
+
+library(centiserve); library(tidyverse); library(GGally); library(igraph)
+
+human <- which(rownames(tFullSTMatrix) == "Homo_sapiens")
+
+nhCytBMatrix <- tFullSTMatrix[-human,-human] # Want this to be non-human host range 
+
+VirPhyloHostRangeMax <- sapply(VirusAssocs, function(a){
+  
+  if(length(a[a%in%rownames(nhCytBMatrix)])>0){
+    
+    b <- a[a%in%rownames(nhCytBMatrix)]
+    
+    if(length(b)>1){
+      max(nhCytBMatrix[b, b][upper.tri(nhCytBMatrix[b, b])])
+    } else 0
+  } else NA
+  
+})
+
+VirPhyloHostRangeMean <- sapply(VirusAssocs, function(a){
+  
+  if(length(a[a%in%rownames(nhCytBMatrix)])>0){
+    
+    b <- a[a%in%rownames(nhCytBMatrix)]
+    
+    if(length(b)>1){
+      mean(nhCytBMatrix[b, b][upper.tri(nhCytBMatrix[b, b])])
+    } else 0
+  } else NA
+  
+})
+
+VirPhyloHostRangeMedian <- sapply(VirusAssocs, function(a){
+  
+  if(length(a[a%in%rownames(nhCytBMatrix)])>0){
+    
+    b <- a[a%in%rownames(nhCytBMatrix)]
+    
+    if(length(b)>1){
+      median(nhCytBMatrix[b, b][upper.tri(nhCytBMatrix[b, b])])
+    } else 0
+  } else NA
+  
+})
+
+VirusHostRanges = data.frame(
+  Virus = names(VirusAssocs),
+  HostRangeMean = VirPhyloHostRangeMean,
+  HostRangeMax = VirPhyloHostRangeMax,
+  HostRangeMedian = VirPhyloHostRangeMedian
+)
+
 
 load("~/Albersnet/data/FullPolygons.Rdata")
 
