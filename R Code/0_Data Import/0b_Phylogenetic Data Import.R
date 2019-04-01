@@ -64,3 +64,6 @@ if(!file.exists("data/intermediate/FullSTMatrix.csv")){
   FullSTMatrix <- as.data.frame(cophenetic(STFull)) %>% as.matrix
   
 } else{ FullSTMatrix <- as.matrix(read.csv("data/intermediate/FullSTMatrix.csv", header = T)) }
+
+tFullSTMatrix <- 1 - (FullSTMatrix - min(FullSTMatrix))/max(FullSTMatrix)
+

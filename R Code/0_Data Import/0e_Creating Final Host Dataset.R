@@ -9,7 +9,7 @@ FinalHostNames <- reduce(list(
 
 FHN <- FinalHostNames; length(FHN)
 
-AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj1))
+AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj))
 AllMammals <- AllMammals[order(AllMammals)]
 AbsentHosts <- FHN[which(!FHN%in%AllMammals)]
 
@@ -68,8 +68,8 @@ UpperHosts <- # Removing diagonals, as they're uninformative
 
 HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            Space = c(RangeAdj[FHN, FHN]),
-                           SpaceA = c(RangeAdjA[FHN, FHN]),
-                           SpaceB = c(RangeAdjB[FHN, FHN]),
+                           #SpaceA = c(RangeAdjA[FHN, FHN]),
+                           #SpaceB = c(RangeAdjB[FHN, FHN]),
                            Phylo = c(tSTMatrix[FHN, FHN]),
                            Sp = as.character(rep(FHN, each = length(FHN))),
                            Sp2 = as.character(rep(FHN, length(FHN)))
@@ -114,15 +114,6 @@ FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 
-#FinalHostMatrix <- FinalHostMatrix %>% left_join(LongDiet, by = c("Sp","Sp2")) %>%
-#  mutate(DietSim = 1 - DietSim)
-
-#FinalHostMatrix <- FinalHostMatrix %>% left_join(EltonTraits[,c("Scientific","Carnivore")], by = c("Sp" = "Scientific"))
-#FinalHostMatrix <- FinalHostMatrix %>% left_join(EltonTraits[,c("Scientific","Carnivore")], by = c("Sp2" = "Scientific"),
-#                                                 suffix = c("",".Sp2"))
-
-#FinalHostMatrix$Eaten <- ifelse(FinalHostMatrix$Carnivore==FinalHostMatrix$Carnivore.Sp2,0,1)
-
 Remove1 <- FinalHostMatrix %>% group_by(Sp) %>% dplyr::summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp)
 Remove2 <- FinalHostMatrix %>% group_by(Sp2) %>% dplyr::summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp2)
 
@@ -145,8 +136,6 @@ FHN <- levels(FinalHostMatrix$Sp)
 
 HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            Space = c(RangeAdj[FHN, FHN]),
-                           SpaceA = c(RangeAdjA[FHN, FHN]),
-                           SpaceB = c(RangeAdjB[FHN, FHN]),
                            Phylo = c(tSTMatrix[FHN, FHN]),
                            Sp = as.character(rep(FHN, each = length(FHN))),
                            Sp2 = as.character(rep(FHN, length(FHN)))
@@ -155,9 +144,7 @@ HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
 HostMatrixdf$Sp <- as.character(HostMatrixdf$Sp)
 HostMatrixdf$Sp2 <- as.character(HostMatrixdf$Sp2)
 
-HostMatrixVar <- c("hOrder", "hFamily", "hDom", "hAllZACites", "hDiseaseZACites"
-                   #"LongMean", "LatMean")
-)
+HostMatrixVar <- c("hOrder", "hFamily", "hDom", "hAllZACites", "hDiseaseZACites")
 
 HostMatrixdf[,HostMatrixVar] <- Hosts[HostMatrixdf$Sp, HostMatrixVar]
 HostMatrixdf[,paste0(HostMatrixVar,".Sp2")] <- Hosts[HostMatrixdf$Sp2, HostMatrixVar]
@@ -174,8 +161,7 @@ HostMatrixdf$DomDom <- paste(HostMatrixdf$hDom, HostMatrixdf$hDom.Sp2)
 HostMatrixdf$DomDom <- ifelse(HostMatrixdf$DomDom == "domestic wild", "wild domestic", HostMatrixdf$DomDom) %>%
   factor(levels = c("wild wild", "domestic domestic", "wild domestic"))
 
-UpperHosts <- # Removing diagonals and 
-  which(upper.tri(HostAdj[FHN,FHN], diag = T))
+UpperHosts <- which(upper.tri(HostAdj[FHN,FHN], diag = T))
 
 FinalHostMatrix <- HostMatrixdf[-UpperHosts,]
 
@@ -188,10 +174,7 @@ FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMa
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 
 FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2)) %>%
-  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo))) %>%
-  mutate(SpaceMax = ifelse(SpaceA<SpaceB, SpaceA, SpaceB),
-         SpaceMin = ifelse(SpaceA>SpaceB, SpaceA, SpaceB))
-
+  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo)))
 
 # Simulating on the full network ####
 
@@ -218,14 +201,14 @@ Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
 
 NonEutherianSp <- Panth1[Panth1$hOrder%in%NonEutherians,"Sp"]
 
-AllMammals <- intersect(rownames(FullSTMatrix), rownames(FullRangeAdj1)) %>% setdiff(NonEutherianSp)
+AllMammals <- intersect(rownames(FullSTMatrix), rownames(FullRangeAdj)) %>% setdiff(NonEutherianSp)
 
 AllMammals <- sort(AllMammals)
 
 AllMammalMatrix <- data.frame(
   Sp = as.character(rep(AllMammals,each = length(AllMammals))),
   Sp2 = as.character(rep(AllMammals,length(AllMammals))),
-  Space = c(FullRangeAdj1[AllMammals,AllMammals]),
+  Space = c(FullRangeAdj[AllMammals,AllMammals]),
   Phylo = c(tFullSTMatrix[AllMammals,AllMammals])
 ) %>% 
   mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo)),

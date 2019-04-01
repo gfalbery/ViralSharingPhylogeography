@@ -77,7 +77,8 @@ ValidSummary <-  ValidSummary %>%
   mutate(LogRank = log10(MeanRank),
          LogHosts = log10(NHosts))
 
-Im1 <- INLAModelAdd("LogRank", 1, c(VirusCovar, "LogHosts", "HostRangeMean"), 
+Im1 <- INLAModelAdd("LogRank", 1, 
+                    c(VirusCovar, "LogHosts", "HostRangeMean"), 
                     Random = "vFamily", "iid", "gaussian", 
                     ValidSummary[!NARows(ValidSummary, c(VirusCovar, "LogHosts", "HostRangeMean", "LogRank")),])
 

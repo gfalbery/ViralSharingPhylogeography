@@ -191,7 +191,7 @@ PlotGrids %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>20
   geom_tile(aes(alpha = log(Density))) +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
   coord_fixed() +  
-  lims(x = c(80, 720)) +
+  #lims(x = c(80, 720)) +
   labs(x = "Longitude", y = "Latitude") +
   scale_colour_continuous_sequential(palette = AlberPalettes[2]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
@@ -203,7 +203,7 @@ PlotGrids %>% filter(Metric == "OutDegree")  %>% mutate(Degree = ifelse(Degree>1
   geom_tile(aes(alpha = log(Density))) +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
   coord_fixed() +  
-  lims(x = c(80, 720)) +
+  #lims(x = c(80, 720)) +
   labs(x = "Longitude", y = "Latitude") +
   scale_colour_continuous_sequential(palette = AlberPalettes[3]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[3]) +
@@ -632,7 +632,8 @@ ValidSummary %>%
   geom_smooth(colour = "black", fill = NA, method = lm) +
   stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black", method = lm) +
   scale_colour_discrete_sequential(palette = AlberPalettes[[2]]) + 
-  ggpubr::stat_cor(aes(x = 0.9, y = 3.2)) +
+  labs(x = "Average host phylogenetic similarity",
+       y = "log10(mean rank)") +
   ggsave("SIFigures/HostRange_Predictability.jpeg", units = "mm", 
          width = 200, height = 100, dpi = 300)
 

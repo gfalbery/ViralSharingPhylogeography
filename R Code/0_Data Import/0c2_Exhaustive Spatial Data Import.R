@@ -1,132 +1,212 @@
 # Creating exhaustive mammal spatial data ####
 
+# Rscript "R Code/Spatial.R"
+
 library(sf); library(fasterize); library(Matrix);library(ggplot2);
 library(ggregplot); library(raster); library(tidyverse); library(igraph); 
-library(maptools)
+library(maptools); library(SpRanger)
 
-# Importing/making ranges ####
+# Importing/making ranges ####]
 
-if(file.exists("data/FullMammalRanges.Rdata")) load("data/FullMammalRanges.Rdata") else{
+print("Mammal Ranges 1!")
+
+if(file.exists("~/LargeFiles/MammalRanges1.Rdata")) load("~/LargeFiles/MammalRanges1.Rdata") else{
   
-  mammal_shapes <- st_read("~/Albersnet shapefiles/TERRESTRIAL_MAMMALS (new)")
+  mammal_shapes <- st_read("~/ShapeFiles")
   
-  #mammal_shapes <- st_transform(mammal_shapes, 54009) # Mollweide projection 
   mammal_shapes <- st_transform(mammal_shapes, 
                                 "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection 
   
-  # Mollweide projection = +proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs
-  # This projection retains grid size as much as possible, but at the expense of shape
-  
   mammal_shapes$binomial = str_replace(mammal_shapes$binomial, " ", "_")
   mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
-  mammal_raster_full <- raster(mammal_shapes, res = 50000) # NB units differ from Mercator!
+  mammal_raster_full <- raster(mammal_shapes, res = 25000)
+  
+  print("Fasterising!")
   
   FullMammalRanges <- fasterize(mammal_shapes, mammal_raster_full, by = "binomial")
-  save(FullMammalRanges, file = "data/FullMammalRanges.Rdata")
+  save(FullMammalRanges, file = "~/LargeFiles/MammalRanges1.Rdata")
   
 }
 
 # Trying earlier dataset ####
 
-if(file.exists("data/FullMammalRanges2.Rdata")) load("data/FullMammalRanges2.Rdata") else{
+if(file.exists("~/LargeFiles/MammalRanges2.Rdata")) load("~/LargeFiles/MammalRanges2.Rdata") else{
   
-  mammal_shapes2 <- st_read("~/Albersnet shapefiles/Mammals_Terrestrial (old)")
+  print("Mammal Ranges 2!")
+  
+  mammal_shapes2 <- st_read("~/ShapeFiles2")
   mammal_shapes2 <- st_transform(mammal_shapes2, "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection
   
   mammal_shapes2$binomial = str_replace(mammal_shapes2$BINOMIAL, " ", "_")
   mammal_shapes2 <- mammal_shapes2[order(mammal_shapes2$binomial),]
-  mammal_shapes_red2 <- mammal_shapes2[!mammal_shapes2$binomial%in%names(FullMammalRanges),]
   
-  #mammal_raster_full2 <- raster(mammal_shapes2, res = 50000) # NB units differ from Mercator!
+  mammal_raster_full2 <- raster(mammal_shapes2, res = 25000) # NB units differ from Mercator!
   
-  FullMammalRanges2 <- fasterize(mammal_shapes_red2, mammal_raster_full2, by = "binomial")
+  print("Fasterising!")
   
-  save(FullMammalRanges2, file = "data/FullMammalRanges2.Rdata")
+  FullMammalRanges2 <- fasterize(mammal_shapes2, mammal_raster_full2, by = "binomial")
+  
+  save(FullMammalRanges2, file = "~/LargeFiles/MammalRanges2.Rdata")
   
 }
+
 
 # Converting these to meaningful values ####
 
-FullValuedf <- data.frame(getValues(FullMammalRanges))
-FullValuedf2 <- reshape2::melt(FullValuedf)
-FullValuedf2$x <- rep(1:FullMammalRanges[[1]]@ncols, FullMammalRanges[[1]]@nrows)
-FullValuedf2$y <- rep(FullMammalRanges[[1]]@nrows:1, each = FullMammalRanges[[1]]@ncols)
-
-FullValuedf3 <- data.frame(getValues(FullMammalRanges2))
-FullValuedf4 <- reshape2::melt(FullValuedf3)
-FullValuedf4$x <- rep(1:FullMammalRanges2[[1]]@ncols, FullMammalRanges2[[1]]@nrows)
-FullValuedf4$y <- rep(FullMammalRanges2[[1]]@nrows:1, each = FullMammalRanges2[[1]]@ncols)
-
-FullRangedf <- rbind(FullValuedf2[!is.na(FullValuedf2$value),],FullValuedf4[!is.na(FullValuedf4$value),]) # This is where a load of them were lost ####
-FullRangedf <- FullRangedf %>% 
-  dplyr::rename(Host = variable, Presence = value)
-
-FullRangedf$GridID <- with(FullRangedf, paste(x, y))
-
-Range0 <- levels(FullRangedf$Host)[which(table(FullRangedf$Host)==0)] # Hosts that have no spatial records??
-FullRangedf <- droplevels(FullRangedf) 
-FullRangedf <- FullRangedf[order(FullRangedf$Host),]
-
-# Could use igraph to project it into bipartite host-grid matrix
-# Or could do this bullshit
-
-FullRangeOverlap <- matrix(0, nrow = nlevels(FullRangedf$Host), ncol = nlevels(FullRangedf$Host))
-dimnames(FullRangeOverlap) <- list(levels(FullRangedf$Host),levels(FullRangedf$Host))
-
-for(x in levels(FullRangedf$Host)){
+if(file.exists("~/LargeFiles/FullRangedf.Rdata")){load("~/LargeFiles/FullRangedf.Rdata"); print("Loaded!") }else{
   
-  if(x == first(levels(FullRangedf$Host))) t1 <- Sys.time()
+  print("Converting to values!")
   
-  Grids <- FullRangedf[FullRangedf$Host==x,"GridID"]
-  SubFullRangedf <- FullRangedf[FullRangedf$GridID %in% Grids,]
+  if(file.exists("~/LargeFiles/FullValuedf1.Rdata")) load("~/LargeFiles/FullValuedf1.Rdata") else{
+    
+    FullValuedf <- data.frame(getValues(FullMammalRanges))
+    
+    print("Saving!")
+    
+    save(FullValuedf, file = "~/LargeFiles/FullValuedf1.Rdata")
+  }
   
-  FullRangeOverlap[x,] <- table(SubFullRangedf$Host)
+  if(file.exists("~/LargeFiles/OverList1.Rdata")) load("~/LargeFiles/OverList1.Rdata") else{
+    
+    print("Making Overlist 1!")
+    
+    OverList1 <- lapply(1:ncol(FullValuedf), function(a){
+      
+      print(names(FullValuedf)[a])
+      
+      data.frame(Species = as.character(names(FullValuedf)[a]),
+                 Presence = FullValuedf[,a],
+                 x = rep(1:FullMammalRanges[[1]]@ncols, FullMammalRanges[[1]]@nrows),
+                 y = rep(FullMammalRanges[[1]]@nrows:1, each = FullMammalRanges[[1]]@ncols)
+                 
+      ) %>% na.omit() %>% select(-Presence)
+      
+    })
+    
+    save(OverList1, file = "~/LargeFiles/OverList1.Rdata")
+  }
   
-  print(x)
+  print("Converting the second one to values!")
   
-  if(x == last(levels(FullRangedf$Host))) t2 <- Sys.time()
+  if(file.exists("~/LargeFiles/FullValuedf3.Rdata")) load("~/LargeFiles/FullValuedf3.Rdata") else{
+    
+    FullValuedf3 <- data.frame(getValues(FullMammalRanges2))
+    
+    print("Saving!")
+    
+    save(FullValuedf3, file = "~/LargeFiles/FullValuedf3.Rdata")
+  }
+  
+  if(file.exists("~/LargeFiles/OverList2.Rdata")) load("~/LargeFiles/OverList2.Rdata") else{
+    
+    print("Making Overlist 2!")
+    
+    OverList2 <- lapply(1:ncol(FullValuedf3), function(a){
+      
+      print(names(FullValuedf3)[a])
+      
+      data.frame(Species = as.character(names(FullValuedf3)[a]),
+                 Presence = FullValuedf3[,a],
+                 x = rep(1:FullMammalRanges2[[1]]@ncols, FullMammalRanges2[[1]]@nrows),
+                 y = rep(FullMammalRanges2[[1]]@nrows:1, each = FullMammalRanges2[[1]]@ncols)
+                 
+      ) %>% na.omit() %>% select(-Presence)
+      
+    })
+    
+    save(OverList2, file = "~/LargeFiles/OverList2.Rdata")
+    
+  }
   
 }
 
-FullRangeA = matrix(rep(diag(FullRangeOverlap), nrow(FullRangeOverlap)), nrow(FullRangeOverlap))
-FullRangeB = matrix(rep(diag(FullRangeOverlap), each = nrow(FullRangeOverlap)), nrow(FullRangeOverlap))
+print("Connecting grid dfs!")
 
-FullRangeAdj1 <- FullRangeOverlap/(FullRangeA + FullRangeB - FullRangeOverlap) # Weighted evenly
-FullRangeAdj2 <- FullRangeOverlap/(FullRangeA) # Asymmetrical
-
-save(FullRangeAdj1, file = "data/FullRangeOverlap.Rdata")
-
-FullRangeAdj1 <- PairsWisely(FullMammalRanges)
-
-# Making polygons for display ####
-
-FullPolygons <- lapply(levels(FullValuedf2$variable), function(x) {
+if(file.exists("~/LargeFiles/FullRangedf.Rdata")){load("~/LargeFiles/FullRangedf.Rdata"); print("Loaded!") }else{
   
-  if(!x%in%Range0){
+  FullRangedf <- rbind(OverList1 %>% bind_rows() %>% mutate(Pass = 1), OverList2 %>% bind_rows() %>% mutate(Pass = 2))
+  
+  FullRangedf <- FullRangedf %>% slice(order(Pass, Species))
+  
+  yDiff <- (FullRangedf %>% group_by(Pass) %>% summarise(Diff = max(y)))$Diff %>% diff
+  
+  FullRangedf <- FullRangedf %>% mutate(y = ifelse(Pass==1, y + yDiff, y))
+  
+  Pass1Sp <- FullRangedf %>% filter(Pass == 1)
+  Pass2Sp <- FullRangedf %>% filter(Pass == 2)
+  
+  SecondSp <- setdiff(Pass2Sp$Species, Pass1Sp$Species)
+  
+  FullRangedf <- FullRangedf %>% filter(Pass==1|Species %in% SecondSp)
+  
+  save(FullRangedf, file = "~/LargeFiles/FullRangedf.Rdata")
+  
+  print("Saved!")
+  
+}
+
+
+Pass1Sp <- FullRangedf %>% filter(Pass == 1)
+Pass2Sp <- FullRangedf %>% filter(Pass == 2)
+
+SecondSp <- setdiff(Pass2Sp$Species, Pass1Sp$Species)
+
+print("Making Polygons!")
+
+if(file.exists("data/FullPolygons.Rdata")) load("data/FullPolygons.Rdata") else {
+  
+  FullPolygons <- lapply(names(FullMammalRanges), function(x) {
+    
+    print(x)
     
     r <- FullMammalRanges[[x]] > -Inf
     
-    r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
-      mutate(Host = x) %>% return
-  }
+    if(!all(is.na(freq(r)[,1]))) r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% mutate(Host = x) %>% return
+    
+  }) %>% bind_rows() %>% mutate(Pass = 1)
   
-}) %>% bind_rows()
-
-FullPolygons2 <- lapply(levels(FullValuedf4$variable), function(x) {
-  
-  if(!x%in%Range0){
+  FullPolygons2 <- lapply(SecondSp, function(x) {
+    
+    print(x)
     
     r <- FullMammalRanges2[[x]] > -Inf
     
-    r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
-      mutate(Host = x) %>% return
+    if(!all(is.na(freq(r)[,1]))) r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% mutate(Host = x) %>% return
+    
+  }) %>% bind_rows() %>% mutate(Pass = 2)
+  
+  FullPolygons <- bind_rows(FullPolygons, FullPolygons2)
+  
+  save(FullPolygons, file = "data/FullPolygons.Rdata")
+  
+}
+
+print("Getting Range Overlap!")
+
+if(file.exists("data/FullRangeOverlap.Rdata")) load("data/FullRangeOverlap.Rdata") else{
+  
+  EXT <- extent(FullMammalRanges2)
+  
+  FullMammalRangesb <- setExtent(FullMammalRanges, EXT, keepres = T)
+  FullMammalRanges2b <- raster::subset(FullMammalRanges2, which(names(FullMammalRanges2)%in%SecondSp))
+  
+  MammalStack <- FullMammalRangesb
+  
+  for(x in names(FullMammalRanges2b)){
+    
+    print(x)  
+    MammalStack <- raster::addLayer(MammalStack, FullMammalRanges2b[[x]])
+    
   }
   
-}) %>% bind_rows()
+  FullRangeAdj <- PairsWisely(MammalStack)
+  
+  save(FullRangeAdj, file = "data/FullRangeOverlap.Rdata")
+  
+}
 
-FullPolygons <- bind_rows(FullPolygons, FullPolygons2)
+save(MammalStack, file = "data/MammalStack.Rdata")
 
-save(FullPolygons, file = "data/FullPolygons.Rdata")
+remove(FullMammalRanges, FullMammalRanges2, MammalStack)
 
 detach(package:raster)
-
