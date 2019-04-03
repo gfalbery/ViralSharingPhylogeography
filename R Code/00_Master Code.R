@@ -2,8 +2,6 @@
 
 library(dplyr)
 
-setwd("/home/gfalbery/Albersnet")
-
 rm(list = ls())
 
 # Running data setup scripts ####
@@ -16,6 +14,7 @@ source(paste0(CodeRoot,"/","0a_EHA Data Import.R"))
 print("Phylo")
 source(paste0(CodeRoot,"/","0b_Phylogenetic Data Import.R" ))
 print("Space")
+source(paste0(CodeRoot,"/","0c2_Exhaustive Spatial Data Import.R"))
 source(paste0(CodeRoot,"/","0c_Kludging Spatial Data Import.R"))
 #print("Ecology")
 #source(paste0(CodeRoot,"/","0d_Ecological Data Import.R"))

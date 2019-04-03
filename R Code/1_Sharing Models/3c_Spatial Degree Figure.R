@@ -9,14 +9,13 @@ load("Output Files/Panth1.Rdata")
 
 if(file.exists("Output Files/FullRangedf.Rdata")) load("Output Files/FullRangedf.Rdata") else{
   print("Having to make the data frame ugh")
-  load("~/Albersnet/data/FullMammalRanges.Rdata")
+  load("data/MammalStack.Rdata")
   
-  FullValuedf <- data.frame(getValues(FullMammalRanges)); detach(package:raster)
+  FullValuedf <- data.frame(getValues(MammalStack))
+  detach(package:raster)
   FullValuedf2 <- reshape2::melt(FullValuedf)
   FullValuedf2$x <- rep(1:FullMammalRanges[[1]]@ncols, FullMammalRanges[[1]]@nrows)
   FullValuedf2$y <- rep(FullMammalRanges[[1]]@nrows:1, each = FullMammalRanges[[1]]@ncols)
-  
-  detach(package:raster)
   
   FullRangedf <- FullValuedf2 %>% 
     filter(!is.na(value)) %>% droplevels %>%

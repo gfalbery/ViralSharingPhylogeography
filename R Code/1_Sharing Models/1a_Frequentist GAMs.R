@@ -21,7 +21,7 @@ BAMList <- DataList <- PPList <- list()
 
 r = 1
 
-for(r in 1:length(Resps)){
+for(r in 1:length(Resps[1])){
   
   print(Resps[r])
   
@@ -43,7 +43,7 @@ for(r in 1:length(Resps)){
   DataList[[Resps[[r]]]]$Domestic <- ifelse(rowSums(cbind(2- DataList[[Resps[r]]]$hDom %>% as.factor %>% as.numeric,
                                                           2- DataList[[Resps[r]]]$hDom.Sp2 %>% as.factor %>% as.numeric))>0,1,0)
   
-  DataList[[Resps[[r]]]]$Space <- DataList[[Resps[[r]]]]$SpaceMin
+  # DataList[[Resps[[r]]]]$Space <- DataList[[Resps[[r]]]]$SpaceMin
   # DataList[[Resps[[r]]]]$Space <- DataList[[Resps[[r]]]]$SpaceMax
   
   PPList[[Resps[r]]] <- list(Spp = list(rank = nlevels(DataList[[Resps[r]]]$Sp), 

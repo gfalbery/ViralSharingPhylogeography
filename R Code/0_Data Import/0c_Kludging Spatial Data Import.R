@@ -7,27 +7,6 @@ library(sf); library(fasterize); library(Matrix);library(ggplot2);
 library(ggregplot); library(raster); library(tidyverse); library(igraph); 
 library(maptools); library(SpRanger)
 
-if(file.exists("data/MammalRanges.Rdata")) load(file = "data/MammalRanges.Rdata") else{
-  
-  mammal_shapes <- st_read("~/ShapeFiles")
-  
-  mammal_shapes <- st_transform(mammal_shapes, 
-                                "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection 
-  
-  mammal_shapes$binomial = str_replace(mammal_shapes$binomial, " ", "_")
-  mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
-  mammal_shapes_red <- mammal_shapes[mammal_shapes$binomial%in%unique(Hosts$Sp),]
-  mammal_raster <- raster(mammal_shapes_red, res = 25000) # NB units differ from Mercator!
-  
-  MammalRanges <- fasterize(mammal_shapes_red, mammal_raster, by = "binomial")
-  save(MammalRanges, file = "data/MammalRanges.Rdata")
-  
-  remove("mammal_raster", "mammal_shapes", "mammal_shapes_red")
-  
-}
-
-LeftOut <- Hosts[!Hosts$Sp%in%names(MammalRanges),"Sp"]
-
 if(file.exists("Output Files/WorldMap.Rdata")) load("Output Files/WorldMap.Rdata") else{
   
   data("wrld_simpl")
@@ -54,45 +33,9 @@ if(file.exists("Output Files/WorldMap.Rdata")) load("Output Files/WorldMap.Rdata
   
 }
 
-if(!file.exists("data/RangeOverlap.Rdata")){
-  
-  RangeAdj <- PairsWisely(MammalRanges)
-  
-  save(RangeAdj, file = "data/RangeOverlap.Rdata")
-  
-  remove(MammalRanges)
-  
-} else load("data/RangeOverlap.Rdata")
+RangeHosts <- intersect(Hosts$Sp, rownames(FullRangeAdj))
 
-Hosts[Hosts$Sp%in%rownames(RangeAdj),"S.Greg1"] <- rowSums(RangeAdj[as.character(Hosts[Hosts$Sp%in%rownames(RangeAdj),"Sp"]),])
-
-# Making polygons for display ####
-
-if(file.exists("data/HostPolygons.Rdata")) load("data/HostPolygons.Rdata") else{
-  
-  HostPolygons <- lapply(levels(Valuedf2$variable), function(x) {
-    
-    if(!x%in%Range0){
-      
-      r <- MammalRanges[[x]] > -Inf
-      
-      r %>% rasterToPolygons(dissolve=TRUE) %>% fortify %>% 
-        mutate(Host = x) %>% return
-    }
-    
-  }) %>% bind_rows()
-  
-  save(HostPolygons, file = "data/HostPolygons.Rdata")
-  
-}
-
-# Deriving Host Centroids and Merging ####
-
-HostCentroids <- data.frame(LongMean = with(HostPolygons, tapply(long, Host, mean)),
-                            LatMean = with(HostPolygons, tapply(lat, Host, mean)),
-                            Host = unique(HostPolygons$Host))
-
-Hosts <- merge(Hosts, HostCentroids, all.x = T, by.x = "Sp", by.y = "Host")
+RangeAdj <- FullRangeAdj[RangeHosts,RangeHosts]
 
 # Viral spatial data adapted from spatial data for their hosts ####
 
@@ -152,13 +95,6 @@ VirusHostRanges = data.frame(
   HostRangeMedian = VirPhyloHostRangeMedian
 )
 
-
-load("~/Albersnet/data/FullPolygons.Rdata")
-
 CodeRoot <- "R Code/0_Data Import"
-
-if(file.exists("~/Albersnet/data/FullRangeOverlap.Rdata")) load("~/Albersnet/data/FullRangeOverlap.Rdata") else{
-  source(paste0(CodeRoot,"/","0c2_Exhaustive Spatial Data Import.R"))
-}
 
 detach(package:raster)
