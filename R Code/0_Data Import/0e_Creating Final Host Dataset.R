@@ -2,6 +2,8 @@
 
 # Replacing absent names in the full ST matrix ####
 
+RangeAdj <- IcebergAdj
+
 FinalHostNames <- reduce(list(
   rownames(RangeAdj), 
   colnames(STMatrix),
@@ -53,7 +55,13 @@ library(tidyverse)
 rownames(Hosts) = Hosts$Sp
 
 tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
-tSTMatrix <- 1 - (STMatrix - min(STMatrix))/max(STMatrix)
+
+
+tFullSTMatrix <- 1 - (FullSTMatrix[!rownames(FullSTMatrix)%in%NonEutherianSp,!rownames(FullSTMatrix)%in%NonEutherianSp] - 
+                        min(FullSTMatrix[!rownames(FullSTMatrix)%in%NonEutherianSp,!rownames(FullSTMatrix)%in%NonEutherianSp]))/
+  max(FullSTMatrix[!rownames(FullSTMatrix)%in%NonEutherianSp,!rownames(FullSTMatrix)%in%NonEutherianSp])
+
+tSTMatrix <- tFullSTMatrix
 
 FinalHostNames <- reduce(list(
   rownames(RangeAdj), 
@@ -173,8 +181,7 @@ FinalHostMatrix$Gz <- as.numeric(FinalHostMatrix$Space==0)
 FinalHostMatrix$Sp <- factor(FinalHostMatrix$Sp, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 FinalHostMatrix$Sp2 <- factor(FinalHostMatrix$Sp2, levels = sort(union(FinalHostMatrix$Sp,FinalHostMatrix$Sp2)))
 
-FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2)) %>%
-  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo)))
+FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2))
 
 # Simulating on the full network ####
 
@@ -183,6 +190,8 @@ FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2)) %>%
 #source("R Code/00_Master Code.R")
 
 library(tidyverse); library(Matrix); library(parallel); library(mgcv)
+
+FullRangeAdj <- IcebergAdj
 
 tFullSTMatrix <- 1 - (FullSTMatrix - min(FullSTMatrix))/max(FullSTMatrix)
 
@@ -211,7 +220,7 @@ AllMammalMatrix <- data.frame(
   Space = c(FullRangeAdj[AllMammals,AllMammals]),
   Phylo = c(tFullSTMatrix[AllMammals,AllMammals])
 ) %>% 
-  mutate(Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo)),
+  mutate(# Phylo = (Phylo - min(Phylo))/max(Phylo - min(Phylo)),
          Gz = as.numeric(Space==0)) %>% droplevels
 
 UpperMammals <- which(upper.tri(FullSTMatrix[AllMammals, AllMammals], diag = T))

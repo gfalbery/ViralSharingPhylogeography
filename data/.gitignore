@@ -11,3 +11,7 @@ OldFullPolygons.Rdata
 OldMammalRanges1.Rdata
 RangeOverlap.Rdata
 RangeOverlapB.Rdata
+
+MammalStackOverlap.Rdata
+MammalStackPolygons.Rdata
+MammalStackValues.Rdata

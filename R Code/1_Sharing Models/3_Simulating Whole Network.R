@@ -10,7 +10,6 @@ library(MCMCglmm); library(tidyverse); library(Matrix); library(parallel); libra
 N = nrow(AllMammaldf)
 
 load("~/Albersnet/Output Files/BAMList.Rdata")
-load("~/Albersnet/Output Files/BAMList.Rdata")
 
 SpCoefNames <- names(BAMList[[1]]$coef)[substr(names(BAMList[[1]]$coef),1,5)=="SppSp"]
 SpCoef <- BAMList[[1]]$coef[SpCoefNames]

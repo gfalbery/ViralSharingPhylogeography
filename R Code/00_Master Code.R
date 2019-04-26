@@ -3,6 +3,7 @@
 library(dplyr)
 
 rm(list = ls())
+# rm(list = setdiff(ls(), "IcebergRaster"))
 
 # Running data setup scripts ####
 

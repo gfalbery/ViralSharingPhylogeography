@@ -179,7 +179,7 @@ PlotGrids %>% filter(Metric == "AllPredDegree") %>% mutate(Degree = ifelse(Degre
   geom_tile(aes(alpha = log(Density))) +
   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
   coord_fixed() +  
-  lims(x = c(80, 720)) +
+  #lims(x = c(80, 720)) +
   labs(x = "Longitude", y = "Latitude") +
   scale_colour_continuous_sequential(palette = AlberPalettes[1]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
