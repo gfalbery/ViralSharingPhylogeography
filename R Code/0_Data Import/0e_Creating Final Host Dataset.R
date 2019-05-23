@@ -2,14 +2,29 @@
 
 # Replacing absent names in the full ST matrix ####
 
-RangeAdj <- IcebergAdj
+# RangeAdj <- IcebergAdjList$Currents
+
+NonEutherians <- c("Diprotodontia",
+                   "Dasyuromorphia",
+                   "Paucituberculata",
+                   "Didelphimorphia",
+                   "Microbiotheria",
+                   "Peramelemorphia", 
+                   "Notoryctemorphia",
+                   "Monotremata")
+
+Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
+  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order)
+Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
+
+NonEutherianSp <- Panth1[Panth1$hOrder%in%NonEutherians,"Sp"]
 
 FinalHostNames <- reduce(list(
   rownames(RangeAdj), 
-  colnames(STMatrix),
-  rownames(HostAdj)), intersect)
+  colnames(FullSTMatrix),
+  rownames(HostAdj)), intersect) 
 
-FHN <- FinalHostNames; length(FHN)
+FHN <- FinalHostNames %>% setdiff(NonEutherianSp); length(FHN)
 
 AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj))
 AllMammals <- AllMammals[order(AllMammals)]
@@ -46,6 +61,21 @@ names(NameReplace) <- AbsentHosts
 
 rownames(FullSTMatrix) <- colnames(FullSTMatrix) <- sapply(rownames(FullSTMatrix), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
 
+NonEutherians <- c("Diprotodontia",
+                   "Dasyuromorphia",
+                   "Paucituberculata",
+                   "Didelphimorphia",
+                   "Microbiotheria",
+                   "Peramelemorphia", 
+                   "Notoryctemorphia",
+                   "Monotremata")
+
+Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
+  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order, hFamily = MSW05_Family)
+Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
+
+NonEutherianSp <- Panth1[Panth1$hOrder%in%NonEutherians,"Sp"]
+
 #rownames(VD) <- colnames(VD) <- sapply(rownames(VD), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
 
 # Going Ahead ####
@@ -53,9 +83,6 @@ rownames(FullSTMatrix) <- colnames(FullSTMatrix) <- sapply(rownames(FullSTMatrix
 library(tidyverse)
 
 rownames(Hosts) = Hosts$Sp
-
-tCytBMatrix <- 1 - (CytBMatrix - min(CytBMatrix))/max(CytBMatrix)
-
 
 tFullSTMatrix <- 1 - (FullSTMatrix[!rownames(FullSTMatrix)%in%NonEutherianSp,!rownames(FullSTMatrix)%in%NonEutherianSp] - 
                         min(FullSTMatrix[!rownames(FullSTMatrix)%in%NonEutherianSp,!rownames(FullSTMatrix)%in%NonEutherianSp]))/
@@ -65,9 +92,11 @@ tSTMatrix <- tFullSTMatrix
 
 FinalHostNames <- reduce(list(
   rownames(RangeAdj), 
-  colnames(STMatrix),
+  colnames(tFullSTMatrix),
   #colnames(VD),
   rownames(HostAdj)), intersect)
+
+FinalHostNames %>% setdiff(NonEutherianSp)
 
 FHN <- FinalHostNames; length(FHN)
 
@@ -78,7 +107,7 @@ HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            Space = c(RangeAdj[FHN, FHN]),
                            #SpaceA = c(RangeAdjA[FHN, FHN]),
                            #SpaceB = c(RangeAdjB[FHN, FHN]),
-                           Phylo = c(tSTMatrix[FHN, FHN]),
+                           Phylo = c(tFullSTMatrix[FHN, FHN]),
                            Sp = as.character(rep(FHN, each = length(FHN))),
                            Sp2 = as.character(rep(FHN, length(FHN)))
 )
@@ -122,14 +151,14 @@ FinalHostMatrix$Phylo <- FinalHostMatrix$Phylo
 FinalHostMatrix$MinDCites <- log(FinalHostMatrix$MinDCites + 1)
 FinalHostMatrix$VirusBinary <- ifelse(FinalHostMatrix$Virus>0, 1, 0)
 
-Remove1 <- FinalHostMatrix %>% group_by(Sp) %>% dplyr::summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp)
-Remove2 <- FinalHostMatrix %>% group_by(Sp2) %>% dplyr::summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% select(Sp2)
+Remove1 <- FinalHostMatrix %>% group_by(Sp) %>% dplyr::summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% dplyr::select(Sp)
+Remove2 <- FinalHostMatrix %>% group_by(Sp2) %>% dplyr::summarise(Mean = mean(VirusBinary)) %>% slice(order(Mean)) %>% filter(Mean==0) %>% dplyr::select(Sp2)
 
-Remove3 <- which(table(c((FinalHostMatrix %>% filter(Phylo < 0.25) %>% select(Sp, Sp2))$Sp %>% as.character(),
-                         (FinalHostMatrix %>% filter(Phylo < 0.25) %>% select(Sp, Sp2))$Sp2 %>% as.character()))>20) %>% 
+Remove3 <- which(table(c((FinalHostMatrix %>% filter(Phylo < 0.25) %>% dplyr::select(Sp, Sp2))$Sp %>% as.character(),
+                         (FinalHostMatrix %>% filter(Phylo < 0.25) %>% dplyr::select(Sp, Sp2))$Sp2 %>% as.character()))>20) %>% 
   names
 
-RemoveSp <- union(intersect(Remove1$Sp, Remove2$Sp2), Remove3)
+RemoveSp <- intersect(Remove1$Sp, Remove2$Sp2)
 
 FinalHostMatrix <- FinalHostMatrix %>% filter(!Sp%in%RemoveSp&!Sp2%in%RemoveSp)
 
@@ -144,7 +173,7 @@ FHN <- levels(FinalHostMatrix$Sp)
 
 HostMatrixdf <- data.frame(Virus = c(HostAdj[FHN, FHN]),
                            Space = c(RangeAdj[FHN, FHN]),
-                           Phylo = c(tSTMatrix[FHN, FHN]),
+                           Phylo = c(tFullSTMatrix[FHN, FHN]),
                            Sp = as.character(rep(FHN, each = length(FHN))),
                            Sp2 = as.character(rep(FHN, length(FHN)))
 )
@@ -191,24 +220,7 @@ FinalHostMatrix <- FinalHostMatrix %>% slice(order(Sp,Sp2))
 
 library(tidyverse); library(Matrix); library(parallel); library(mgcv)
 
-FullRangeAdj <- IcebergAdj
-
-tFullSTMatrix <- 1 - (FullSTMatrix - min(FullSTMatrix))/max(FullSTMatrix)
-
-NonEutherians <- c("Diprotodontia",
-                   "Dasyuromorphia",
-                   "Paucituberculata",
-                   "Didelphimorphia",
-                   "Microbiotheria",
-                   "Peramelemorphia", 
-                   "Notoryctemorphia",
-                   "Monotremata")
-
-Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
-  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order)
-Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
-
-NonEutherianSp <- Panth1[Panth1$hOrder%in%NonEutherians,"Sp"]
+# FullRangeAdj <- IcebergAdjList$Currents
 
 AllMammals <- intersect(rownames(FullSTMatrix), rownames(FullRangeAdj)) %>% setdiff(NonEutherianSp)
 

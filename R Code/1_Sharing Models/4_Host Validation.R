@@ -83,4 +83,14 @@ Im1 <- INLAModelAdd("LogRank", 1,
                     ValidSummary[!NARows(ValidSummary, c(VirusCovar, "LogHosts", "HostRangeMean", "LogRank")),])
 
 
+# Null predictions using only space and phylogeny ####
 
+GAMValidSpace <- lapply(VirusAssocs, 
+                        function(a){
+                          NetworkValidate(a, FullRangeAdj[rownames(AllSums), rownames(AllSums)])
+                        })
+
+GAMValidPhylo <- lapply(VirusAssocs, 
+                        function(a){
+                          NetworkValidate(a, tFullSTMatrix[rownames(AllSums), rownames(AllSums)])
+                        })

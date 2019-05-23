@@ -50,7 +50,7 @@ AssocsTraits <- merge(AssocsTraits, HostTraits, by.x = "Host", by.y = "hHostName
 AssocsTraits$Domestic <- ifelse(AssocsTraits$Host%in%Domestics,1,0)
 AssocsTraits$Wildlife <- ifelse(AssocsTraits$Host%in%Wildlife,1,0)
 
-ZoonoticViruses <- AssocsBase %>% filter(Host == "Homo_sapiens") %>% select(Virus)
+ZoonoticViruses <- AssocsBase %>% filter(Host == "Homo_sapiens") %>% dplyr::select(Virus)
 
 Hosts <- Hosts %>% 
   mutate(
