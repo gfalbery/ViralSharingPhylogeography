@@ -36,7 +36,7 @@ if(file.exists("Output Files/AllPredictions1b.Rdata")) load("Output Files/AllPre
                 newdata = AllMammaldf[(Divisions[i-1]+1):Divisions[i],], 
                 type = "terms",
                 exclude = "Spp")
-  })
+  }, mc.cores = 10)
   
   save(AllPredictions1b, file = "Output Files/AllPredictions1b.Rdata")
   

@@ -6,6 +6,14 @@ library(sf); library(fasterize); library(Matrix);library(ggplot2);
 library(ggregplot); library(raster); library(tidyverse); library(igraph); 
 library(maptools); library(SpRanger)
 
+AreaRaster <- raster("Iceberg Input Files/LandArea.asc")
+
+blank <- matrix(0,360*2,720*2) # proper resolution
+# blank <- matrix(0, 360, 720) # quick and dirty resolution
+blank <- raster(blank)
+extent(blank) <- c(-180,180,-90,90)
+projection(blank) <- CRS("+proj=longlat +datum=WGS84")
+
 # Importing/making ranges ####
 
 if(file.exists("data/FullRangeOverlap.Rdata")){ load("data/FullRangeOverlap.Rdata"); load("data/FullPolygons.Rdata") }else{
@@ -16,16 +24,26 @@ if(file.exists("data/FullRangeOverlap.Rdata")){ load("data/FullRangeOverlap.Rdat
     
     mammal_shapes <- st_read("~/ShapeFiles")
     
-    mammal_shapes <- st_transform(mammal_shapes, 
-                                  "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection 
+    Transform = T
+    
+    if(Transform){
+      
+      mammal_shapes <- st_transform(mammal_shapes, 
+                                    "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection 
+    } 
     
     mammal_shapes$binomial = str_replace(mammal_shapes$binomial, " ", "_")
     mammal_shapes <- mammal_shapes[order(mammal_shapes$binomial),]
-    mammal_raster_full <- raster(mammal_shapes, res = 25000)
+    mammal_raster_full <- raster(mammal_shapes, res = 0.25)
     
     print("Fasterising!")
     
     FullMammalRanges <- fasterize(mammal_shapes, mammal_raster_full, by = "binomial")
+    
+    if(!Transform) FullMammalRanges <- FullMammalRanges*AreaRaster
+    
+    names(FullMammalRanges) <- unique(mammal_shapes$binomial)
+    
     save(FullMammalRanges, file = "~/LargeFiles/MammalRanges1.Rdata")
     
   }
@@ -37,21 +55,31 @@ if(file.exists("data/FullRangeOverlap.Rdata")){ load("data/FullRangeOverlap.Rdat
     print("Mammal Ranges 2!")
     
     mammal_shapes2 <- st_read("~/ShapeFiles2")
-    mammal_shapes2 <- st_transform(mammal_shapes2, "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection
+    
+    if(Transform){
+      mammal_shapes2 <- st_transform(mammal_shapes2, "+proj=moll +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs") # Mollweide projection
+    }
     
     mammal_shapes2$binomial = str_replace(mammal_shapes2$BINOMIAL, " ", "_")
     mammal_shapes2 <- mammal_shapes2[order(mammal_shapes2$binomial),]
     
-    mammal_raster_full2 <- raster(mammal_shapes2, res = 25000) # NB units differ from Mercator!
+    mammal_raster_full2 <- raster(mammal_shapes2, res = 0.25) # NB units differ from Mercator!
     
     print("Fasterising!")
     
     FullMammalRanges2 <- fasterize(mammal_shapes2, mammal_raster_full2, by = "binomial")
     
+    if(!Transform){
+      
+      FullMammalRanges2 <- FullMammalRanges2*AreaRaster
+      
+    }
+    
+    names(FullMammalRanges2) <- unique(mammal_shapes2$binomial)
+    
     save(FullMammalRanges2, file = "~/LargeFiles/MammalRanges2.Rdata")
     
   }
-  
   
   # Converting these to meaningful values ####
   
@@ -147,7 +175,6 @@ if(file.exists("data/FullRangeOverlap.Rdata")){ load("data/FullRangeOverlap.Rdat
     
   }
   
-  
   Pass1Sp <- names(FullMammalRanges)
   Pass2Sp <- names(FullMammalRanges2)
   
@@ -194,29 +221,30 @@ if(file.exists("data/FullRangeOverlap.Rdata")){ load("data/FullRangeOverlap.Rdat
     
     MammalStack <- FullMammalRangesb
     
-    N1 = length(values(MammalStack[[1]]))
+    MammalStack <- lapply(names(FullMammalRanges), function(a){
+      print(a)
+      FullMammalRanges[[a]] %>% resample(blank, method = 'ngb')
+    })
     
-    for(x in names(FullMammalRangesb)){
-      
-      print(x)  
-      values(MammalStack[[x]])[1:N1] <- values(FullMammalRanges[[x]])
-      
-    }
+    MammalStack2 <- lapply(SecondSp, function(a){
+      print(a)
+      FullMammalRanges2[[a]] %>% resample(blank, method = 'ngb')
+    })
     
-    for(x in names(FullMammalRanges2b)){
-      
-      print(x)  
-      MammalStack <- raster::addLayer(MammalStack, FullMammalRanges2b[[x]])
-      
-    }
+    names(MammalStack2) <- SecondSp
     
-    FullRangeAdj <- PairsWisely(MammalStack)
+    MammalStackFull <- append(MammalStack, MammalStack2)
+    names(MammalStackFull) <- c(Pass1Sp, SecondSp)
+    
+    MammalStackFull <- MammalStackFull[sort(names(MammalStackFull))]
+    
+    FullRangeAdj <- PairsWisely(MammalStackFull, Area = T)
     
     save(FullRangeAdj, file = "data/FullRangeOverlap.Rdata")
     
   }
   
-  save(MammalStack, file = "data/MammalStack.Rdata")
+  save(MammalStackFull, file = "data/MammalStack.Rdata")
   
   detach(package:raster)
   remove(FullMammalRanges, FullMammalRanges2, MammalStack)

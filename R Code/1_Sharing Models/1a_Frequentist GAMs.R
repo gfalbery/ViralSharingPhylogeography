@@ -3,9 +3,9 @@
 
 # Rscript "R Code/1_Sharing Models/1a_Frequentist GAMs.R"
 
-#if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else{
+if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else{
   source("R Code/00_Master Code.R")
-#}
+}
 
 library(mgcv); library(tidyverse); library(ggregplot)
 

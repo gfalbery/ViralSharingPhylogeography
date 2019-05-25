@@ -78,9 +78,11 @@ EIDSpecies <- read.csv("data/EID/SpeciesInteractions_EID2.csv", header = T)
 
 #EIDSpecies #<- EIDSpecies %>% filter(Sequences.count>0)
 
-EIDSpecies <- EIDSpecies %>% mutate(Carrier = str_replace(Carrier, " ", "_"))
+EIDSpecies <- EIDSpecies %>% mutate(Carrier = str_replace(Carrier, " ", "_"),
+                                    Cargo = str_replace(Cargo, " ", "_"))
 
 substr(EIDSpecies$Carrier,1,1) = toupper(substr(EIDSpecies$Carrier,1,1))
+substr(EIDSpecies$Cargo,1,1) = toupper(substr(EIDSpecies$Cargo,1,1))
 
 Panth1 <- Panth1 %>% mutate(Obs = ifelse(Sp %in% FHN, 1, 0),
                             ZoonoticHost = ifelse(Sp %in% Hosts[Hosts$hZoonosisCount>0,"Sp"], 1, 0)) %>%
@@ -93,4 +95,37 @@ save(Panth1, file = "Output Files/Panth1.Rdata")
 scale_this <- function(x){
   (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)
 }
+
+# Making EID sharing network ####
+
+AssocsEID <- EIDSpecies[EIDSpecies$Cargo.classification == "Virus"&EIDSpecies$Carrier%in%AllMammals,c("Cargo", "Carrier")] %>%
+  droplevels %>%
+  slice(order(Carrier))
+
+m <- table(AssocsEID)
+M <- as.matrix(m)
+
+bipgraph <- graph.incidence(M, weighted = NULL)
+
+EIDgraph <- bipartite.projection(bipgraph)$proj2
+
+EIDAdj <- as.matrix(get.adjacency(EIDgraph, attr = "weight"))
+diag(EIDAdj) <- table(AssocsEID$Carrier)
+Remove <- which(rowSums(EIDAdj)==diag(EIDAdj))
+EIDAdj <- EIDAdj[-Remove,-Remove]
+
+EIDAdj[EIDAdj>0] <- 1
+
+EIDMammals <- intersect(AllMammals, rownames(EIDAdj))
+
+EIDCordf <- data.frame(
+  EID = c(EIDAdj[EIDMammals,EIDMammals][lower.tri(EIDAdj[EIDMammals,EIDMammals])]),
+  PredNetwork = c(AllSums[EIDMammals,EIDMammals][lower.tri(EIDAdj[EIDMammals,EIDMammals])])
+) %>% mutate(EIDConnected = as.factor(as.numeric(EID == 1)))
+
+EIDCordf[,c("Sp","Sp2")] <- expand.grid(EIDMammals, EIDMammals)[lower.tri(EIDAdj[EIDMammals,EIDMammals])]
+
+SinaPlot(EIDCordf, "EIDConnected", "PredNetwork")
+
+
 

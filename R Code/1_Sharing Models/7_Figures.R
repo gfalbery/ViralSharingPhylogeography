@@ -555,6 +555,14 @@ Panth1 %>% group_by(hOrder) %>%
   scale_colour_manual(values = c("grey", AlberColours[[2]], AlberColours[[1]], AlberColours[[3]])) +
   ggsave("SIFigures/ObservedRodentCentrality.jpeg", units = "mm", height = 100, width = 150)
 
+# Species that share in EID had higher sharing probability in our networks ####
+
+SinaGraph(EIDCordf, "EIDConnected", "PredNetwork") +
+  scale_colour_manual(values = c(AlberColours[[1]], AlberColours[[2]])) +
+  scale_alpha_manual(values = c(0.2,0.2)) +
+  theme(legend.position = "none") +
+  ggsave("SIFigures/EIDConnections_Predictions.jpeg", units = "mm", height = 100, width = 150, dpi = 300)
+
 # Numbers of species versus centrality ####
 
 Panth1 %>% group_by(hOrder) %>%
@@ -591,7 +599,7 @@ Panth1 %>% group_by(hOrder) %>%
 
 OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + geom_point() + 
   coord_fixed() + 
-  geom_smooth(colour = "black", fill = NA) + 
+  geom_smooth(colour = "black", fill = NA, method = lm) + 
   stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black") +
   facet_wrap(~Metric, labeller = labeller(Metric = c("AllPredDegree" = "All Links",
                                                      "OutDegree" = "Out-of-Order Links",
@@ -659,7 +667,8 @@ dev.off()
 
 # Taxonomic patterns of predictability ####
 
-BarGraph(ValidSummary, "vFamily", "MeanRank", text = "N", order = T)
+BarGraph(ValidSummary, "vFamily", "MeanRank", text = "N", order = T) +
+  labs(x = "Viral Family")
 
 summarise(Rank = median(MeanRank),
           SE = )
@@ -674,6 +683,7 @@ vFamilyOrder <- Errordf$vFamily
 
 ggplot(ValidSummary, aes(vFamily, log10(MeanRank))) + geom_sina() + 
   scale_x_discrete(limits = vFamilyOrder) +
+  labs(x = "Viral Family", y = "Inverse Predictability") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   ggsave("SIFigures/VirusTaxonomy_PredictionSuccess.jpeg", units = "mm", width = 150, height = 100, dpi = 300)
 

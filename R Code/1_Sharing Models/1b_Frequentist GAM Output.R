@@ -147,3 +147,60 @@ if(file.exists("Output Files/FitList.Rdata")) load("Output Files/FitList.Rdata")
   save(FitList, PostList, DrawList, file = "Output Files/FitList.Rdata")
   
 }
+
+plot_grid( FitList[["VirusBinary"]] %>% 
+             filter(!is.na(SpaceQuantile)) %>%
+             ggplot(aes(Phylo, Fit, colour = SpaceQuantile)) + 
+             geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = SpaceQuantile), alpha = 0.2, colour = NA) +
+             geom_line(aes(group = as.factor(Space))) +
+             labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity", 
+                  colour = "Overlap", fill = "Overlap") +
+             lims(x = c(0,1), y = c(0,1)) +
+             coord_fixed() +
+             scale_color_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+             scale_fill_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+             theme(legend.position = c(0.1, 0.8), legend.background = element_rect(colour = "dark grey")) +
+             geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
+           
+           FitList[["VirusBinary"]] %>% 
+             filter(!is.na(PhyloQuantile)) %>%
+             ggplot(aes(Space, Fit, colour = PhyloQuantile)) + 
+             geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = PhyloQuantile), alpha = 0.2, colour = NA) +
+             geom_line(aes(group = as.factor(Phylo))) +
+             labs(y = "Predicted Viral Sharing", x = "Geographic Overlap", 
+                  colour = "Relatedness", fill = "Relatedness") +
+             lims(x = c(0,1), y = c(0,1)) +
+             coord_fixed() +
+             scale_color_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+             scale_fill_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+             theme(legend.position = c(0.1, 0.8), legend.background = element_rect(colour = "dark grey")) +
+             geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01),
+           
+           FitList[["VirusBinary"]] %>% 
+             filter(!Phylo == last(unique(Phylo)),
+                    !Space == last(unique(Space))) %>%
+             ggplot(aes(Space, Phylo)) + 
+             geom_tile(aes(fill = Fit)) + 
+             labs(x = "Geographic Overlap", 
+                  y = "Phylogenetic Similarity",
+                  fill = "Estimate") +
+             #ggtitle("Tensor Field") +
+             lims(x = c(0,1), y = c(0,1)) +
+             coord_fixed() +
+             theme(legend.position = "bottom") +
+             scale_fill_continuous_sequential(palette = "Greens 2", cmax = 20, end = 1),
+           
+           DataList$VirusBinary %>%
+             ggplot(aes(Space, Phylo)) + 
+             labs(x = "Geographic Overlap", 
+                  y = "Phylogenetic Similarity") +
+             #ggtitle("Data Distribution") +
+             scale_fill_continuous_sequential(palette = "purp", begin = 0.2) +
+             lims(x = c(0,1), y = c(0,1)) +
+             coord_fixed() +
+             theme(legend.position = "bottom") +
+             geom_hex(aes(fill = stat(log(count)))),
+           
+           nrow = 2, 
+           rel_heights = c(1,1.23), 
+           labels = "AUTO")
