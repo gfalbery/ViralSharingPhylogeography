@@ -153,3 +153,5 @@ if(file.exists("Output Files/AllSimGs.Rdata")) load("Output Files/AllSimGs.Rdata
 }
 
 print(Sys.time())
+
+AllMammaldf$Virus <- AllSums[AllMammals,AllMammals][lower.tri(AllSums[AllMammals,AllMammals])]

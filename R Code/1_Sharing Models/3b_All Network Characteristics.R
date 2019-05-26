@@ -121,11 +121,15 @@ EIDMammals <- intersect(AllMammals, rownames(EIDAdj))
 EIDCordf <- data.frame(
   EID = c(EIDAdj[EIDMammals,EIDMammals][lower.tri(EIDAdj[EIDMammals,EIDMammals])]),
   PredNetwork = c(AllSums[EIDMammals,EIDMammals][lower.tri(EIDAdj[EIDMammals,EIDMammals])])
-) %>% mutate(EIDConnected = as.factor(as.numeric(EID == 1)))
+)
 
 EIDCordf[,c("Sp","Sp2")] <- expand.grid(EIDMammals, EIDMammals)[lower.tri(EIDAdj[EIDMammals,EIDMammals])]
 
-SinaPlot(EIDCordf, "EIDConnected", "PredNetwork")
+SinaGraph(EIDCordf, "EIDConnected", "PredNetwork")
+SinaGraph(EIDCordf, "EID", "PredNetwork")
 
-
+EIDCordf %>%
+  mutate(P = cut(PredNetwork, breaks = unique(quantile(PredNetwork, 0:10/10)), 
+                 labels = round(unique(quantile(PredNetwork, 0:10/10))[1:9],4))) %>% 
+  ggMMplot("P", "EIDConnected")
 

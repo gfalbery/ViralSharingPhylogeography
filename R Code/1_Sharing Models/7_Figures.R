@@ -177,7 +177,7 @@ PlotGrids %>% filter(Metric == "AllPredDegree") %>% mutate(Degree = ifelse(Degre
   ggplot(aes(x, y, fill = Degree)) + #, colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
   geom_tile(aes(alpha = log(Density))) +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
+  # facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(AllPredDegree = "All Links"))) +
   coord_fixed() +  
   #lims(x = c(80, 720)) +
   labs(x = "Longitude", y = "Latitude") +
@@ -189,7 +189,7 @@ PlotGrids %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>20
   ggplot(aes(x, y, fill = Degree)) + # , colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
   geom_tile(aes(alpha = log(Density))) +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
+#  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
   coord_fixed() +  
   #lims(x = c(80, 720)) +
   labs(x = "Longitude", y = "Latitude") +
@@ -197,11 +197,11 @@ PlotGrids %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>20
   scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
   ggsave("Figures/In Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
-PlotGrids %>% filter(Metric == "OutDegree")  %>% mutate(Degree = ifelse(Degree>170, 170, ifelse(Degree<110,110,Degree))) %>%
+PlotGrids %>% filter(Metric == "OutDegree")  %>% mutate(Degree = ifelse(Degree>150, 150, ifelse(Degree<110,110,Degree))) %>%
   ggplot(aes(x, y, fill = Degree)) + #, colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
   geom_tile(aes(alpha = log(Density))) +
-  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
+#   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
   coord_fixed() +  
   #lims(x = c(80, 720)) +
   labs(x = "Longitude", y = "Latitude") +
@@ -216,25 +216,25 @@ PlotGrids %>% filter(Metric == "OutDegree")  %>% mutate(Degree = ifelse(Degree>1
 # 6.	Panel of maps: Illustrative maps of host ranges for mammal species from host predictions (currently unidentified) for specific viruses, e.g. CCHFV; Nipah virus; Ebola; etc. (supplement will list out probability of being a host for all viruses)
 
 PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
-         Focal = c(1), 
+         Focal = c("Observed"), 
          Facet = F,
-         Validate = F) + 
+         Validate = F)$MapPlot + 
   theme_void() + theme(plot.title = element_text(hjust=0.5)) +
   ggtitle("CCHF Known Hosts") +
   ggsave("Figures/CCHF_Known.jpeg", units = "mm", width = 250, height = 150)
 
 PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
-         Focal = c(0), 
+         Focal = c("Predicted"), 
          Facet = F,
-         Validate = F, Threshold = 15) + 
+         Validate = F, Threshold = 15)$MapPlot + 
   theme_void() + theme(plot.title = element_text(hjust=0.5)) +
   #ggtitle("CCHF Model Success") +
   ggsave("Figures/CCHF_Predicted.jpeg", units = "mm", width = 250, height = 150)
 
 PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
-         Focal = c(1,0), 
+         Focal = c("Predicted","Observed"), 
          Facet = T,
-         Validate = T)[[2]] + 
+         Validate = F, Summarise = F)$MapPlot + 
   ggtitle("CCHF Model Success") +
   ggsave("Figures/CCHF_Success.jpeg", units = "mm", width = 100, height = 100)
 
@@ -291,6 +291,8 @@ ggplot(DrawList[["VirusBinary"]]$Phylo,
 
 # Phylo ####
 
+RespLabels <- c("Viruses", "RNA", "DNA", "Vector-borne", "Non-vector")
+
 lapply(2:5, function(a){
   
   FitList[[a]] %>% 
@@ -300,7 +302,7 @@ lapply(2:5, function(a){
     geom_line(aes(group = as.factor(Space))) +
     labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity", 
          colour = "Overlap", fill = "Overlap",
-         title = Resps[a]) +
+         title = RespLabels[a]) +
     lims(x = c(0,1), y = c(0,1)) +
     coord_fixed() +
     scale_color_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
@@ -329,7 +331,7 @@ lapply(2:5, function(a){
     geom_line(aes(group = as.factor(Phylo))) +
     labs(y = "Predicted Viral Sharing", x = "Geographic Overlap", 
          colour = "Relatedness", fill = "Relatedness",
-         title = Resps[a]) +
+         title = RespLabels[a]) +
     lims(x = c(0,1), y = c(0,1)) +
     coord_fixed() +
     scale_color_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
@@ -563,6 +565,11 @@ SinaGraph(EIDCordf, "EIDConnected", "PredNetwork") +
   theme(legend.position = "none") +
   ggsave("SIFigures/EIDConnections_Predictions.jpeg", units = "mm", height = 100, width = 150, dpi = 300)
 
+SinaGraph(EIDCordf, "EIDConnected", "PredNetwork", "Sp", Alpha = 0.3, Scale = F) +
+  scale_colour_discrete_sequential(palette = AlberPalettes[[3]]) +
+  scale_alpha_manual(values = c(0.2,0.2)) +
+  theme(legend.position = "none") 
+
 # Numbers of species versus centrality ####
 
 Panth1 %>% group_by(hOrder) %>%
@@ -597,13 +604,16 @@ Panth1 %>% group_by(hOrder) %>%
             InDegree = mean(InDegree),
             OutDegree = mean(OutDegree)) %>% lm(log(InDegree+1) ~ log(Number+1), data = .)
 
-OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + geom_point() + 
+OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) + 
+  geom_point(colour = AlberColours[[3]]) + 
   coord_fixed() + 
   geom_smooth(colour = "black", fill = NA, method = lm) + 
-  stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black") +
+  stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black", method = lm) +
   facet_wrap(~Metric, labeller = labeller(Metric = c("AllPredDegree" = "All Links",
                                                      "OutDegree" = "Out-of-Order Links",
                                                      "InDegree" = "Within-Order Links")))  +
+  theme(strip.background = element_rect(fill = "white", colour = "grey")) +
+  labs(x = "log(Host Number)") + 
   ggsave("SIFigures/log_NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
 OrderPairs %>%
@@ -614,7 +624,6 @@ OrderPairs %>%
        y = "log(Predicted Links + 1)",
        title = "Scaling of between-order links") +
   ggsave("SIFigures/BetweenOrderScaling.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
-
 
 # No. hosts versus predictability ####
 
@@ -683,7 +692,7 @@ vFamilyOrder <- Errordf$vFamily
 
 ggplot(ValidSummary, aes(vFamily, log10(MeanRank))) + geom_sina() + 
   scale_x_discrete(limits = vFamilyOrder) +
-  labs(x = "Viral Family", y = "Inverse Predictability") +
+  labs(x = "Viral Family", y = "log10(Focal host rank)S") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   ggsave("SIFigures/VirusTaxonomy_PredictionSuccess.jpeg", units = "mm", width = 150, height = 100, dpi = 300)
 
