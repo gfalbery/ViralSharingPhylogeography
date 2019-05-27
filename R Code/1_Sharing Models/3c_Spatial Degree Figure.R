@@ -7,178 +7,73 @@ library(tidyverse); library(raster); library(colorspace)
 
 load("Output Files/Panth1.Rdata")
 
-if(file.exists("Output Files/FullRangedf.Rdata")) load("Output Files/FullRangedf.Rdata") else{
-  print("Having to make the data frame ugh")
-  load("data/MammalStack.Rdata")
+if(file.exists("Output Files/GridDegree.Rdata")) load("Output Files/GridDegree.Rdata") else{
   
-  FullValuedf <- data.frame(getValues(MammalStack))
-  detach(package:raster)
-  FullValuedf2 <- reshape2::melt(FullValuedf)
-  FullValuedf2$x <- rep(1:FullMammalRanges[[1]]@ncols, FullMammalRanges[[1]]@nrows)
-  FullValuedf2$y <- rep(FullMammalRanges[[1]]@nrows:1, each = FullMammalRanges[[1]]@ncols)
+  load("~/LargeFiles/MammalStackFullMercator.Rdata")
   
-  FullRangedf <- FullValuedf2 %>% 
-    filter(!is.na(value)) %>% droplevels %>%
-    dplyr::rename(Host = variable, Presence = value)
+  RasterListb <- lapply(1:length(AllMammals), function(a){
+    
+    if(a %% 500==0) print(a)
+    
+    MammalStackFull[[AllMammals[a]]]
+    
+  })
   
-  save(FullRangedf, file = "Output Files/FullRangedf.Rdata")
+  ToSkip <- which(sapply(RasterListb, is.null))
   
-}
-
-print("Joining rangedf and Panth1")
-
-FullRangedf2 <- FullRangedf %>% left_join(Panth1[,c("Sp","AllPredDegree", "InDegree", "OutDegree")], 
-                                          by = c("Host" = "Sp")) %>%
-  filter(!Host=="Ursus_maritimus")
-
-GridDegree <- FullRangedf2 %>% group_by(x,y) %>% 
-  summarise_at(vars(ends_with("Degree")), function(a) mean(a, na.rm = T))
-
-PopDegree <- FullRangedf2 %>% group_by(x,y) %>% 
-  summarise(Density = n())
-
-#save(GridDegree, file = "Output Files/GridDegree.Rdata")
-
-GridDegree2 <- gather(GridDegree, key = "Metric", value = "Degree", ends_with("Degree")) %>% 
-  left_join(PopDegree, by = c("x","y"))
-
-save(GridDegree2, file = "Output Files/GridDegree2.Rdata")
-
-GridDegree3 <- GridDegree %>% 
-  mutate(AllPredDegree = ifelse(abs(scale(AllPredDegree)[,1])>3,
-                                NA,
-                                AllPredDegree
-  ),
-  InDegree = ifelse(abs(scale(InDegree)[,1])>3,
-                    NA,
-                    InDegree
-  ),
-  OutDegree = ifelse(abs(scale(OutDegree)[,1])>3,
-                     NA,
-                     OutDegree
-  )
-  )
-
-for(j in c("AllPredDegree","InDegree","OutDegree")){
+  names(RasterListb) <- AllMammals
   
-  print(j)
+  # RasterListb <- RasterListb[-ToSkip]
+  # AllMammalsSub <- ToBagSpecies[-ToSkip]
   
-  for(i in which(is.na(GridDegree3[,j]))){
+  OverlapSums <- rep(0, ncol(RasterListb[[1]])*nrow(RasterListb[[1]]))
+  
+  for(i in 1:length(RasterListb)){
     
-    print(i/nrow(GridDegree3))
+    if(i %% 500 == 0) print(i)
+    SubSums <- raster::getValues(RasterListb[[i]]) > 0 %>% as.numeric
+    SubSums[is.na(SubSums)] <- 0
+    OverlapSums <- OverlapSums + SubSums
     
-    xSurroundings <- GridDegree3[i,"x"]
-    ySurroundings <- GridDegree3[i,"y"]
-    
-    xMeans <- GridDegree3 %>% filter(x == xSurroundings$x) %>% 
-      slice(which(y-ySurroundings$y == min(y-ySurroundings$y)))
-    
-    xMeans <- GridDegree3 %>% 
-      slice(-which(is.na(j))) %>%
-      filter(x == xSurroundings$x) %>%
-      mutate(a = y-ySurroundings$y) 
-    
-    if(nrow(xMeans)>0){
-      xMeans <- xMeans %>%
-        mutate(a = a-min(a)) %>%
-        filter(a<10)
-    } else xMeans <- NULL
-    
-    yMeans <- GridDegree3 %>% 
-      slice(-which(is.na(j))) %>%
-      filter(y == ySurroundings$y) %>%
-      mutate(a = x-xSurroundings$x)
-    
-    if(nrow(yMeans)>0){
-      yMeans <- yMeans %>%
-        mutate(a = a-min(a)) %>%
-        filter(a<10)
-    } else yMeans <- NULL
-    
-    if(!(is.null(xMeans)&is.null(yMeans))){
-      GridDegree3[i,j] <- mean(c(xMeans[,j],yMeans[,j]), na.rm = T)
-    }
   }
-}
-
-GridDegree4 <- gather(GridDegree3, key = "Metric", value = "Degree", ends_with("Degree"))
-
-save(GridDegree4, file = "Output Files/GridDegree4.Rdata")
-
-
-# Trying it by sum ####
-
-GridDegreeSum <- FullRangedf2 %>% group_by(x,y) %>% 
-  summarise_at(vars(ends_with("Degree")), function(a) sum(a, na.rm = T))
-
-#save(GridDegreeSum, file = "Output Files/GridDegreeSum.Rdata")
-
-GridDegreeSum2 <- gather(GridDegreeSum, key = "Metric", value = "Degree", ends_with("Degree"))
-
-save(GridDegreeSum2, file = "Output Files/GridDegreeSum2.Rdata")
-
-GridDegreeSum3 <- GridDegreeSum %>% 
-  mutate(AllPredDegree = ifelse(abs(scale(AllPredDegree)[,1])>3,
-                                NA,
-                                AllPredDegree
-  ),
-  InDegree = ifelse(abs(scale(InDegree)[,1])>3,
-                    NA,
-                    InDegree
-  ),
-  OutDegree = ifelse(abs(scale(OutDegree)[,1])>3,
-                     NA,
-                     OutDegree
-  )
-  )
-
-for(j in c("AllPredDegree","InDegree","OutDegree")){
   
-  print(j)
+  AllDegree <- rep(0, ncol(RasterListb[[1]])*nrow(RasterListb[[1]]))
+  InDegree <- rep(0, ncol(RasterListb[[1]])*nrow(RasterListb[[1]]))
+  OutDegree <- rep(0, ncol(RasterListb[[1]])*nrow(RasterListb[[1]]))
   
-  for(i in which(is.na(GridDegreeSum3[,j]))){
+  for(i in 1:length(RasterListb)){
     
-    print(i/nrow(GridDegreeSum3))
+    if(i %% 500 == 0) print(i)
+    SubSums <- raster::getValues(RasterListb[[i]]) > 0 %>% as.numeric
+    SubSums[is.na(SubSums)] <- 0
+    AllDegree <- AllDegree + SubSums*Panth1[Panth1$Sp==AllMammals[i],"AllPredDegree"]
+    InDegree <- InDegree + SubSums*Panth1[Panth1$Sp==AllMammals[i],"InDegree"]
+    OutDegree <- OutDegree + SubSums*Panth1[Panth1$Sp==AllMammals[i],"OutDegree"]
     
-    xSurroundings <- GridDegreeSum3[i,"x"]
-    ySurroundings <- GridDegreeSum3[i,"y"]
-    
-    xMeans <- GridDegreeSum3 %>% filter(x == xSurroundings$x) %>% 
-      slice(which(y-ySurroundings$y == min(y-ySurroundings$y)))
-    
-    xMeans <- GridDegreeSum3 %>% 
-      slice(-which(is.na(j))) %>%
-      filter(x == xSurroundings$x) %>%
-      mutate(a = y-ySurroundings$y) 
-    
-    if(nrow(xMeans)>0){
-      xMeans <- xMeans %>%
-        mutate(a = a-min(a)) %>%
-        filter(a<10)
-    } else xMeans <- NULL
-    
-    yMeans <- GridDegreeSum3 %>% 
-      slice(-which(is.na(j))) %>%
-      filter(y == ySurroundings$y) %>%
-      mutate(a = x-xSurroundings$x)
-    
-    if(nrow(yMeans)>0){
-      yMeans <- yMeans %>%
-        mutate(a = a-min(a)) %>%
-        filter(a<10)
-    } else yMeans <- NULL
-    
-    if(!(is.null(xMeans)&is.null(yMeans))){
-      GridDegreeSum3[i,j] <- mean(c(xMeans[,j],yMeans[,j]), na.rm = T)
-    }
   }
+  
+  DegreeDF <- data.frame(
+    X = rep(1:ncol(MammalStackFull[[1]]), nrow(MammalStackFull[[1]])),
+    Y = rep(nrow(MammalStackFull[[1]]):1, each = ncol(MammalStackFull[[1]])),
+    
+    Richness = OverlapSums,
+    AllDegree = AllDegree,
+    InDegree = InDegree,
+    OutDegree = OutDegree
+    
+  ) 
+  
+  UniversalBlank <- raster("Iceberg Input Files/UniversalBlank.tif")
+  Land = which(raster::values(UniversalBlank)==0)
+  Sea = which(is.na(raster::values(UniversalBlank)))
+  
+  DegreeDF <- DegreeDF[-Sea,]
+  
+  GridDegree <- DegreeDF %>% 
+    mutate_at(vars(contains("Degree")), function(a) a/DegreeDF$Richness) %>% 
+    mutate_at(vars(contains("Degree")), function(a) ifelse(a==0|is.na(a), min(a[a>0], na.rm = T), a)) %>% 
+    gather(key = "Metric", value = "Degree", contains("Degree"))
+  
+  save(GridDegree, file = "Output Files/GridDegree.Rdata")
+  
 }
-
-GridDegreeSum4 <- gather(GridDegreeSum3, key = "Metric", value = "Degree", ends_with("Degree"))
-
-save(GridDegreeSum4, file = "Output Files/GridDegreeSum4.Rdata")
-
-
-
-
-

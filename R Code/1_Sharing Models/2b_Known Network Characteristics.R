@@ -21,7 +21,7 @@ if(file.exists("Output Files/KnownNetworkStats.Rdata")) load("Output Files/Known
   print("1c!")
   PredNetwork1c <- mclapply(SimGraphs1c, AllNetworkStats, mc.cores = 10)
   
-  save(ObsNetwork, PredNetwork1, PredNetwork1b, file = "Output Files/KnownNetworkStats.Rdata")
+  save(ObsNetwork, PredNetwork1, PredNetwork1b, PredNetwork1c, file = "Output Files/KnownNetworkStats.Rdata")
   
 }
 
@@ -36,5 +36,5 @@ PredDegrees <- data.frame(PredDegree1 = apply(PredDegrees1, 1, mean),
                           PredDegree1c = apply(PredDegrees1c, 1, mean),
                           Sp = names(PredNetwork1c[[1]]$Degree))
 
-Hosts <- Hosts %>% # select(-c("PredDegree1")) %>% #,"PredDegree1b")) %>%
+Hosts <- Hosts %>% dplyr::select(-c("PredDegree1c")) %>% #,"PredDegree1b")) %>%
   left_join(PredDegrees, by = "Sp")

@@ -142,41 +142,43 @@ plot_grid(plot1, bottom_row, nrow = 2,
 # Figure 3.	taxonomic and geographic prediction patterns #####
 
 load("Output Files/Panth1.Rdata")
-load("Output Files/GridDegree2.Rdata")
+load("Output Files/GridDegree.Rdata")
 
-PlotGrids <- GridDegree2
-
-Map_All <- PlotGrids %>% filter(Metric == "AllPredDegree") %>% mutate(Degree = ifelse(Degree>320, 320, Degree)) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) +
+Map_All <- GridDegree %>% filter(Metric == "AllDegree") %>% 
+  mutate(Degree = ifelse(Degree>200, 200, Degree)) %>%
+  mutate(RichCut = as.factor(ifelse(Richness>2,1,0))) %>%
+  ggplot(aes(X, Y, fill = Degree, colour = Degree)) +
   geom_tile(fill = "grey", colour = "grey") +
-  geom_tile(aes(alpha = log(Density))) +
-  coord_fixed() + lims(x = c(225, 1350)) + 
-  guides(alpha = "none") + 
+  geom_tile(aes(alpha = ifelse(Richness>2, 0.2, 1))) +
+  coord_fixed() + 
+  guides(alpha = "none") +
   labs(fill = "All links", colour = "All links") +
   scale_colour_continuous_sequential(palette = AlberPalettes[1]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
   theme_void() + 
   theme(legend.position = "bottom")
 
-Map_In <- PlotGrids %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>200, 200, ifelse(Degree<30,40,Degree))) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + 
+Map_In <- GridDegree %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>150, 150, ifelse(Degree<30,40,Degree))) %>%
+  mutate(RichCut = as.factor(ifelse(Richness>2,1,0))) %>%
+  ggplot(aes(X, Y, fill = Degree, colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
-  geom_tile(aes(alpha = log(Density))) +
-  coord_fixed() + lims(x = c(225, 1350)) +  
-  guides(alpha = "none")+ 
+  geom_tile(aes(alpha = ifelse(Richness>2, 0.2, 1))) +
+  coord_fixed() + 
+  guides(alpha = "none") +
   labs(fill = "Within-order links", colour = "Within-order links") +
   scale_colour_continuous_sequential(palette = AlberPalettes[2]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
   theme_void() + 
   theme(legend.position = "bottom") 
 
-Map_Out <- PlotGrids %>% filter(Metric == "OutDegree")  %>% 
-  mutate(Degree = ifelse(Degree>150, 150, ifelse(Degree<110,110,Degree))) %>%
-  ggplot(aes(x, y, fill = Degree, colour = Degree)) + 
+Map_Out <- GridDegree %>% filter(Metric == "OutDegree")  %>% 
+  mutate(RichCut = as.factor(ifelse(Richness>2,1,0))) %>%
+  mutate(Degree = ifelse(Degree>50, 50, ifelse(Degree<25, 25, Degree))) %>%
+  ggplot(aes(X, Y, fill = Degree, colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
-  geom_tile(aes(alpha = log(Density))) +
-  coord_fixed() + lims(x = c(225, 1350)) +  
-  guides(alpha = "none")+ 
+  geom_tile(aes(alpha = ifelse(Richness>2, 0.2, 1))) +
+  coord_fixed() + 
+  guides(alpha = "none") +
   labs(fill = "Out-of-order links", colour = "Out-of-order links") +
   scale_colour_continuous_sequential(palette = AlberPalettes[3]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[3]) +
@@ -258,7 +260,7 @@ PredPlot(Virus = "Crimean-Congo_hemorrhagic_fever_virus",
          Validate = F,
          Facet = F)
 
-# Supplementary figures #####
+# !!!!!!!!!!!!! Supplementary figures !!!!!!!!!!!! #####
 
 # Subnetwork model outputs ####
 
@@ -396,6 +398,27 @@ ggplot(Hosts, aes(Degree, PredDegree1c, colour = Sp)) +
   lims(x = c(0, max(Hosts$Degree, na.rm = T)), y = c(0, max(Hosts$Degree, na.rm = T))) +
   scale_colour_discrete_sequential(palette = AlberPalettes[2]) +
   ggsave("SIFigures/Degree.PredDegree1c.jpeg", units = "mm", width = 100, height = 100)
+
+HostsLong <- 
+  Hosts %>% gather(key = "Key", value = "Value", contains("PredDegree")) 
+
+MaxLim = max(HostsLong$Value, na.rm = T)
+
+HostsLong %>%
+  ggplot(aes(Degree, Value, colour = Sp)) + 
+  facet_wrap(~Key, 
+             labeller = labeller(Key = c("PredDegree1" = "All effects",
+                                         "PredDegree1b" = "Fixed effects",
+                                         "PredDegree1c" = "Random Effects"))) + 
+  geom_point(alpha = 0.5) +
+  coord_fixed() +
+  theme(legend.position = "none", strip.background = element_rect(fill = "white")) +
+  labs(x = "Observed Degree", y = "Predicted Degree") +
+  # lims(x = c(0, max(Hosts$Value, na.rm = T)), y = c(0, max(Hosts$Value, na.rm = T))) +
+  lims(x = c(0, MaxLim), y = c(0, MaxLim)) +
+  scale_colour_discrete_sequential(palette = AlberPalettes[2]) +
+  ggsave("SIFigures/Degree.Preds.jpeg", units = "mm", width = 200, height = 100)
+
 
 jpeg("SIFigures/DegreePairs.jpeg", units = "mm", width = 200, height = 200, res = 300)
 
