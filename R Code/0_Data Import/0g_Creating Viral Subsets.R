@@ -43,7 +43,9 @@ FinalHostMatrix <- FinalHostMatrix %>% left_join(DNAHostdf,
 
 # Vector-Borne ####
 
-VectorViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "Y") %>% select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
+VectorViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "Y") %>% 
+  dplyr::select(vVirusNameCorrected) %>% 
+  unlist %>% intersect(rownames(M))
 MVector <- M[VectorViruses,]
 MVector <- MVector[,which(colSums(MVector)>0)]
 VectorBipGraph <- graph.incidence(MVector, weighted = T)
@@ -52,7 +54,7 @@ VectorHostAdj <- get.adjacency(VectorHostGraph) %>% as.matrix
 
 VectorHostdf <- VectorHostAdj %>% reshape2::melt() %>%
   #dplyr::rename(Sp = Var2, Sp2 = Var1, Vector = value) %>%
-  select(Var2, Var1, value) %>%
+  dplyr::select(Var2, Var1, value) %>%
   dplyr::rename(Sp = Var2, Sp2 = Var1, Vector = value)
 
 rownames(VectorHostdf) <- with(VectorHostdf, paste(Sp, Sp2))

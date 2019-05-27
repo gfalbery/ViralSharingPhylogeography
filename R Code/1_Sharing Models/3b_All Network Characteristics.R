@@ -34,7 +34,7 @@ Hosts <- left_join(Hosts, AllPredDegrees, by = "Sp")
 # GGally::ggpairs(Hosts %>% select(contains("Degree")), lower = list(continuous = "smooth"))
 
 Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
-  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order)
+  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order, hFamily = MSW05_Family)
 Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
 
 Panth1 <- left_join(Panth1, AllPredDegrees, by = "Sp")
@@ -87,10 +87,10 @@ substr(EIDSpecies$Cargo,1,1) = toupper(substr(EIDSpecies$Cargo,1,1))
 Panth1 <- Panth1 %>% mutate(Obs = ifelse(Sp %in% FHN, 1, 0),
                             ZoonoticHost = ifelse(Sp %in% Hosts[Hosts$hZoonosisCount>0,"Sp"], 1, 0)) %>%
   mutate(EIDObs = ifelse(Sp %in% EIDSpecies$Carrier, 1, 0)) %>%
-  mutate(JustEID = ifelse(EIDObs==1&Obs==0, 1, 0)) 
+  mutate(JustEID = ifelse(EIDObs==1&Obs==0, 1, 0)) %>%
+  mutate(Subset = paste0(Obs, EIDObs))
 
 save(Panth1, file = "Output Files/Panth1.Rdata")
-
 
 scale_this <- function(x){
   (x - mean(x, na.rm=TRUE)) / sd(x, na.rm=TRUE)

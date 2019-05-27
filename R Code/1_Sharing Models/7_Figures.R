@@ -13,7 +13,7 @@ plot_grid( FitList[["VirusBinary"]] %>%
              ggplot(aes(Phylo, Fit, colour = SpaceQuantile)) + 
              geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = SpaceQuantile), alpha = 0.2, colour = NA) +
              geom_line(aes(group = as.factor(Space))) +
-             labs(y = "Predicted Viral Sharing", x = "Phylogenetic Similarity", 
+             labs(y = "Viral Sharing Probability", x = "Phylogenetic Similarity", 
                   colour = "Overlap", fill = "Overlap") +
              lims(x = c(0,1), y = c(0,1)) +
              coord_fixed() +
@@ -27,7 +27,7 @@ plot_grid( FitList[["VirusBinary"]] %>%
              ggplot(aes(Space, Fit, colour = PhyloQuantile)) + 
              geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = PhyloQuantile), alpha = 0.2, colour = NA) +
              geom_line(aes(group = as.factor(Phylo))) +
-             labs(y = "Predicted Viral Sharing", x = "Geographic Overlap", 
+             labs(y = "Viral Sharing Probability", x = "Geographic Overlap", 
                   colour = "Relatedness", fill = "Relatedness") +
              lims(x = c(0,1), y = c(0,1)) +
              coord_fixed() +
@@ -75,17 +75,19 @@ plot_grid( FitList[["VirusBinary"]] %>%
 
 Errordf <- Panth1 %>% group_by(hOrder) %>%
   mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
-  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% group_by(Obs) %>%
-  summarise(CentreDegree = mean(ScalePredDegree),
-            sd = sd(ScalePredDegree),
+  filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% 
+  group_by(Subset) %>%
+  summarise(CentreDegree = mean(ScalePredDegree, na.rm = T),
+            sd = sd(ScalePredDegree, na.rm = T),
             N = n()) %>% mutate(se = sd/(N^0.5))
 
 Panth1 %>% group_by(hOrder) %>%
   mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
   filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% 
-  ggplot(aes(as.factor(Subset), ScalePredDegree, colour = as.factor(Subset))) + 
-  #geom_violin() +
-  geom_sina(aes(alpha = as.factor(Subset))) + scale_alpha_manual(values = c(0.3,1,1,1)) +
+  ggplot(aes(Subset, ScalePredDegree, colour = as.factor(Subset))) + 
+  # geom_violin(colour = "grey") +
+  geom_hline(yintercept = 0, lty = 2, alpha = 0.2) +
+  geom_sina(aes(alpha = Subset)) + scale_alpha_manual(values = c(0.3,1,1,1)) +
   labs(x = "Host dataset", y = "Within-order scaled degree (SD)") +
   theme(legend.position = "none") +
   geom_point(data = Errordf, colour = "black", aes(y = CentreDegree)) + 
@@ -93,12 +95,26 @@ Panth1 %>% group_by(hOrder) %>%
                 aes(x = as.factor(Subset), 
                     ymin = CentreDegree - se,
                     ymax = CentreDegree + se), width = 0.1) +
-  scale_x_discrete(labels = c("Unobserved", "HP3 Only", "EID Only", "Both")) +
-  scale_colour_discrete_sequential(palette = AlberPalettes[[2]], begin = 0.25) +
+  scale_x_discrete(labels = c("Unobserved", "EID Only","HP3 Only",  "Both")) +
+  scale_colour_manual(values = c("light grey", AlberColours[[1]], AlberColours[[2]], AlberColours[[3]])) +
   ggsave("Figures/Order_ObsYN_Scale_Sina.jpeg", units = "mm", height = 150, width = 150, dpi = 600)
 
-Hosts %>% filter(!Sp%in%Remove3) %>% BarGraph("AnyZoo", "AllPredDegree", text = "N") + 
+Hosts$AnyZoo <- as.factor(as.numeric(Hosts$hZoonosisCount>0))
+
+Hosts <- Hosts %>% left_join(AllDegrees)
+
+Hosts %>% # filter(AllPredDegree<250) %>% 
+  BarGraph("AnyZoo", "AllPredDegree", Text = "N") + 
   labs(x = "Zoonotic Host", y = "Predicted links") + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c(AlberColours[[1]],AlberColours[[2]])) +
+  ggsave("Figures/Zoonosis_PredictedLinks.jpeg", units = "mm", width = 100, height = 100, dpi = 600)
+
+Hosts %>% #filter(!Sp%in%Remove3) %>% 
+  SinaGraph("AnyZoo", "AllPredDegree") + 
+  labs(x = "Zoonotic Host", y = "Predicted links") + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c(AlberColours[[1]],AlberColours[[2]])) +
   ggsave("Figures/Zoonosis_PredictedLinks.jpeg", units = "mm", width = 100, height = 100, dpi = 600)
 
 # Figure 3.	Mammal order level centrality #####
@@ -183,30 +199,33 @@ PlotGrids %>% filter(Metric == "AllPredDegree") %>% mutate(Degree = ifelse(Degre
   labs(x = "Longitude", y = "Latitude") +
   scale_colour_continuous_sequential(palette = AlberPalettes[1]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
+  theme_void() +
   ggsave("Figures/All Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
 PlotGrids %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifelse(Degree>200, 200, ifelse(Degree<30,40,Degree))) %>%
   ggplot(aes(x, y, fill = Degree)) + # , colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
   geom_tile(aes(alpha = log(Density))) +
-#  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
+  #  facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(InDegree = "Within-Order Links"))) +
   coord_fixed() +  
   #lims(x = c(80, 720)) +
   labs(x = "Longitude", y = "Latitude") +
   scale_colour_continuous_sequential(palette = AlberPalettes[2]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
+  theme_void() +
   ggsave("Figures/In Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
 PlotGrids %>% filter(Metric == "OutDegree")  %>% mutate(Degree = ifelse(Degree>150, 150, ifelse(Degree<110,110,Degree))) %>%
   ggplot(aes(x, y, fill = Degree)) + #, colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
   geom_tile(aes(alpha = log(Density))) +
-#   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
+  #   facet_wrap(~Metric, nrow = 3, labeller = labeller(Metric = c(OutDegree = "Out-of-Order Links"))) +
   coord_fixed() +  
   #lims(x = c(80, 720)) +
   labs(x = "Longitude", y = "Latitude") +
   scale_colour_continuous_sequential(palette = AlberPalettes[3]) +  
   scale_fill_continuous_sequential(palette = AlberPalettes[3]) +
+  theme_void() +
   ggsave("Figures/Out Link Map.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
 
 # 5.	Panel: viral trait plots (RNA vs. DNA; vector-borne or not; etc)
@@ -401,8 +420,7 @@ lapply(2:5, function(a){
             base_aspect_ratio = 1)
 
 
-
- # Data Description: observed tiles of space:phylo with virusbinary fill #####
+# Data Description: observed tiles of space:phylo with virusbinary fill #####
 
 FinalHostMatrix %>%
   mutate(SpaceQuantile = cut(Space, breaks = c(0:10)/10, include.lowest = T),
@@ -507,10 +525,12 @@ Panth1 %>% group_by(hOrder) %>%
   filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% group_by(Obs) %>%
   summarise(CentreDegree = mean(ScalePredDegree),
             sd = sd(ScalePredDegree),
-            N = n()) %>% mutate(se = sd/(N^0.5)) %>% ggplot(aes(as.factor(Obs), CentreDegree, fill = as.factor(Obs))) + geom_col(colour = "black") + 
+            N = n()) %>% mutate(se = sd/(N^0.5)) %>% 
+  ggplot(aes(as.factor(Obs), CentreDegree, fill = as.factor(Obs))) + 
+  geom_col(colour = "black") + 
   geom_errorbar(aes(ymin = CentreDegree-se, ymax = CentreDegree+se), width = 0.1)  +
   theme(legend.position = "none") +
-  labs(x = "Observed Data", y = "Within-order scaled degree (SD)") +
+  labs(x = "Observed Data", y = "Within-order scaled links") +
   ggsave("Figures/Order_ObsYN_Scale.jpeg", units = "mm", height = 100, width = 100)
 
 # Bats specifically ####
@@ -557,18 +577,14 @@ Panth1 %>% group_by(hOrder) %>%
   scale_colour_manual(values = c("grey", AlberColours[[2]], AlberColours[[1]], AlberColours[[3]])) +
   ggsave("SIFigures/ObservedRodentCentrality.jpeg", units = "mm", height = 100, width = 150)
 
-# Species that share in EID had higher sharing probability in our networks ####
+# Species that share in EID have higher sharing probability in our networks ####
 
-SinaGraph(EIDCordf, "EIDConnected", "PredNetwork") +
+SinaGraph(EIDCordf, "EIDConnected", "PredNetwork", Scale = "width", Alpha = 0.2) +
   scale_colour_manual(values = c(AlberColours[[1]], AlberColours[[2]])) +
   scale_alpha_manual(values = c(0.2,0.2)) +
   theme(legend.position = "none") +
-  ggsave("SIFigures/EIDConnections_Predictions.jpeg", units = "mm", height = 100, width = 150, dpi = 300)
-
-SinaGraph(EIDCordf, "EIDConnected", "PredNetwork", "Sp", Alpha = 0.3, Scale = F) +
-  scale_colour_discrete_sequential(palette = AlberPalettes[[3]]) +
-  scale_alpha_manual(values = c(0.2,0.2)) +
-  theme(legend.position = "none") 
+  labs(x = "EID2 Sharing", y = "Predicted Sharing Probability") +
+  ggsave("Figures/EIDConnections_Predictions.jpeg", units = "mm", height = 100, width = 150, dpi = 300)
 
 # Numbers of species versus centrality ####
 
@@ -609,9 +625,9 @@ OrderLevelLinks %>% ggplot(aes(log(HostNumber), log(Degree+1))) +
   coord_fixed() + 
   geom_smooth(colour = "black", fill = NA, method = lm) + 
   stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black", method = lm) +
-  facet_wrap(~Metric, labeller = labeller(Metric = c("AllPredDegree" = "All Links",
-                                                     "OutDegree" = "Out-of-Order Links",
-                                                     "InDegree" = "Within-Order Links")))  +
+  facet_wrap(~Metric, labeller = labeller(Metric = c("AllPredDegree" = "All links",
+                                                     "OutDegree" = "Out-of-order links",
+                                                     "InDegree" = "Within-order links")))  +
   theme(strip.background = element_rect(fill = "white", colour = "grey")) +
   labs(x = "log(Host Number)") + 
   ggsave("SIFigures/log_NHosts_Degree_Order.jpeg", units = "mm", height = 100, width = 200, dpi = 300)
@@ -620,8 +636,8 @@ OrderPairs %>%
   ggplot(aes(log(`1`) + log(`2`), log(Degree+1))) + 
   coord_fixed() +
   geom_point(alpha = 0.6) +
-  labs(x = "log(Order 1 Hosts*Order 2 Hosts)", 
-       y = "log(Predicted Links + 1)",
+  labs(x = "log(order 1 hosts*order 2 hosts)", 
+       y = "log(Predicted links + 1)",
        title = "Scaling of between-order links") +
   ggsave("SIFigures/BetweenOrderScaling.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
 
@@ -656,7 +672,7 @@ ValidSummary %>%
 
 # RNA Viruses are harder to predict ####
 
-BarGraph(ValidSummary, "vDNAoRNA", "MeanRank", text = "N") +
+BarGraph(ValidSummary, "vDNAoRNA", "MeanRank", Text = "N") +
   scale_fill_manual(values = c(AlberColours[[1]], AlberColours[[2]])) +
   theme(legend.position = "none") +
   ggsave("SIFigures/RNA_DNA_Prediction.jpeg", units = "mm", height = 100, width = 100)
@@ -667,7 +683,7 @@ jpeg("SIFigures/ViralTraits_Predictability.jpeg", units = "mm", width = 200, hei
 
 VirusCovar %>% 
   lapply(function(a){
-    BarGraph(ValidSummary, a, "MeanRank", text = "N") +
+    BarGraph(ValidSummary, a, "MeanRank", Text = "N") +
       theme(legend.position = "none")
   }) %>% 
   arrange_ggplot2(ncol = 3)
@@ -676,11 +692,11 @@ dev.off()
 
 # Taxonomic patterns of predictability ####
 
-BarGraph(ValidSummary, "vFamily", "MeanRank", text = "N", order = T) +
+BarGraph(ValidSummary, "vFamily", "MeanRank", Text = "N", Order = T, Just = T) +
   labs(x = "Viral Family")
 
-summarise(Rank = median(MeanRank),
-          SE = )
+BarGraph(ValidSummary, "vFamily", "LogRank", Text = "N", Order = T, Just = T) +
+  labs(x = "Viral Family")
 
 Errordf <- ValidSummary %>% group_by(vFamily) %>% 
   summarise(MedianRank = median(MeanRank),
@@ -690,9 +706,9 @@ Errordf <- ValidSummary %>% group_by(vFamily) %>%
 
 vFamilyOrder <- Errordf$vFamily
 
-ggplot(ValidSummary, aes(vFamily, log10(MeanRank))) + geom_sina() + 
+ggplot(ValidSummary, aes(vFamily, log10(MeanRank))) + geom_sina(colour = AlberColours[[2]]) + 
   scale_x_discrete(limits = vFamilyOrder) +
-  labs(x = "Viral Family", y = "log10(Focal host rank)S") +
+  labs(x = "Viral Family", y = "log10(Focal host rank)") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   ggsave("SIFigures/VirusTaxonomy_PredictionSuccess.jpeg", units = "mm", width = 150, height = 100, dpi = 300)
 

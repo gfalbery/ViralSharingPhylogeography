@@ -64,6 +64,9 @@ InDegrees <- hUniteList %>% group_by(Sp) %>% summarise(InDegree = sum(Degree))
 AllDegrees <- OutDegrees %>% left_join(InDegrees) %>%
   mutate(AllPredDegree = OutDegree + InDegree)
 
+Panth1 <- Panth1 %>% #dplyr::select(-c("AllPredDegree", "InDegree", "OutDegree")) %>%
+  left_join(AllDegrees, by = "Sp")
+
 OrderLevelLinks <- Panth1 %>% #dplyr::select(-c("AllPredDegree", "InDegree", "OutDegree")) %>%
   left_join(AllDegrees, by = "Sp") %>%
   group_by(hOrder) %>%

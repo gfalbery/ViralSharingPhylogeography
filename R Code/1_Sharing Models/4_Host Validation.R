@@ -344,6 +344,28 @@ EIDPredList <- lapply(BothViruses, function(a){
   
 })
 
+# Trying out viral traits' impact on predictability ####
+
+VirusCovar <- c("IsHoSa","IsHoSa.stringent",
+                #"vGenomeMinLength","vGenomeMaxLength","vGenomeAveLength","vWOKcites","vPubMedCites",
+                "vCytoReplicTF","vSegmentedTF",
+                "vVectorYNna","vSSoDS","vDNAoRNA","vEnvelope",
+                "IsZoonotic")
+
+VirusTraits <- VirusTraits %>% 
+  dplyr::rename(Virus = vVirusNameCorrected) %>%
+  mutate(vCytoReplicTF = as.numeric(vCytoReplicTF),
+         vSegmentedTF = as.numeric(vSegmentedTF))
+
+ValidSummary <-  ValidSummary %>%
+  left_join(VirusTraits, by = "Virus") %>%
+  left_join(VirusHostRanges) %>%
+  mutate(LogRank = log10(MeanRank),
+         LogHosts = log10(NHosts))
+
+Im1 <- INLAModelAdd("LogRank", 1, c(VirusCovar, "LogHosts", "HostRangeMean"), 
+                    Random = "vFamily", "iid", "gaussian", 
+                    ValidSummary[!NARows(ValidSummary, c(VirusCovar, "LogHosts", "HostRangeMean", "LogRank")),])
 
 
 
