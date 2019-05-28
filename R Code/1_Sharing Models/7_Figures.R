@@ -10,64 +10,64 @@ theme_set(theme_cowplot())
 load("Output Files/FitList.Rdata")
 load("Output Files/BAMList.Rdata")
 
-plot_grid( FitList[["VirusBinary"]] %>% 
-             filter(!is.na(SpaceQuantile)) %>%
-             ggplot(aes(Phylo, Fit, colour = SpaceQuantile)) + 
-             geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = SpaceQuantile), alpha = 0.2, colour = NA) +
-             geom_line(aes(group = as.factor(Space))) +
-             labs(y = "Viral Sharing Probability", x = "Phylogenetic Similarity", 
-                  colour = "Overlap", fill = "Overlap") +
-             lims(x = c(0,1), y = c(0,1)) +
-             coord_fixed() +
-             scale_color_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
-             scale_fill_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
-             theme(legend.position = c(0.1, 0.8), legend.background = element_rect(colour = "dark grey")) +
-             geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
-           
-           FitList[["VirusBinary"]] %>% 
-             filter(!is.na(PhyloQuantile)) %>%
-             ggplot(aes(Space, Fit, colour = PhyloQuantile)) + 
-             geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = PhyloQuantile), alpha = 0.2, colour = NA) +
-             geom_line(aes(group = as.factor(Phylo))) +
-             labs(y = "Viral Sharing Probability", x = "Geographic Overlap", 
-                  colour = "Relatedness", fill = "Relatedness") +
-             lims(x = c(0,1), y = c(0,1)) +
-             coord_fixed() +
-             scale_color_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
-             scale_fill_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
-             theme(legend.position = c(0.1, 0.8), legend.background = element_rect(colour = "dark grey")) +
-             geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01),
-           
-           FitList[["VirusBinary"]] %>% 
-             filter(!Phylo == last(unique(Phylo)),
-                    !Space == last(unique(Space))) %>%
-             ggplot(aes(Space, Phylo)) + 
-             geom_tile(aes(fill = Fit)) + 
-             labs(x = "Geographic Overlap", 
-                  y = "Phylogenetic Similarity",
-                  fill = "Estimate") +
-             #ggtitle("Tensor Field") +
-             lims(x = c(0,1), y = c(0,1)) +
-             coord_fixed() +
-             theme(legend.position = "bottom") +
-             scale_fill_continuous_sequential(palette = "Greens 2", cmax = 20, end = 1,
-                                              limits = c(0,1),
-                                              breaks = c(0,0.5,1)),
-           
-           DataList$VirusBinary %>%
-             ggplot(aes(Space, Phylo)) + 
-             labs(x = "Geographic Overlap", 
-                  y = "Phylogenetic Similarity") +
-             #ggtitle("Data Distribution") +
-             scale_fill_continuous_sequential(palette = "purp", begin = 0.2) +
-             lims(x = c(0,1), y = c(0,1)) +
-             coord_fixed() +
-             theme(legend.position = "bottom") +
-             geom_hex(aes(fill = stat(log(count)))),
-           
-           nrow = 2, 
-           rel_heights = c(1,1.23), 
-           labels = "AUTO") %>% 
+plot_grid(FitList[["VirusBinary"]] %>% 
+            filter(!is.na(SpaceQuantile)) %>%
+            ggplot(aes(Phylo, Fit, colour = SpaceQuantile)) + 
+            geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = SpaceQuantile), alpha = 0.2, colour = NA) +
+            geom_line(aes(group = as.factor(Space))) +
+            labs(y = "Viral Sharing Probability", x = "Phylogenetic Similarity", 
+                 colour = "Overlap", fill = "Overlap") +
+            lims(x = c(0,1), y = c(0,1)) +
+            coord_fixed() +
+            scale_color_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+            scale_fill_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+            theme(legend.position = c(0.1, 0.8), legend.background = element_rect(colour = "dark grey")) +
+            geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01),
+          
+          FitList[["VirusBinary"]] %>% 
+            filter(!is.na(PhyloQuantile)) %>%
+            ggplot(aes(Space, Fit, colour = PhyloQuantile)) + 
+            geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = PhyloQuantile), alpha = 0.2, colour = NA) +
+            geom_line(aes(group = as.factor(Phylo))) +
+            labs(y = "Viral Sharing Probability", x = "Geographic Overlap", 
+                 colour = "Relatedness", fill = "Relatedness") +
+            lims(x = c(0,1), y = c(0,1)) +
+            coord_fixed() +
+            scale_color_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+            scale_fill_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+            theme(legend.position = c(0.1, 0.8), legend.background = element_rect(colour = "dark grey")) +
+            geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01),
+          
+          FitList[["VirusBinary"]] %>% 
+            filter(!Phylo == last(unique(Phylo)),
+                   !Space == last(unique(Space))) %>%
+            ggplot(aes(Space, Phylo)) + 
+            geom_tile(aes(fill = Fit)) + 
+            labs(x = "Geographic Overlap", 
+                 y = "Phylogenetic Similarity",
+                 fill = "Estimate") +
+            #ggtitle("Tensor Field") +
+            lims(x = c(0,1), y = c(0,1)) +
+            coord_fixed() +
+            theme(legend.position = "bottom") +
+            scale_fill_continuous_sequential(palette = "Greens 2", cmax = 20, end = 1,
+                                             limits = c(0,1),
+                                             breaks = c(0,0.5,1)),
+          
+          DataList$VirusBinary %>%
+            ggplot(aes(Space, Phylo)) + 
+            labs(x = "Geographic Overlap", 
+                 y = "Phylogenetic Similarity") +
+            #ggtitle("Data Distribution") +
+            scale_fill_continuous_sequential(palette = "purp", begin = 0.2) +
+            lims(x = c(0,1), y = c(0,1)) +
+            coord_fixed() +
+            theme(legend.position = "bottom") +
+            geom_hex(aes(fill = stat(log(count)))),
+          
+          nrow = 2, 
+          rel_heights = c(1,1.23), 
+          labels = "AUTO") %>% 
   save_plot(filename = "Figures/Figure1.jpeg", 
             #units = "mm", width = 200, height = 200,
             ncol = 2, # we're saving a grid plot of 2 columns
@@ -111,8 +111,6 @@ plot2 <- Hosts %>%
   theme(legend.position = "none") +
   scale_fill_manual(values = c(AlberColours[[1]], AlberColours[[2]])) 
 
-# Species that share in EID have higher sharing probability in our networks ####
-
 table(EIDCordf$EIDConnected)
 
 plot3 <-
@@ -149,7 +147,7 @@ Map_All <- GridDegree %>% filter(Metric == "AllDegree") %>%
   mutate(RichCut = as.factor(ifelse(Richness>2,1,0))) %>%
   ggplot(aes(X, Y, fill = Degree, colour = Degree)) +
   geom_tile(fill = "grey", colour = "grey") +
-  geom_tile(aes(alpha = ifelse(Richness>2, 0.2, 1))) +
+  geom_tile(aes(alpha = log10(Richness+1))) +
   coord_fixed() + 
   guides(alpha = "none") +
   labs(fill = "All links", colour = "All links") +
@@ -162,7 +160,7 @@ Map_In <- GridDegree %>% filter(Metric == "InDegree")  %>% mutate(Degree = ifels
   mutate(RichCut = as.factor(ifelse(Richness>2,1,0))) %>%
   ggplot(aes(X, Y, fill = Degree, colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
-  geom_tile(aes(alpha = ifelse(Richness>2, 0.2, 1))) +
+  geom_tile(aes(alpha = log10(Richness+1))) +
   coord_fixed() + 
   guides(alpha = "none") +
   labs(fill = "Within-order links", colour = "Within-order links") +
@@ -176,7 +174,7 @@ Map_Out <- GridDegree %>% filter(Metric == "OutDegree")  %>%
   mutate(Degree = ifelse(Degree>50, 50, ifelse(Degree<25, 25, Degree))) %>%
   ggplot(aes(X, Y, fill = Degree, colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
-  geom_tile(aes(alpha = ifelse(Richness>2, 0.2, 1))) +
+  geom_tile(aes(alpha = log10(Richness+1))) +
   coord_fixed() + 
   guides(alpha = "none") +
   labs(fill = "Out-of-order links", colour = "Out-of-order links") +
@@ -230,35 +228,13 @@ WholePlot %>%  save_plot(filename = "Figures/Figure3.jpeg",
                          base_aspect_ratio = 1,
                          base_height = 9)
 
-# 6.	Panel of maps: Illustrative maps of host ranges for mammal species from host predictions (currently unidentified) for specific viruses, e.g. CCHFV; Nipah virus; Ebola; etc. (supplement will list out probability of being a host for all viruses)
+# Figure 4: CCHF Model Predictions ####
 
 PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
-         Focal = c("Observed"), 
-         Facet = F,
-         Validate = F)$MapPlot + 
-  theme_void() + theme(plot.title = element_text(hjust=0.5)) +
-  ggtitle("CCHF Known Hosts") +
-  ggsave("Figures/CCHF_Known.jpeg", units = "mm", width = 250, height = 150)
-
-PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
-         Focal = c("Predicted"), 
-         Facet = F,
-         Validate = F, Threshold = 15)$MapPlot + 
-  theme_void() + theme(plot.title = element_text(hjust=0.5)) +
-  #ggtitle("CCHF Model Success") +
-  ggsave("Figures/CCHF_Predicted.jpeg", units = "mm", width = 250, height = 150)
-
-PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
-         Focal = c("Predicted","Observed"), 
+         Focal = c("Observed","Predicted"), 
          Facet = T,
-         Validate = F, Summarise = F)$MapPlot + 
-  ggtitle("CCHF Model Success") +
-  ggsave("Figures/CCHF_Success.jpeg", units = "mm", width = 100, height = 100)
-
-PredPlot(Virus = "Crimean-Congo_hemorrhagic_fever_virus", 
-         Focal = c(0), 
-         Validate = F,
-         Facet = F)
+         Validate = F, Summarise = F)$MapPlot %>%
+  save_plot(filename = "Figures/Figure4.jpeg", base_height = 8)
 
 # !!!!!!!!!!!!! Supplementary figures !!!!!!!!!!!! #####
 
@@ -292,7 +268,7 @@ lapply(2:5, function(a){
             # each individual subplot should have an aspect ratio of 1.3
             base_aspect_ratio = 1)
 
-lpply(2:5, function(a){
+lapply(2:5, function(a){
   
   FitList[[a]] %>% 
     filter(!is.na(PhyloQuantile)) %>%

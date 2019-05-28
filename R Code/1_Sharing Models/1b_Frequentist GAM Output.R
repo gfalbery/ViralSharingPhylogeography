@@ -1,14 +1,9 @@
 
 # Rscript "R Code/1_Sharing Models/1b_Frequentist GAM Output.R" ####
 
+library(mgcv); library(tidyverse); library(ggregplot); library(MASS)
+
 if(file.exists("Output Files/FitList.Rdata")) load("Output Files/FitList.Rdata") else {
-  
-  if(file.exists("Output Files/Finaldf.Rdata")) load("Output Files/Finaldf.Rdata") else source("R Code/00_Master Code.R")
-  
-  library(mgcv); library(tidyverse); library(ggregplot); library(MASS)
-  
-  load("Output Files/BAMList.Rdata")
-  #load("Output Files/BAMList2.Rdata")
   
   Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
   

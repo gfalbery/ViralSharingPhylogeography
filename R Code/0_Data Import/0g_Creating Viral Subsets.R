@@ -6,8 +6,8 @@ SubResps <- c("RNA", "DNA", "Vector","NVector")
 
 library(igraph); library(tidyverse); library(ggregplot)
 
-RNAViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA") %>% select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
-DNAViruses <- VirusTraits %>% filter(vDNAoRNA == "DNA") %>% select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
+RNAViruses <- VirusTraits[VirusTraits$vDNAoRNA == "RNA","vVirusNameCorrected"] %>% intersect(rownames(M))
+DNAViruses <- VirusTraits[VirusTraits$vDNAoRNA == "DNA","vVirusNameCorrected"] %>% intersect(rownames(M))
 
 MRNA <- M[RNAViruses,]
 MDNA <- M[DNAViruses,]
@@ -25,11 +25,11 @@ RNAHostAdj <- get.adjacency(RNAHostGraph) %>% as.matrix
 DNAHostAdj <- get.adjacency(DNAHostGraph) %>% as.matrix
 
 RNAHostdf <- RNAHostAdj %>% reshape2::melt() %>%
-  select(Var2, Var1, value) %>%
+  dplyr::select(Var2, Var1, value) %>%
   dplyr::rename(Sp = Var2, Sp2 = Var1, RNA = value)
 
 DNAHostdf <- DNAHostAdj %>% reshape2::melt() %>%
-  select(Var2, Var1, value) %>%
+  dplyr::select(Var2, Var1, value) %>%
   dplyr::rename(Sp = Var2, Sp2 = Var1, DNA = value)
 
 rownames(RNAHostdf) <- with(RNAHostdf, paste(Sp, Sp2))
@@ -61,7 +61,7 @@ rownames(VectorHostdf) <- with(VectorHostdf, paste(Sp, Sp2))
 
 # Non-Vector-Borne ####
 
-NVectorViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "N") %>% select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
+NVectorViruses <- VirusTraits %>% filter(vDNAoRNA == "RNA"&vVectorYNna == "N") %>% dplyr::select(vVirusNameCorrected) %>% unlist %>% intersect(rownames(M))
 MNVector <- M[NVectorViruses,]
 MNVector <- MNVector[,which(colSums(MNVector)>0)]
 NVectorBipGraph <- graph.incidence(MNVector, weighted = T)
@@ -69,7 +69,7 @@ NVectorHostGraph <- bipartite.projection(NVectorBipGraph)$proj2
 NVectorHostAdj <- get.adjacency(NVectorHostGraph) %>% as.matrix
 
 NVectorHostdf <- NVectorHostAdj %>% reshape2::melt() %>%
-  select(Var2, Var1, value) %>%
+  dplyr::select(Var2, Var1, value) %>%
   dplyr::rename(Sp = Var2, Sp2 = Var1, NVector = value)
 
 rownames(NVectorHostdf) <- with(NVectorHostdf, paste(Sp, Sp2))
@@ -79,7 +79,6 @@ FinalHostMatrix <- FinalHostMatrix %>% left_join(VectorHostdf,
 
 FinalHostMatrix <- FinalHostMatrix %>% left_join(NVectorHostdf,
                                                  by = c("Sp","Sp2"))
-
 
 SlopeTime <- gather(FinalHostMatrix, key = "Group", value = "Shared", paste0(SubResps)) %>%
   filter(!is.na(Shared))
