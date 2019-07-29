@@ -174,7 +174,9 @@ DevianceAccounted = 1 - RealDeviance/InterceptDeviance
 
 ((sapply(DevianceList, mean) - RealDeviance)/(InterceptDeviance - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
 
-((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
+((sapply(DevianceList, mean) - RealDeviance) %>% prop.table()) %>% round(3)
+
+(((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())*DevianceAccounted) %>% round(3)
 
 # Validating the model and getting deviance contributions 
 
@@ -230,5 +232,5 @@ DevianceAccounted = 1 - RealDeviance/InterceptDeviance
 
 ((sapply(DevianceList, mean) - RealDeviance)/(InterceptDeviance - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
 
-((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
+(((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())*DevianceAccounted) %>% round(3)
 
