@@ -32,7 +32,7 @@ plot_grid(FitList[["VirusBinary"]] %>%
             geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = PhyloQuantile), alpha = 0.2, colour = NA) +
             geom_line(aes(group = as.factor(Phylo))) +
             labs(y = "Viral Sharing Probability", x = "Geographic Overlap", 
-                 colour = "Phylogenetic\nsimilarity", fill = "Phylogenetic\nsimilarity") +
+                 colour = "Phylogenetic similarity", fill = "Phylogenetic similarity") +
             lims(x = c(0,1), y = c(0,1)) +
             coord_fixed() +
             scale_color_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
@@ -250,15 +250,25 @@ WholePlot %>%  save_plot(filename = "Figures/Figure3.jpeg",
                          base_aspect_ratio = 1,
                          base_height = 9)
 
-# Figure 4: CCHF Model Predictions ####
-
-PredPlot(HostList = VirusAssocs[["Crimean-Congo_hemorrhagic_fever_virus"]], 
-         Focal = c("Observed","Predicted"), 
-         Facet = T,
-         Validate = F, Summarise = F)$MapPlot %>%
-  save_plot(filename = "Figures/Figure4.jpeg", base_height = 8)
-
 # !!!!!!!!!!!!! Supplementary figures !!!!!!!!!!!! #####
+
+# Deviance contributions ####
+
+DevianceDF <- data.frame(
+  Var = names((((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())) %>% round(3)),
+  Model_Deviance = (((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())) %>% round(3)
+) %>%
+  mutate(Total_Deviance = Model_Deviance*DevianceAccounted) %>%
+  mutate(Var = factor(Var, levels = c("Domestic", "MinCites", "Gz", "Space", "Phylo", "Spp")))
+
+DevianceDF %>% gather("Model", "Deviance", Model_Deviance, Total_Deviance) %>% 
+  ggplot(aes(Model, Deviance, fill = Var)) + geom_col(position = "stack", colour = "black") + 
+  lims(y = c(0,1)) +
+  labs(fill = "Variable") +
+  scale_fill_discrete_sequential(palette = "Plasma", rev = F,
+                                 labels = c("Domestic", "Citations", "Space == 0", "Space", "Phylogeny", "Species")) +
+  scale_x_discrete(labels = c("Model Deviance", "Total Deviance")) +
+  ggsave("SIFigures/Deviance Contributions.jpeg", units = "mm", width = 160, height = 110)
 
 # Subnetwork model outputs ####
 
@@ -513,10 +523,13 @@ OrderPairs %>%
 
 ValidSummary %>% 
   ggplot(aes(HostRangeMean, log10(MeanRank))) +
-  geom_point(aes(colour = vFamily)) + 
-  geom_smooth(colour = "black", fill = NA, method = lm) +
-  stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black", method = lm) +
-  scale_colour_discrete_sequential(palette = AlberPalettes[[2]]) + 
+  geom_point(aes(colour = vVectorYNna)) + 
+  geom_smooth(colour = "black", fill = NA, method = lm, aes(colour = vVectorYNna)) +
+  stat_smooth(fill = NA, aes(colour = vVectorYNna), 
+              geom = "ribbon", 
+              lty = 2, colour = "black", 
+              method = lm) +
+  # scale_colour_discrete_sequential(palette = AlberPalettes[[2]]) + 
   labs(x = "Average host phylogenetic similarity",
        y = "log10(mean rank)") +
   ggsave("SIFigures/HostRange_Predictability.jpeg", units = "mm", 
