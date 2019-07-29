@@ -23,6 +23,8 @@ AllPredDegrees <- data.frame(AllPredDegree, Sp = AllMammals)
 
 Hosts <- left_join(Hosts, AllPredDegrees, by = "Sp")
 
+save(Hosts, file = "Output Files/Hosts.Rdata")
+
 Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
   dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order, hFamily = MSW05_Family)
 Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
@@ -81,7 +83,9 @@ save(Panth1, file = "Output Files/Panth1.Rdata")
 
 # Making EID sharing network ####
 
-AssocsEID <- EIDSpecies[EIDSpecies$Cargo.classification == "Virus"&EIDSpecies$Carrier%in%AllMammals,c("Cargo", "Carrier")] %>%
+AssocsEID <- EIDSpecies[EIDSpecies$Cargo.classification == "Virus"&
+                          EIDSpecies$Carrier%in%AllMammals,
+                        c("Cargo", "Carrier")] %>%
   droplevels %>%
   slice(order(Carrier))
 
@@ -102,7 +106,7 @@ EIDAdj[EIDAdj>0] <- 1
 EIDMammals <- intersect(AllMammals, rownames(EIDAdj))
 
 EIDCordf <- data.frame(
-  EID = c(EIDAdj[EIDMammals,EIDMammals][lower.tri(EIDAdj[EIDMammals,EIDMammals])]),
+  EIDConnected = c(EIDAdj[EIDMammals,EIDMammals][lower.tri(EIDAdj[EIDMammals,EIDMammals])]),
   PredNetwork = c(AllSums[EIDMammals,EIDMammals][lower.tri(EIDAdj[EIDMammals,EIDMammals])])
 )
 

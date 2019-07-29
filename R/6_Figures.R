@@ -55,7 +55,7 @@ plot_grid(FitList[["VirusBinary"]] %>%
             coord_fixed() +
             theme(legend.position = "bottom",
                   legend.title = element_text(size = 10)) +
-            scale_fill_continuous_sequential(palette = "Greens 2", cmax = 20, end = 1,
+            scale_fill_continuous_sequential(palette = "ag_GrnYl",
                                              limits = c(0,1),
                                              breaks = c(0,0.5,1)),
           
@@ -64,7 +64,7 @@ plot_grid(FitList[["VirusBinary"]] %>%
             labs(x = "Geographic Overlap", 
                  y = "Phylogenetic Similarity") +
             #ggtitle("Data Distribution") +
-            scale_fill_continuous_sequential(palette = "purp", begin = 0.2) +
+            scale_fill_continuous_sequential(palette = "Heat 2") +
             lims(x = c(0,1), y = c(0,1)) +
             coord_fixed() +
             theme(legend.position = "bottom") +
@@ -94,7 +94,6 @@ plot1 <- Panth1 %>% group_by(hOrder) %>%
   mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
   filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% 
   ggplot(aes(Subset, ScalePredDegree, colour = as.factor(Subset))) + 
-  geom_violin(colour = "grey") +
   geom_hline(yintercept = 0, lty = 2, alpha = 0.2) +
   geom_sina(aes(alpha = Subset)) + scale_alpha_manual(values = c(0.3,1,1,1)) +
   labs(x = "Host dataset", y = "Within-order scaled degree (SD)") +
@@ -103,32 +102,52 @@ plot1 <- Panth1 %>% group_by(hOrder) %>%
   geom_errorbar(data = Errordf, inherit.aes = F, 
                 aes(x = as.factor(Subset), 
                     ymin = CentreDegree - se,
-                    ymax = CentreDegree + se), width = 0.1) +
-  scale_x_discrete(labels = c("Unobserved", "EID Only","HP3 Only",  "Both")) +
+                    ymax = CentreDegree + se), 
+                width = 0.1) +
+  scale_x_discrete(labels = c("Unobserved", "EID2 Only","Training Data Only",  "Both")) +
   scale_colour_manual(values = c("light grey", AlberColours[[1]], AlberColours[[2]], AlberColours[[3]]))
-
 
 Hosts$AnyZoo <- as.factor(as.numeric(Hosts$hZoonosisCount>0))
 
-plot2 <- Hosts %>% 
-  BarGraph("AnyZoo", "AllPredDegree", Text = "N") + 
-  labs(x = "Zoonotic Host", y = "Predicted links") + 
-  theme(legend.position = "none") +
-  scale_fill_manual(values = c(AlberColours[[1]], AlberColours[[2]])) 
+Ns1 = table(Hosts$AnyZoo)
 
-table(EIDCordf$EIDConnected)
+plot2 <- Hosts %>% 
+  SinaGraph("AnyZoo", 
+            "AllPredDegree",
+            Alpha = 0.6) + 
+  labs(x = "Zoonotic Host", 
+       y = "Predicted links") + 
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c(AlberColours[[1]], AlberColours[[2]])) +
+  scale_colour_manual(values = c(AlberColours[[1]], AlberColours[[2]])) +
+  scale_x_discrete(labels = c("No","Yes")) +
+  geom_text(data = data.frame(),
+            inherit.aes = F, 
+            aes(label = paste0("N=",c(Ns1[1],Ns1[2])),
+                x = as.factor(c(0,1)), y = rep(575,2)))
+
+EIDCordf %>% 
+  filter(!(Sp%in%FHN&Sp2%in%FHN)) -> 
+  SubEIDCordf
+
+Ns = table(SubEIDCordf$EIDConnected)
 
 plot3 <-
-  SinaGraph(EIDCordf, "EIDConnected", "PredNetwork", Scale = "width", Alpha = 0.2) +
+  SinaGraph(EIDCordf, 
+            "EIDConnected", 
+            "PredNetwork", 
+            Scale = "width", Alpha = 0.2) +
   scale_colour_manual(values = c(AlberColours[[1]], AlberColours[[2]])) +
-  # scale_colour_discrete_sequential(palette = AlberPalettes[[3]], nmax = 8, order = c(4,7)) +
   scale_alpha_manual(values = c(0.2,0.2)) +
+  scale_x_discrete(labels = c("No", "Yes")) +
   theme(legend.position = "none") +
-  labs(x = "EID2 Sharing", y = "Predicted Sharing Probability") +
-  lims(y = c(0,1)) + geom_text(data = data.frame(),
-                               inherit.aes = F, 
-                               aes(label = c("N=46887", "N=7069"), 
-                                   x = as.factor(c(0,1)), y = c(1,1)))
+  labs(x = "Shares in EID2", 
+       y = "Sharing Probability") +
+  lims(y = c(0,1)) + 
+  geom_text(data = data.frame(),
+            inherit.aes = F, 
+            aes(label = paste0("N=",c(Ns[1],Ns[2])), 
+                x = as.factor(c(0,1)), y = c(1,1)))
 
 bottom_row <- plot_grid(plot2, plot3, labels = c("B","C"))
 
@@ -136,10 +155,7 @@ plot_grid(plot1, bottom_row, nrow = 2,
           labels = c("A",NULL), 
           rel_heights = c(1.5,1)) %>%
   save_plot(filename = "Figures/Figure2.jpeg", 
-            #units = "mm", width = 200, height = 200,
-            # ncol = 2, # we're saving a grid plot of 2 columns
             nrow = 2, # and 2 rows
-            # each individual subplot should have an aspect ratio of 1.3
             base_aspect_ratio = 2)
 
 # Figure 3.	taxonomic and geographic prediction patterns #####
@@ -162,7 +178,7 @@ Map_All <- GridDegree %>% filter(Metric == "AllDegree") %>%
   theme(legend.position = "bottom")
 
 Map_In <- GridDegree %>% filter(Metric == "InDegree")  %>% 
-  #mutate(Degree = ifelse(Degree>150, 150, ifelse(Degree<30,40,Degree))) %>%
+  mutate(Degree = ifelse(Degree>220, 220, Degree)) %>%
   mutate(RichCut = as.factor(ifelse(Richness>2,1,0))) %>%
   ggplot(aes(X, Y, fill = Degree, colour = Degree)) + 
   geom_tile(fill = "grey", colour = "grey") +
@@ -681,9 +697,100 @@ BarGraph(ValidSummary, "vFamily", "MeanRank", Text = "N", Order = T, Just = T) +
 BarGraph(ValidSummary, "vFamily", "LogRank", Text = "N", Order = T, Just = T) +
   labs(x = "Viral Family")
 
+# Summed sharing (rather than mean) ####
+
+load("Output Files/Panth1.Rdata")
+load("Output Files/GridDegree.Rdata")
+
+Sum_Map_All <- GridDegree %>% filter(Metric == "AllDegree") %>% 
+  mutate(Degree = ifelse(Degree>300, 300, Degree)*Richness) %>%
+  ggplot(aes(X, Y, fill = Degree, colour = Degree)) +
+  geom_tile(fill = "grey", colour = "grey") +
+  geom_tile(aes(alpha = log10(Richness+1))) +
+  coord_fixed() + 
+  guides(alpha = "none") +
+  labs(fill = "All links", colour = "All links") +
+  scale_colour_continuous_sequential(palette = AlberPalettes[1]) +  
+  scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
+  theme_void() + 
+  theme(legend.position = "bottom",
+        legend.text = element_text(hjust = 1, angle = 40))
+
+Sum_Map_In <- GridDegree %>% filter(Metric == "InDegree")  %>% 
+  mutate(Degree = Degree*Richness) %>%
+  ggplot(aes(X, Y, fill = Degree, colour = Degree)) + 
+  geom_tile(fill = "grey", colour = "grey") +
+  geom_tile(aes(alpha = log10(Richness+1))) +
+  coord_fixed() + 
+  guides(alpha = "none") +
+  labs(fill = "Within-order links", colour = "Within-order links") +
+  scale_colour_continuous_sequential(palette = AlberPalettes[2]) +  
+  scale_fill_continuous_sequential(palette = AlberPalettes[2]) +
+  theme_void() + 
+  theme(legend.position = "bottom",
+        legend.text = element_text(hjust = 1, angle = 40)) 
+
+Sum_Map_Out <- GridDegree %>% filter(Metric == "OutDegree")  %>% 
+  mutate(Degree = ifelse(Degree>150, 150, ifelse(Degree<0, 0, Degree))*Richness) %>%
+  ggplot(aes(X, Y, fill = Degree, colour = Degree)) + 
+  geom_tile(fill = "grey", colour = "grey") +
+  geom_tile(aes(alpha = log10(Richness+1))) +
+  coord_fixed() + 
+  guides(alpha = "none") +
+  labs(fill = "Out-of-order links", colour = "Out-of-order links") +
+  scale_colour_continuous_sequential(palette = AlberPalettes[3]) +  
+  scale_fill_continuous_sequential(palette = AlberPalettes[3]) +
+  theme_void() + 
+  theme(legend.position = "bottom",
+        legend.text = element_text(hjust = 1, angle = 40)) 
+
+TextSize = 3
+AxisTextX = 8
+AxisTextY = 10
+
+Sum_Taxon_All <- 
+  BarGraph(Panth1, "hOrder", "AllPredDegree", Just = T, Order = T, Text = "N", TextSize = TextSize, Fun = sum) +
+  scale_fill_discrete_sequential(palette = AlberPalettes[[1]]) +
+  labs(x = NULL, y = "All links") +
+  theme(axis.text.x = element_text(size = AxisTextX),
+        axis.text.y = element_text(size = AxisTextY)) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+Sum_Taxon_In <- BarGraph(Panth1, "hOrder", "InDegree", Just = T, Order = T, Text = "N", TextSize = TextSize, Fun = sum) +
+  scale_fill_discrete_sequential(palette = AlberPalettes[[2]]) +
+  labs(x = NULL, y = "Within-order links") +
+  theme(axis.text.x = element_text(size = AxisTextX),
+        axis.text.y = element_text(size = AxisTextY)) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+Sum_Taxon_Out <- BarGraph(Panth1, "hOrder", "OutDegree", Just = T, Order = T, Text = "N", TextSize = TextSize, Fun = sum) +
+  scale_fill_discrete_sequential(palette = AlberPalettes[[3]]) +
+  labs(x = NULL, y = "Out-of-order links") +
+  theme(axis.text.x = element_text(size = AxisTextX),
+        axis.text.y = element_text(size = AxisTextY)) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1))
+
+Row_All <- plot_grid(Sum_Taxon_All, Sum_Map_All, 
+                     nrow = 1, rel_widths = c(1.5,1), 
+                     labels = LETTERS[1:2], axis = "t")
+
+Row_In <- plot_grid(Sum_Taxon_In, Sum_Map_In, nrow = 1, rel_widths = c(1.5,1), 
+                    labels = LETTERS[1:2+2], axis = "t")
+
+Row_Out<- plot_grid(Sum_Taxon_Out, Sum_Map_Out, nrow = 1, rel_widths = c(1.5,1), 
+                    labels = LETTERS[1:2+4], axis = "t")
+
+SumPlot <- plot_grid(Row_All, Row_In, Row_Out, nrow = 3)
+
+SumPlot %>%  save_plot(filename = "SIFigures/SumPlot.jpeg", 
+                       #units = "mm", width = 200, height = 200,
+                       # ncol = 2, # we're saving a grid plot of 2 columns
+                       # nrow = 2, # and 2 rows
+                       # each individual subplot should have an aspect ratio of 1.3
+                       base_aspect_ratio = 1,
+                       base_height = 9)
 
 # Poster Presentation Map ####
-
 
 plot_grid(FitList[["VirusBinary"]] %>% 
             filter(!is.na(SpaceQuantile)) %>%

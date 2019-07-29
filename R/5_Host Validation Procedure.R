@@ -4,7 +4,7 @@
 library(tidyverse); library(parallel); library(ggregplot); library(ape); library(SpRanger); library(Matrix)
 
 # load("Output Files/AllSims.Rdata")
-# load("Output Files/AllSums.Rdata")
+load("Output Files/AllSums.Rdata")
 
 print("Start Validating!")
 
@@ -12,8 +12,10 @@ a = 1
 
 GAMValid <- lapply(VirusAssocs, 
                    function(a){
-                     NetworkValidate(a, AllSums)
+                     NetworkValidate(a, AllSums, colSums)
                    })
+
+save(GAMValid, file = "Output Files/GAMValid.Rdata")
 
 {
   
@@ -67,24 +69,32 @@ ValidSummary <-  ValidSummary %>%
   left_join(VirusTraits, by = "Virus") %>%
   left_join(VirusHostRanges) %>%
   mutate(LogRank = log10(MeanRank),
-         LogHosts = log10(NHosts))
+         LogHosts = log10(NHosts)) %>% 
+  mutate_if(is.numeric, function(a) scale(a))
 
 Im1 <- INLAModelAdd("LogRank", 1, 
                     c(VirusCovar, "LogHosts", "HostRangeMean"), 
                     Random = "vFamily", "iid", "gaussian", 
                     ValidSummary[!NARows(ValidSummary, c(VirusCovar, "LogHosts", "HostRangeMean", "LogRank")),])
 
+list(Im1$AllModels[[1]], Im1$AllModels[[2]]$HostRangeMean, Im1$AllModels[[3]]$vVectorYNna, Im1$AllModels[[4]]$LogHosts) %>% Efxplot
+
+Efxplot(Im1["FinalModel"])
 
 # Null predictions using only space and phylogeny ####
 
 GAMValidSpace <- lapply(VirusAssocs, 
                         function(a){
-                          NetworkValidate(a, FullRangeAdj[rownames(AllSums), rownames(AllSums)])
+                          NetworkValidate(a, 
+                                          FullRangeAdj[rownames(AllSums), 
+                                                       rownames(AllSums)])
                         })
 
 GAMValidPhylo <- lapply(VirusAssocs, 
                         function(a){
-                          NetworkValidate(a, tFullSTMatrix[rownames(AllSums), rownames(AllSums)])
+                          NetworkValidate(a, 
+                                          tFullSTMatrix[rownames(AllSums), 
+                                                        rownames(AllSums)])
                         })
 
 SpaceValidSummary <- data.frame(
