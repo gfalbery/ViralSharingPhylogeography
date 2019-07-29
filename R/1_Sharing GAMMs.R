@@ -192,3 +192,120 @@ for(r in 1:length(BAMList)){
 }
 
 save(FitList, PostList, DrawList, file = "Output Files/FitList.Rdata")
+
+# Validating the model and getting deviance contributions 
+
+
+Iterations = 10
+
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
+
+y = Resps[1]
+
+RealOutcomes <- DataList[[y]][,y]
+
+RealPredictions <- predict.bam(BAMList[[y]], 
+                               newdata = DataList[[y]]) %>% logistic
+
+InterceptPredictions <- rep(mean(RealPredictions), nrow(DataList[[y]]))
+
+RandomPredictionList <- DevianceList <- list()
+
+for(x in c("Space", "Phylo", "MinCites", "Domestic","Spp")){
+  
+  print(x)
+  
+  for(i in 1:Iterations){
+    
+    print(i)
+    
+    PredDF <- DataList[[1]]
+    
+    PredDF[,x] <- PredDF %>% slice(sample(1:n())) %>% pull(x)
+    
+    if(x == "Space"){
+      PredDF <- PredDF %>% mutate(Gz = as.numeric(Space == 0))
+    }
+    
+    Predictions <- predict.bam(BAMList[[y]], 
+                               newdata = PredDF)
+    
+    RandomPredictionList[[x]][[i]] <- logistic(Predictions)
+    
+    ModelLikelihood = dbinom(RealOutcomes, 1, RandomPredictionList[[x]][[i]], log = TRUE) %>% sum
+    
+    Deviance = -2*ModelLikelihood
+    
+    DevianceList[[x]][[i]] <- Deviance
+  }
+}
+
+RealModelLikelihood = dbinom(RealOutcomes, 1, RealPredictions, log = TRUE) %>% sum
+RealDeviance = -2*RealModelLikelihood
+
+InterceptModelLikelihood = dbinom(RealOutcomes, 1, InterceptPredictions, log = TRUE) %>% sum
+InterceptDeviance = -2*InterceptModelLikelihood
+
+sapply(DevianceList, mean) %>% c(Real = RealDeviance, Intercept = InterceptDeviance)
+
+DevianceAccounted = 1 - RealDeviance/InterceptDeviance
+
+# Keeping the vector constant ####
+
+Iterations = 10
+
+Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
+
+y = Resps[1]
+
+RealOutcomes <- DataList[[y]][,y]
+
+RealPredictions <- predict.bam(BAMList[[y]], 
+                               newdata = DataList[[y]]) %>% logistic
+
+InterceptPredictions <- rep(mean(RealPredictions), nrow(DataList[[y]]))
+
+RandomPredictionList <- DevianceList <- list()
+
+for(x in c("Space", "Phylo", "MinCites", "Domestic","Spp")){
+  
+  print(x)
+  
+  PredDF <- DataList[[1]]
+  
+  SaveVector <- PredDF[,y]
+  
+  for(i in 1:Iterations){
+    
+    print(i)
+    
+    PredDF <- PredDF %>% slice(sample(1:n()))
+    PredDF[,x] <- SaveVector
+    
+    if(x == "Space"){
+      PredDF <- PredDF %>% mutate(Gz = as.numeric(Space == 0))
+    }
+    
+    Predictions <- predict.bam(BAMList[[y]], 
+                               newdata = PredDF)
+    
+    RandomPredictionList[[x]][[i]] <- logistic(Predictions)
+    
+    ModelLikelihood = dbinom(RealOutcomes, 1, RandomPredictionList[[x]][[i]], log = TRUE) %>% sum
+    
+    Deviance = -2*ModelLikelihood
+    
+    DevianceList[[x]][[i]] <- Deviance
+    
+  }
+}
+
+RealModelLikelihood = dbinom(RealOutcomes, 1, RealPredictions, log = TRUE) %>% sum
+RealDeviance = -2*RealModelLikelihood
+
+InterceptModelLikelihood = dbinom(RealOutcomes, 1, InterceptPredictions, log = TRUE) %>% sum
+InterceptDeviance = -2*InterceptModelLikelihood
+
+sapply(DevianceList, mean) %>% c(Real = RealDeviance, Intercept = InterceptDeviance)
+
+DevianceAccounted = 1 - RealDeviance/InterceptDeviance
