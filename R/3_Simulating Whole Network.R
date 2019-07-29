@@ -109,27 +109,6 @@ print("Summing Matrix!")
 
 if(file.exists("Output Files/AllSums.Rdata")) load("Output Files/AllSums.Rdata") else{
   
-  AllPredSums <- logistic(rowSums(AllPredictions))
-  
-  AssMat <- matrix(NA, 
-                   nrow = length(AllMammals), 
-                   ncol = length(AllMammals))
-  
-  AssMat[lower.tri(AssMat)] <- AllPredSums
-  AssMat[upper.tri(AssMat)] <- t(AssMat)[!is.na(t(AssMat))]
-  diag(AssMat) <- 0
-  
-  dimnames(AssMat) <- list(AllMammals,
-                           AllMammals)
-  
-  AllSums <- as(AssMat, "dgCMatrix")
-  
-  save(AllSums, file = "Output Files/AllSums.Rdata")
-  
-}
-
-if(file.exists("Output Files/AllSums2.Rdata")) load("Output Files/AllSums2.Rdata") else{
-  
   AllPredDF <- AllPredList %>% as.data.frame()
   
   AllPredSums <- rowSums(AllPredDF)/length(AllPredList)
@@ -145,9 +124,9 @@ if(file.exists("Output Files/AllSums2.Rdata")) load("Output Files/AllSums2.Rdata
   dimnames(AssMat) <- list(AllMammals,
                            AllMammals)
   
-  AllSums2 <- as(AssMat, "dgCMatrix")
+  AllSums <- as(AssMat, "dgCMatrix")
   
-  save(AllSums2, file = "Output Files/AllSums2.Rdata")
+  save(AllSums, file = "Output Files/AllSums.Rdata")
   
 }
 
@@ -175,4 +154,4 @@ if(file.exists("Output Files/AllSimGs.Rdata")) load("Output Files/AllSimGs.Rdata
 print(Sys.time())
 
 AllMammaldf$Virus <- AllSums[AllMammals,AllMammals][lower.tri(AllSums[AllMammals,AllMammals])]
-AllMammaldf$Virus2 <- AllSums2[AllMammals,AllMammals][lower.tri(AllSums2[AllMammals,AllMammals])]
+
