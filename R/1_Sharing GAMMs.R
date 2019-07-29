@@ -59,7 +59,7 @@ save(DataList, PPList, BAMList, file = "Output Files/BAMList.Rdata")
 
 # Using this to make outputs ####
 
-FitList <- PostList <- DrawList <- list()
+FitList <- list()
 
 r = 1
 
@@ -112,91 +112,13 @@ for(r in 1:length(BAMList)){
   
   print("Getting posterior uncertainty!")
   
-  # Posterior Uncertainty Simulation #### https://www.fromthebottomoftheheap.net/2014/06/16/simultaneous-confidence-intervals-for-derivatives/
-  
-  for(i in c("Space", "Phylo")){
-    
-    print(i)
-    
-    PredData <- FitList[[Resps[r]]] 
-    
-    if(i == "Space") PredData <- PredData %>% filter(Phylo == last(unique(Phylo))) else{
-      
-      PredData <- PredData %>% filter(Space == 0)
-      
-    }
-    
-    lp <- predict(Model, newdata = PredData, 
-                  type = "lpmatrix") %>% 
-      as.data.frame()
-    
-    coefs <- coef(Model)
-    vc <- vcov(Model)
-    
-    sim <- mvrnorm(100, mu = coefs, Sigma = vc)
-    
-    want <- lp %>% colnames
-    
-    lp <- lp %>% as.matrix #%>% logistic
-    
-    fits <- lp[, want] %*% t(sim[, want]) %>% as.data.frame() %>%
-      mutate(i = PredData[,i])
-    
-    PostList[[Resps[r]]][[i]] <- gather(fits, key = "Draw", value = "Fit", -i) %>%
-      mutate(Fit = logistic(Fit))
-    
-  }
-  
-  Draw = F
-  
-  if(Draw){
-    
-    DrawList[[Resps[r]]] <- list()
-    
-    for(i in c("Space", "Phylo")){
-      
-      print(i)
-      
-      lp = list()
-      
-      for(j in 1:100){
-        
-        print(j)
-        
-        PredData <- FitList[[Resps[r]]]
-        
-        if(i == "Space"){
-          
-          PredData <- PredData %>% filter(Phylo == last(unique(Phylo))) %>%
-            mutate(Phylo = sample(DataList[[Resps[r]]]$Phylo, 1))
-          
-        } else {
-          
-          PredData <- PredData %>% filter(Space == last(unique(Space))) %>%
-            mutate(Space = sample(DataList[[Resps[r]]]$Space, 1))
-          
-        }
-        
-        lp[[j]] <- data.frame(Fit = predict(Model, newdata = PredData),
-                              Iteration = as.factor(j),
-                              i = PredData[,i])
-        
-      }
-      
-      DrawList[[Resps[r]]][[i]] <- lp %>% bind_rows() %>% as.data.frame() %>%
-        mutate(Fit = logistic(Fit))
-      
-    }
-  }
-  
 }
 
-save(FitList, PostList, DrawList, file = "Output Files/FitList.Rdata")
+save(FitList, file = "Output Files/FitList.Rdata")
 
 # Validating the model and getting deviance contributions 
 
-
-Iterations = 10
+Iterations = 100
 
 Resps <- c("VirusBinary","RNA","DNA","Vector","NVector")
 
@@ -250,7 +172,11 @@ sapply(DevianceList, mean) %>% c(Real = RealDeviance, Intercept = InterceptDevia
 
 DevianceAccounted = 1 - RealDeviance/InterceptDeviance
 
-# Keeping the vector constant ####
+((sapply(DevianceList, mean) - RealDeviance)/(InterceptDeviance - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
+
+((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
+
+# Validating the model and getting deviance contributions 
 
 Iterations = 10
 
@@ -267,24 +193,17 @@ InterceptPredictions <- rep(mean(RealPredictions), nrow(DataList[[y]]))
 
 RandomPredictionList <- DevianceList <- list()
 
-for(x in c("Space", "Phylo", "MinCites", "Domestic","Spp")){
+for(x in c("Space", "Gz", "Phylo", "MinCites", "Domestic","Spp", "Gz")){
   
   print(x)
-  
-  PredDF <- DataList[[1]]
-  
-  SaveVector <- PredDF[,y]
   
   for(i in 1:Iterations){
     
     print(i)
     
-    PredDF <- PredDF %>% slice(sample(1:n()))
-    PredDF[,x] <- SaveVector
+    PredDF <- DataList[[1]]
     
-    if(x == "Space"){
-      PredDF <- PredDF %>% mutate(Gz = as.numeric(Space == 0))
-    }
+    PredDF[,x] <- PredDF %>% slice(sample(1:n())) %>% pull(x)
     
     Predictions <- predict.bam(BAMList[[y]], 
                                newdata = PredDF)
@@ -296,7 +215,6 @@ for(x in c("Space", "Phylo", "MinCites", "Domestic","Spp")){
     Deviance = -2*ModelLikelihood
     
     DevianceList[[x]][[i]] <- Deviance
-    
   }
 }
 
@@ -309,3 +227,8 @@ InterceptDeviance = -2*InterceptModelLikelihood
 sapply(DevianceList, mean) %>% c(Real = RealDeviance, Intercept = InterceptDeviance)
 
 DevianceAccounted = 1 - RealDeviance/InterceptDeviance
+
+((sapply(DevianceList, mean) - RealDeviance)/(InterceptDeviance - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
+
+((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
+
