@@ -54,7 +54,7 @@ save(GAMValid, file = "Output Files/GAMValid.Rdata")
 
 save(ValidSummary, file = "Output Files/ValidSummary.Rdata")
 
-VirusCovar <- c("IsHoSa","IsHoSa.stringent",
+VirusCovar <- c("IsHoSa", # "IsHoSa.stringent",
                 #"vGenomeMinLength","vGenomeMaxLength","vGenomeAveLength","vWOKcites","vPubMedCites",
                 "vCytoReplicTF","vSegmentedTF",
                 "vVectorYNna","vSSoDS","vDNAoRNA","vEnvelope",
@@ -65,22 +65,30 @@ VirusTraits <- VirusTraits %>%
   mutate(vCytoReplicTF = as.numeric(vCytoReplicTF),
          vSegmentedTF = as.numeric(vSegmentedTF))
 
-ValidSummary <-  ValidSummary %>%
+ValidDF <-  ValidSummary %>%
   left_join(VirusTraits, by = "Virus") %>%
   left_join(VirusHostRanges) %>%
   mutate(LogRank = log10(MeanRank),
-         LogHosts = log10(NHosts)) %>% 
-  mutate_if(is.numeric, function(a) scale(a))
+         LogHosts = log10(NHosts)) %>%
+  # mutate_if(is.numeric, function(a) scale(a)) %>%
+  select(-c(vSubfamily, vGenus, vIsTypeSpecies, vICTVnumber, vGenomeMinLength, vGenomeMaxLength, vGenomeAveLength)) %>%
+  na.omit()
 
 Im1 <- INLAModelAdd("LogRank", 1, 
                     c(VirusCovar, "LogHosts", "HostRangeMean"), 
                     Random = "vFamily", "iid", "gaussian", 
-                    ValidSummary[!NARows(ValidSummary, c(VirusCovar, "LogHosts", "HostRangeMean", "LogRank")),])
+                    ValidDF)
 
 list(Im1$AllModels[[1]], Im1$AllModels[[2]]$HostRangeMean, Im1$AllModels[[3]]$vVectorYNna, Im1$AllModels[[4]]$LogHosts) %>% Efxplot
 
-Efxplot(Im1["FinalModel"])
+Efxplot(ModelList = Im1["FinalModel"])
 
+LM1 <- lme4::lmer(LogRank ~ HostRangeMean + vVectorYNna + LogHosts + (1|vFamily),
+            data = ValidDF)
+
+R2 <- r2glmm::r2beta(LM1, method = 'sgv')
+R2
+  
 # Null predictions using only space and phylogeny ####
 
 GAMValidSpace <- lapply(VirusAssocs, 

@@ -2,7 +2,6 @@
 
 library(tidyverse);library(Matrix); library(parallel); library(mgcv); library(ggregplot)
 
-
 # Removing non-eutherian mammals ####
 
 NonEutherians <- c("Diprotodontia",

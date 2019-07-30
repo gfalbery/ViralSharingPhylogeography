@@ -16,7 +16,7 @@ plot_grid(FitList[["VirusBinary"]] %>%
             geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = SpaceQuantile), alpha = 0.2, colour = NA) +
             geom_line(aes(group = as.factor(Space))) +
             labs(y = "Viral Sharing Probability", x = "Phylogenetic Similarity", 
-                 colour = "Geographic\noverlap", fill = "Geographic\noverlap") +
+                 colour = "Geographic overlap", fill = "Geographic overlap") +
             lims(x = c(0,1), y = c(0,1)) +
             coord_fixed() +
             scale_color_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
@@ -82,6 +82,8 @@ plot_grid(FitList[["VirusBinary"]] %>%
 
 # Figure 2.	Observed hosts have higher predicted degree centrality #####
 
+load("Output Files/Panth1.Rdata")
+
 Errordf <- Panth1 %>% group_by(hOrder) %>%
   mutate(ScalePredDegree = scale_this(AllPredDegree)) %>%   
   filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% 
@@ -95,7 +97,7 @@ plot1 <- Panth1 %>% group_by(hOrder) %>%
   filter(hOrder %in% (Panth1 %>% filter(Obs==1) %>% droplevels)$hOrder) %>% 
   ggplot(aes(Subset, ScalePredDegree, colour = as.factor(Subset))) + 
   geom_hline(yintercept = 0, lty = 2, alpha = 0.2) +
-  geom_sina(aes(alpha = Subset)) + scale_alpha_manual(values = c(0.3,1,1,1)) +
+  geom_sina(aes(alpha = Subset)) + scale_alpha_manual(values = c(0.3,0.7,0.7,0.7)) +
   labs(x = "Host dataset", y = "Within-order scaled degree (SD)") +
   theme(legend.position = "none") +
   geom_point(data = Errordf, colour = "black", aes(y = CentreDegree)) + 
@@ -133,7 +135,7 @@ EIDCordf %>%
 Ns = table(SubEIDCordf$EIDConnected)
 
 plot3 <-
-  SinaGraph(EIDCordf, 
+  SinaGraph(SubEIDCordf, 
             "EIDConnected", 
             "PredNetwork", 
             Scale = "width", Alpha = 0.2) +
@@ -154,7 +156,16 @@ bottom_row <- plot_grid(plot2, plot3, labels = c("B","C"))
 plot_grid(plot1, bottom_row, nrow = 2, 
           labels = c("A",NULL), 
           rel_heights = c(1.5,1)) %>%
-  save_plot(filename = "Figures/Figure2.jpeg", 
+  save_plot(filename = "Figures/Figure2a.jpeg", 
+            nrow = 2, # and 2 rows
+            base_aspect_ratio = 2)
+
+bottom_row <- plot_grid(plot3, plot2, labels = c("A","B"))
+
+plot_grid(bottom_row, plot1, nrow = 2, 
+          labels = c(" ","C"), 
+          rel_heights = c(1,1.5)) %>%
+  save_plot(filename = "Figures/Figure2b.jpeg", 
             nrow = 2, # and 2 rows
             base_aspect_ratio = 2)
 
@@ -254,21 +265,49 @@ WholePlot %>%  save_plot(filename = "Figures/Figure3.jpeg",
 
 # Deviance contributions ####
 
-DevianceDF <- data.frame(
-  Var = names((((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())) %>% round(3)),
-  Model_Deviance = (((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())) %>% round(3)
-) %>%
-  mutate(Total_Deviance = Model_Deviance*DevianceAccounted) %>%
-  mutate(Var = factor(Var, levels = c("Domestic", "MinCites", "Gz", "Space", "Phylo", "Spp")))
+lapply(Resps, function(a){
+  DevianceDF <- data.frame(
+    Var = names((((sapply(DevianceList[[a]], mean) - RealDeviance[[a]]) %>% prop.table())) %>% round(3)),
+    Model_Deviance = (((sapply(DevianceList[[a]], mean) - RealDeviance[[a]]) %>% prop.table())) %>% round(3)
+  ) %>%
+    mutate(Total_Deviance = Model_Deviance*(RealDeviance[[a]]/InterceptDeviance[[a]])) %>%
+    mutate(Var = factor(Var, levels = c("Domestic", "MinCites", "Gz", "Space", "Phylo", "Spp")))
+  
+}) -> DevianceDFList
 
-DevianceDF %>% gather("Model", "Deviance", Model_Deviance, Total_Deviance) %>% 
+names(DevianceDFList) <- Resps
+
+Resps %>% lapply(function(a){ 
+  
+  gather(DevianceDFList[[a]], "Model", "Deviance", Model_Deviance, Total_Deviance) %>% 
+    ggplot(aes(Model, Deviance, fill = Var)) + geom_col(position = "stack", colour = "black") + 
+    lims(y = c(0,1)) +
+    labs(fill = "Variable") +
+    scale_fill_discrete_sequential(palette = "Plasma", rev = F,
+                                   labels = c("Domestic", "Citations", "Space == 0", "Space", "Phylogeny", "Species")) +
+    scale_x_discrete(labels = c("Model Deviance", "Total Deviance")) +
+    ggtitle(a)
+  
+}) %>% plot_grid(plotlist = ., ncol = 5) %>% save_plot(file = "SIFigures/DevianceOutput.jpeg", 
+                                                       base_aspect_ratio = 1, base_width = 15)
+
+
+Resps %>% lapply(function(a){ 
+  
+  gather(DevianceDFList[[a]], "Model", "Deviance", Model_Deviance, Total_Deviance)
+  
+})  %>% bind_rows(.id = "Response") %>% mutate(Response = factor(RespLabels[as.numeric(Response)], levels = RespLabels)) %>%
   ggplot(aes(Model, Deviance, fill = Var)) + geom_col(position = "stack", colour = "black") + 
   lims(y = c(0,1)) +
-  labs(fill = "Variable") +
+  labs(fill = "Variable", x = NULL) +
   scale_fill_discrete_sequential(palette = "Plasma", rev = F,
                                  labels = c("Domestic", "Citations", "Space == 0", "Space", "Phylogeny", "Species")) +
   scale_x_discrete(labels = c("Model Deviance", "Total Deviance")) +
-  ggsave("SIFigures/Deviance Contributions.jpeg", units = "mm", width = 160, height = 110)
+  theme(strip.background = element_rect(fill = "white"),
+        axis.text.x = element_text(hjust = 1, angle = 45)) + 
+  facet_wrap(~Response, nrow = 1) +
+  ggsave(file = "SIFigures/DevianceOutput.jpeg", units = "mm", height = 100, width = 200)
+
 
 # Subnetwork model outputs ####
 
@@ -519,21 +558,37 @@ OrderPairs %>%
        title = "Scaling of between-order links") +
   ggsave("SIFigures/BetweenOrderScaling.jpeg", units = "mm", height = 100, width = 100, dpi = 300)
 
-# Correlations among host range and predictability ####
+# Host range correlates with predictability ####
 
-ValidSummary %>% 
+ValidDF %>% 
   ggplot(aes(HostRangeMean, log10(MeanRank))) +
-  geom_point(aes(colour = vVectorYNna)) + 
-  geom_smooth(colour = "black", fill = NA, method = lm, aes(colour = vVectorYNna)) +
+  geom_point(aes(colour = vVectorYNna), alpha = 0.6) + 
+  geom_smooth(fill = NA, method = lm, aes(colour = vVectorYNna)) +
   stat_smooth(fill = NA, aes(colour = vVectorYNna), 
               geom = "ribbon", 
-              lty = 2, colour = "black", 
+              lty = 2, #colour = "black", 
               method = lm) +
   # scale_colour_discrete_sequential(palette = AlberPalettes[[2]]) + 
   labs(x = "Average host phylogenetic similarity",
-       y = "log10(mean rank)") +
-  ggsave("SIFigures/HostRange_Predictability.jpeg", units = "mm", 
-         width = 200, height = 100, dpi = 300)
+       y = "log10(mean rank)",
+       colour = "Vector-Borne")  + scale_y_reverse() +
+  scale_colour_manual(values = c(AlberColours[[2]], AlberColours[[1]])) +
+  ggsave("SIFigures/HostRange_Predictability.jpeg", units = "mm", width = 150, height = 100, dpi = 300)
+
+# Host number and predictability ####
+
+ValidDF %>% 
+  ggplot(aes(LogHosts, LogRank)) +
+  geom_point(alpha = 0.6, colour = AlberColours[[1]]) + 
+  geom_smooth(fill = NA, method = lm, colour = "black") +
+  stat_smooth(fill = NA, 
+              geom = "ribbon", 
+              lty = 2, colour = "black", 
+              method = lm) +
+  labs(x = "log10(host number)",
+       y = "log10(mean rank)")  + #scale_y_reverse() +
+  ggsave("SIFigures/HostNumber_Predictability.jpeg", units = "mm", 
+         width = 150, height = 100, dpi = 300)
 
 # No other viral traits matter for prediction ####
 
@@ -541,7 +596,7 @@ jpeg("SIFigures/ViralTraits_Predictability.jpeg", units = "mm", width = 200, hei
 
 VirusCovar %>% 
   lapply(function(a){
-    BarGraph(ValidSummary, a, "MeanRank", Text = "N") +
+    BarGraph(ValidDF, a, "MeanRank", Text = "N") +
       theme(legend.position = "none")
   }) %>% 
   arrange_ggplot2(ncol = 3)
@@ -550,7 +605,7 @@ dev.off()
 
 # Taxonomic patterns of predictability ####
 
-Errordf <- ValidSummary %>% group_by(vFamily) %>% 
+Errordf <- ValidDF %>% group_by(vFamily) %>% 
   summarise(MedianRank = median(MeanRank),
             sd = sd(MeanRank),
             N = n()) %>% mutate(se = sd/(N^0.5)) %>%
@@ -558,10 +613,12 @@ Errordf <- ValidSummary %>% group_by(vFamily) %>%
 
 vFamilyOrder <- Errordf$vFamily
 
-ggplot(ValidSummary, aes(vFamily, log10(MeanRank))) + geom_sina(colour = AlberColours[[2]]) + 
+ggplot(ValidDF, aes(vFamily, log10(MeanRank))) + 
+  geom_boxplot() + 
+  geom_point(colour = AlberColours[[2]]) + 
   scale_x_discrete(limits = vFamilyOrder) +
   labs(x = "Viral Family", y = "log10(Focal host rank)", colour = "Family") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_y_reverse() +
   ggsave("SIFigures/VirusTaxonomy_PredictionSuccess.jpeg", units = "mm", width = 150, height = 100, dpi = 300)
 
 # ?????????? Figures I still might use?? ####
@@ -681,7 +738,7 @@ plot_grid(
 
 # No. hosts versus predictability ####
 
-ggplot(ValidSummary, aes(log10(NHosts), log10(MeanRank))) + 
+ggplot(ValidDF, aes(log10(NHosts), log10(MeanRank))) + 
   geom_point() +
   geom_smooth(colour = "black", fill = NA) + 
   stat_smooth(fill = NA, geom = "ribbon", lty = 2, colour = "black") +

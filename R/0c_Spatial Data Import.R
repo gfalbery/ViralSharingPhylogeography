@@ -295,7 +295,91 @@ RangeAdj <- FullRangeAdj[RangeHosts,RangeHosts]
 
 VirusAssocs <- apply(M, 1, function(a) names(a[a>0]))
 
+detach(package:raster)
+
 library(centiserve); library(tidyverse); library(GGally); library(igraph)
+
+# Removing non-eutherian mammals ####
+
+NonEutherians <- c("Diprotodontia",
+                   "Dasyuromorphia",
+                   "Paucituberculata",
+                   "Didelphimorphia",
+                   "Microbiotheria",
+                   "Peramelemorphia", 
+                   "Notoryctemorphia",
+                   "Monotremata")
+
+Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
+  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order)
+Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
+
+NonEutherianSp <- Panth1[Panth1$hOrder%in%NonEutherians,"Sp"]
+
+FinalHostNames <- reduce(list(
+  rownames(FullRangeAdj), 
+  colnames(FullSTMatrix),
+  rownames(HostAdj)), intersect)
+
+FHN <- FinalHostNames %>% setdiff(NonEutherianSp); length(FHN)
+
+AllMammals <- intersect(colnames(FullSTMatrix),colnames(FullRangeAdj))
+AllMammals <- AllMammals[order(AllMammals)]
+AbsentHosts <- FHN[which(!FHN%in%AllMammals)]
+
+# Replacing absent names in the full ST matrix ####
+
+NameReplace <- c(
+  "Micaelamys_namaquensis",
+  "Akodon_paranaensis",
+  "Bos_frontalis",
+  "Bos_grunniens",
+  "Bubalus_arnee", # Absent
+  "Capra_hircus",
+  "Hexaprotodon_liberiensis",
+  "Equus_burchellii",
+  "Oryzomys_alfaroi" ,
+  "Oryzomys_laticeps",
+  "Oryzomys_megacephalus",
+  "Callithrix_argentata",
+  "Miniopterus_schreibersii",
+  "Myotis_ricketti",
+  "Oryzomys_albigularis",
+  "Ovis_aries",
+  "Piliocolobus_badius",
+  "Piliocolobus_rufomitratus" ,
+  "Lycalopex_gymnocercus" ,
+  "Rhinolophus_hildebrandtii",
+  "Oryzomys_angouya",
+  "Mops_condylurus",
+  "Chaerephon_plicatus",
+  "Chaerephon_pumilus",
+  "Taurotragus_oryx")
+
+names(NameReplace) <- AbsentHosts
+
+rownames(FullSTMatrix) <- colnames(FullSTMatrix) <- sapply(rownames(FullSTMatrix), function(a) ifelse(a%in%AbsentHosts, NameReplace[a], a))
+
+NonEutherians <- c("Diprotodontia",
+                   "Dasyuromorphia",
+                   "Paucituberculata",
+                   "Didelphimorphia",
+                   "Microbiotheria",
+                   "Peramelemorphia", 
+                   "Notoryctemorphia",
+                   "Monotremata")
+
+Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
+  dplyr::rename(Sp = MSW05_Binomial, hOrder = MSW05_Order, hFamily = MSW05_Family)
+Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
+
+NonEutherianSp <- Panth1[Panth1$hOrder%in%NonEutherians,"Sp"]
+
+tFullSTMatrix <- 1 - (FullSTMatrix[!rownames(FullSTMatrix)%in%NonEutherianSp,!rownames(FullSTMatrix)%in%NonEutherianSp] - 
+                        min(FullSTMatrix[!rownames(FullSTMatrix)%in%NonEutherianSp,!rownames(FullSTMatrix)%in%NonEutherianSp]))/
+  max(FullSTMatrix[!rownames(FullSTMatrix)%in%NonEutherianSp,!rownames(FullSTMatrix)%in%NonEutherianSp])
+
+tSTMatrix <- tFullSTMatrix
 
 human <- which(rownames(tFullSTMatrix) == "Homo_sapiens")
 
@@ -321,7 +405,9 @@ VirPhyloHostRangeMean <- sapply(VirusAssocs, function(a){
     b <- a[a%in%rownames(nhCytBMatrix)]
     
     if(length(b)>1){
+      
       mean(nhCytBMatrix[b, b][upper.tri(nhCytBMatrix[b, b])])
+      
     } else 0
   } else NA
   
@@ -346,7 +432,5 @@ VirusHostRanges = data.frame(
   HostRangeMax = VirPhyloHostRangeMax,
   HostRangeMedian = VirPhyloHostRangeMedian
 )
-
-detach(package:raster)
 
 

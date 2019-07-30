@@ -74,4 +74,16 @@ nlevels(DataList$Vector$Sp)
 nlevels(DataList$NVector$Sp)
 nlevels(DataList$DNA$Sp)
 
+# Methods ####
 
+nrow(AssocsTraits)
+length(FHN)
+
+length(intersect(rownames(FullRangeAdj), 
+                 rownames(FullSTMatrix) %>% setdiff(NonEutherianSp)))
+
+dim(FullSTMatrix)
+
+dim(FullRangeAdj)
+
+nrow(AllMammaldf)
