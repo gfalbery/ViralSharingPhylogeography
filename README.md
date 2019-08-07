@@ -5,4 +5,17 @@ The project examines mammalian viral sharing patterns and their phylogeographic 
 
 Simulating with the resulting estimates produced a neutral network of global viral sharing patterns, which we used to uncover multiple taxonomic and geographic patterns of viral sharing.
 
-R scripts are numbered according to the order of use - everything else is a mess xox
+# R scripts are numbered according to the order of use: #
+- scripts beginning with `0_` will import and structure datasets.
+- all other scripts will: 
+-- run viral sharing GAMMs, 
+-- validate the GAMMs, 
+-- use the estimates to predict the global mammalian viral sharing network, 
+-- summarise traits of the network,
+-- use it to predict sharing patterns, and 
+-- make figures.
+
+# Data come from three main sources: # 
+- The IUCN ( )
+- A mammalian supertree ( )
+- A mammal-virus association dataset ( )
