@@ -179,11 +179,16 @@ for(y in Resps){
   
 }
 
-sapply(DevianceList, mean) %>% c(Real = RealDeviance, Intercept = InterceptDeviance)
+DevianceList %>% lapply(., function(a) sapply(a, mean)) %>% c(Real = RealDeviance, Intercept = InterceptDeviance)
 
-DevianceAccounted = 1 - RealDeviance/InterceptDeviance
+lapply(Resps, function(a){
+  DevianceDF <- data.frame(
+    Var = names((((sapply(DevianceList[[a]], mean) - RealDeviance[[a]]) %>% prop.table())) %>% round(3)),
+    Model_Deviance = (((sapply(DevianceList[[a]], mean) - RealDeviance[[a]]) %>% prop.table())) %>% round(3)
+  ) %>%
+    mutate(Total_Deviance = Model_Deviance*(RealDeviance[[a]]/InterceptDeviance[[a]])) %>%
+    mutate(Var = factor(Var, levels = c("Domestic", "MinCites", "Gz", "Space", "Phylo", "Spp")))
+  
+}) -> DevianceDFList
 
-((sapply(DevianceList, mean) - RealDeviance)/(InterceptDeviance - RealDeviance) %>% prop.table())*DevianceAccounted %>% round(2)
-
-(((sapply(DevianceList, mean) - RealDeviance) %>% prop.table())*DevianceAccounted) %>% round(3)
-
+names(DevianceDFList) <- Resps

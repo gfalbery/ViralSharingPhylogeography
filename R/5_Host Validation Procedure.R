@@ -1,9 +1,8 @@
 
 # 5_Host Validation Procedure ####
 
-library(tidyverse); library(parallel); library(ggregplot); library(ape); library(SpRanger); library(Matrix)
+library(tidyverse); library(parallel); library(ggregplot); library(ape); library(SpRanger); library(Matrix); library(broom)
 
-# load("Output Files/AllSims.Rdata")
 load("Output Files/AllSums.Rdata")
 
 print("Start Validating!")
@@ -84,11 +83,11 @@ list(Im1$AllModels[[1]], Im1$AllModels[[2]]$HostRangeMean, Im1$AllModels[[3]]$vV
 Efxplot(ModelList = Im1["FinalModel"])
 
 LM1 <- lme4::lmer(LogRank ~ HostRangeMean + vVectorYNna + LogHosts + (1|vFamily),
-            data = ValidDF)
+                  data = ValidDF)
 
 R2 <- r2glmm::r2beta(LM1, method = 'sgv')
 R2
-  
+
 # Null predictions using only space and phylogeny ####
 
 GAMValidSpace <- lapply(VirusAssocs, 
@@ -382,4 +381,109 @@ Im1 <- INLAModelAdd("LogRank", 1, c(VirusCovar, "LogHosts", "HostRangeMean"),
                     ValidSummary[!NARows(ValidSummary, c(VirusCovar, "LogHosts", "HostRangeMean", "LogRank")),])
 
 
+# Validation with increasing numbers of hosts ####
 
+FocalRank <- function(x){
+  
+  y <- x[x[,"Focal"]=="Observed","Count"]
+  z <- x[x[,"Focal"]=="Predicted","Count"]
+  
+  (length(z$Count) + 2) - sapply(y$Count, function(a) rank(c(a,z$Count))[1])
+  
+}
+
+ValidSummaryList <- list()
+
+Length <- length(VirusAssocs[[Virus]])
+
+ValidSummaryList[[1]][2:Length] %>% lapply(bind_rows) %>% lapply()
+
+i = 1
+
+for(i in i:length(VirusAssocs)){
+  
+  Virus <- names(VirusAssocs)[i]
+  
+  print(Virus)
+  
+  ValidSummaryList[[Virus]] <- list()
+  
+  Length <- length(VirusAssocs[[i]] %>% intersect(AllMammals))
+  
+  print(paste0("Length:", Length))
+  
+  if(Length>2){
+    
+    SubAssocs <- VirusAssocs[[i]] %>% intersect(AllMammals)
+    
+    for(j in 2:Length){
+      
+      print(j)
+      
+      Combs <- combn(SubAssocs, j) %>% as.data.frame()
+      
+      if(ncol(Combs)>Iterations){
+        
+        Combs <- Combs[,sample(1:ncol(Combs), Iterations)]
+        
+      }
+      
+      GAMValid2 <- lapply(Combs %>% mutate_if(is.factor, as.character) %>% as.list, 
+                          function(a){
+                            NetworkValidate(a, AllSums, colSums, Silent = T) 
+                          })
+      
+      ValidSummaryList[[Virus]][[j]] <- ValidSummary2 <- data.frame(
+        
+        Virus = Virus, 
+        
+        Iteration = 1:length(GAMValid2),
+        
+        NHosts = map(GAMValid2, "Focal") %>% sapply(function(a) which(a=="Observed") %>% length),
+        
+        MeanRank = sapply(GAMValid2, function(a) mean(FocalRank(a))),
+        
+        MeanCount = sapply(GAMValid2, function(a) mean(a$Count)),
+        MeanCount1 = sapply(GAMValid2, function(a) mean(a[a$Focal=="Observed",]$Count)),
+        MeanCount0 = sapply(GAMValid2, function(a) mean(a[a$Focal=="Predicted",]$Count))
+        
+      ) %>% slice(order(MeanRank)) %>%
+        mutate(CountDiff = MeanCount1 - MeanCount0)
+      
+      ValidSummary2 %>% summarise(mean(MeanRank), 
+                                  median(MeanRank))
+      
+    }
+    
+  }
+}
+
+Virus = "African_horse_sickness_virus"
+
+ValidSummaryList[which(sapply(ValidSummaryList, function(a) length(a)>0))] %>% lapply(function(a) bind_rows(a[2:length(a)])) %>% bind_rows() %>%
+  group_by(Virus, NHosts) %>%
+  ggplot(aes(NHosts, MeanRank)) + geom_point() + geom_smooth(method = lm) + ggpubr::stat_cor() +
+  facet_wrap(~Virus, scales = "free")
+
+ValidSummaryList[which(sapply(ValidSummaryList, function(a) length(a)>0))] %>% lapply(function(a) bind_rows(a[2:length(a)])) %>% bind_rows() %>%
+  group_by(Virus, NHosts) %>% summarise(MeanRank = median(MeanRank)) %>% 
+  ungroup() %>% group_by(NHosts) %>% 
+  summarise(MeanRank = median(MeanRank)) %>% 
+  ggplot(aes(NHosts, MeanRank)) + geom_point()
+
+ValidSummaryList[which(sapply(ValidSummaryList, function(a) length(a)>0))] %>% lapply(function(a) bind_rows(a[2:length(a)])) %>% bind_rows() %>%
+  group_by(Virus, NHosts) %>% summarise(MeanRank = median(MeanRank)) %>% 
+  do(tidy(lm(MeanRank ~ NHosts, data = .)))
+
+ValidSummaryList[which(sapply(ValidSummaryList, function(a) length(a)>0))] %>% lapply(function(a) bind_rows(a[2:length(a)])) %>% bind_rows() %>%
+  group_by(Virus, NHosts) %>% summarise(MeanRank = median(MeanRank)) %>% 
+  do(tidy(cor(pull(.,MeanRank), pull(.,NHosts))))
+
+ValidSummaryList[which(sapply(ValidSummaryList, function(a) length(a)>0))] %>% lapply(function(a) bind_rows(a[2:length(a)])) %>% bind_rows() %>%
+  group_by(Virus) %>% # summarise(MeanRank = median(MeanRank)) %>% 
+  do(tidy(lm(MeanRank ~ NHosts, data = .)))
+
+ValidSummaryList[which(sapply(ValidSummaryList, function(a) length(a)>0))] %>% lapply(function(a) bind_rows(a[2:length(a)])) %>% bind_rows() %>%
+  group_by(Virus) %>% # summarise(MeanRank = median(MeanRank)) %>% 
+  do(tidy(lm(log10(MeanRank) ~ NHosts, data = .))) %>% 
+  filter(term == "NHosts") %>% pull(estimate)

@@ -7,6 +7,9 @@ library(igraph); library(tidyverse); library(ggregplot); library(parallel); libr
 
 print("Getting All Network Characteristics")
 
+load("~/Albersnet/Output Files/AllSimGs.Rdata")
+load("~/Albersnet/Output Files/AllSums.Rdata")
+
 if(file.exists("Output Files/AllNetworkStats.Rdata")) load("Output Files/AllNetworkStats.Rdata") else{
   
   AllPredNetwork <- mclapply(AllSimGs, AllNetworkStats, mc.cores = 10)
@@ -30,10 +33,6 @@ Panth1 <- read.delim("data/PanTHERIA_1-0_WR05_Aug2008.txt") %>%
 Panth1$Sp <- Panth1$Sp %>% str_replace(" ", "_")
 
 Panth1 <- left_join(Panth1, AllPredDegrees, by = "Sp")
-
-load("data/FullPolygons.Rdata")
-
-FullPolygons <- left_join(FullPolygons, AllPredDegrees, by = c("Host" = "Sp"), all.x = T)
 
 print("Dividing within- and between-order links")
 
@@ -186,7 +185,6 @@ if(file.exists("Output Files/GridDegree.Rdata")) load("Output Files/GridDegree.R
 
 # Dissecting between-order links ####
 
-
 Combos <- t(combn(levels(Panth1$hOrder),2)) %>% as.data.frame() %>%
   rename(Order1 = V1, Order2 = V2)
 
@@ -205,7 +203,7 @@ for(i in 1:nrow(Combos)){
     
     FocalNet <- AllSums[b1,b2] %>% as.matrix
     
-    hComboList[[i]] <- data.frame(Degree = c(rowSums(FocalNet), colSums(FocalNet)),
+    hComboList[[paste(Combos[i,1],Combos[i,2], sep = ".")]] <- data.frame(Degree = c(rowSums(FocalNet), colSums(FocalNet)),
                                   Iteration = i,
                                   Sp = c(b1, b2),
                                   Order = c(rep(a[1], length(b1)), rep(a[2], length(b2))),
@@ -213,7 +211,7 @@ for(i in 1:nrow(Combos)){
   }
 }
 
-hComboList <- hComboList %>% bind_rows()
+hComboList <- hComboList %>% bind_rows(.id = "Combo")
 
 hUniteList <- list()
 
