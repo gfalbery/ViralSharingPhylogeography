@@ -153,21 +153,12 @@ plot3 <-
             aes(label = paste0("N=",c(Ns[1],Ns[2])), 
                 x = as.factor(c(0,1)), y = c(1,1)))
 
-bottom_row <- plot_grid(plot2, plot3, labels = c("B","C"))
+top_row <- plot_grid(plot3, plot2, labels = c("A","B"))
 
-plot_grid(plot1, bottom_row, nrow = 2, 
-          labels = c("A",NULL), 
-          rel_heights = c(1.5,1)) %>%
-  save_plot(filename = "Figures/Figure2a.jpeg", 
-            nrow = 2, # and 2 rows
-            base_aspect_ratio = 2)
-
-bottom_row <- plot_grid(plot3, plot2, labels = c("A","B"))
-
-plot_grid(bottom_row, plot1, nrow = 2, 
+plot_grid(top_row, plot1, nrow = 2, 
           labels = c(" ","C"), 
           rel_heights = c(1,1.5)) %>%
-  save_plot(filename = "Figures/Figure2b.jpeg", 
+  save_plot(filename = "Figures/Figure2.jpeg", 
             nrow = 2, # and 2 rows
             base_aspect_ratio = 2)
 
