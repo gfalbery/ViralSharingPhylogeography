@@ -1,4 +1,4 @@
-![banner](https://github.com/gfalbery/Albersnet/blob/master/VoidMap2.jpg)
+![banner](https://github.com/gfalbery/Albersnet/blob/master/VoidMap2.jpeg)
 
 # Predicting the global mammalian viral sharing network using phylogeography #
 ## Authors: Greg Albery, Evan Eskew, Noam ross, and Kevin Olival ##
