@@ -13,13 +13,13 @@ Simulating with the resulting estimates produced a "neutral" network of global v
 
 ### R scripts are numbered according to the order of use: ###
 - Scripts beginning with `0_` will import and structure datasets.
-- All other scripts will: \n
--- run viral sharing GAMMs, \n
--- validate the GAMMs, \n
--- use the estimates to predict the global mammalian viral sharing network, \n
--- summarise traits of the network,\n
--- use it to predict sharing patterns, and \n
--- make figures.\n
+- All other scripts will:  
+-- run viral sharing GAMMs,  
+-- validate the GAMMs,  
+-- use the estimates to predict the global mammalian viral sharing network,  
+-- summarise traits of the network,  
+-- use it to predict sharing patterns, and  
+-- make figures.  
 
 ### Data come from three main sources: ###
 - The IUCN (https://www.iucnredlist.org/resources/spatial-data-download)
