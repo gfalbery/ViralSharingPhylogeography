@@ -1,4 +1,4 @@
-![banner](https://github.com/gfalbery/Albersnet/blob/master/VoidMap2.jpeg)
+![banner](https://github.com/gfalbery/Albersnet/blob/master/Display_Map.jpeg)
 
 # Predicting the global mammalian viral sharing network using phylogeography #
 ## Authors: Greg Albery, Evan Eskew, Noam ross, and Kevin Olival ##
@@ -25,4 +25,5 @@ Simulating with the resulting estimates produced a "neutral" network of global v
 - The IUCN (https://www.iucnredlist.org/resources/spatial-data-download)
 - A mammalian supertree (https://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2009.01307.x)
 - A mammal-virus association dataset (https://github.com/ecohealthalliance/hp3)
-- The Enhanced Infectious Diseases Database (EID2) (https://www.nature.com/articles/sdata201549)
+
+Our validation set was the Enhanced Infectious Diseases Database (EID2) (https://www.nature.com/articles/sdata201549)
