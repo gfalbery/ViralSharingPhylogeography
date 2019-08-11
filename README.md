@@ -1,5 +1,9 @@
 ![banner](https://github.com/gfalbery/Albersnet/blob/master/Display_Map.jpeg)
 
+  <!-- badges: start -->
+  [![Launch Rstudio Binder](http://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/gfalbery/Albersnet/master?urlpath=rstudio)
+  <!-- badges: end -->
+  
 # Predicting the global mammalian viral sharing network using phylogeography #
 ## Authors: Greg Albery, Evan Eskew, Noam ross, and Kevin Olival ##
 
