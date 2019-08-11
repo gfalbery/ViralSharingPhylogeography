@@ -1,0 +1,58 @@
+Type: Compendium
+Package: ViralSharingPhylogepgraphy
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.1
+Authors@R: 
+    person(given = "First",
+           family = "Last",
+           role = c("aut", "cre"),
+           email = "first.last@example.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Predicting the mammalian viral sharing
+    network
+License: What license it uses
+Depends: 
+    ape,
+    broom,
+    centiserve,
+    colorspace,
+    cowplot,
+    dplyr,
+    fasterize,
+    fs,
+    geiger,
+    GGally,
+    ggplot2,
+    ggpubr,
+    ggregplot,
+    igraph,
+    lme4,
+    magrittr,
+    maptools,
+    MASS,
+    matrix,
+    Matrix,
+    MCMCglmm,
+    metR,
+    mgcv,
+    ncdf4,
+    parallel,
+    phylogram,
+    picante,
+    purrr,
+    PVR,
+    r2glmm,
+    raster,
+    RColorBrewer,
+    RCurl,
+    readr,
+    reshape2,
+    ROCR,
+    rprojroot,
+    sf,
+    SpRanger,
+    terra,
+    tidyverse,
+    velox
+Encoding: UTF-8
+LazyData: true
