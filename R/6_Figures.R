@@ -531,6 +531,16 @@ SumPlot %>% save_plot(filename = "SIFigures/Figure SI9.jpeg",
 
 # Deviance contributions ####
 
+# SITable ####
+
+SITable <- DevianceDFList %>% 
+  lapply(function(a) t(a) %>% as.data.frame()) %>% 
+  bind_rows(.id = "Response") %>% slice(1:5*3-1)
+
+names(SITable) <- c("Response",DevianceDFList[[1]]$Var %>% as.character)
+
+SITable$N <- sapply(DataList, function(a) nlevels(a$Sp))
+
 Resps %>% lapply(function(a){ 
   
   gather(DevianceDFList[[a]], "Model", "Deviance", Model_Deviance, Total_Deviance) %>% 
