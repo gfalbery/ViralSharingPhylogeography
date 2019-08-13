@@ -21,7 +21,7 @@
   "description": "Data and code to replicate the findings of Albery et al., 2019",
   "access_right": "open",
   "related_identifiers": [{
-      "identifier": "https://doi.org/10.1101/732255",
+      "identifier": "10.1101/732255",
       "relation": "isSupplementTo",
       "scheme": "doi"
     }, {
