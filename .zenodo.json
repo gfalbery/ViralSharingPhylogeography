@@ -21,6 +21,10 @@
   "description": "Data and code to replicate the findings of Albery et al., 2019",
   "access_right": "open",
   "related_identifiers": [{
+      "identifier": "https://www.biorxiv.org/content/10.1101/732255v2",
+      "relation": "isSupplementTo",
+      "scheme": "doi"
+    }, {
     "identifier": "http://github.com/gfalbery/ViralSharingPhylogeography",
     "relation": "isIdenticalTo",
     "scheme": "url"
