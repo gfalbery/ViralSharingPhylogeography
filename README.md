@@ -1,4 +1,4 @@
-![banner](https://github.com/gfalbery/ViralSharingPhylogeography/blob/master/Display_Map.jpeg)
+![banner](https://github.com/gfalbery/ViralSharingPhylogeography/blob/master/Display_Map2.png)
 
   <!-- badges: start -->
   [![Launch Rstudio Binder](http://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/gfalbery/ViralSharingPhylogeography/master?urlpath=rstudio)
