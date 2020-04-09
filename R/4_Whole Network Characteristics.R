@@ -66,7 +66,7 @@ Panth1 <- Panth1 %>% left_join(InDegrees2)
 Panth1$OutDegree <- with(Panth1, AllPredDegree-InDegree)
 
 EIDSpecies <- read.csv("data/EID/SpeciesInteractions_EID2.csv", header = T)
-EIDSpecies <- EIDSpecies %>% mutate(Carrier = str_replace(Carrier, " ", "_"),
+EIDSpecies <- EIDSpecies %>% mutate(Carrier = str_replace(Carrier, " ", "_") %>% CamelConvert,
                                     Cargo = str_replace(Cargo, " ", "_"))
 
 substr(EIDSpecies$Carrier,1,1) <- toupper(substr(EIDSpecies$Carrier,1,1))
@@ -177,7 +177,7 @@ if(file.exists("Output Files/GridDegree.Rdata")) load("Output Files/GridDegree.R
   GridDegree <- DegreeDF %>% 
     mutate_at(vars(contains("Degree")), function(a) a/DegreeDF$Richness) %>% 
     mutate_at(vars(contains("Degree")), function(a) ifelse(a==0|is.na(a), min(a[a>0], na.rm = T), a)) %>% 
-    gather(key = "Metric", value = "Degree", contains("Degree"))
+    tidyr::gather(key = "Metric", value = "Degree", contains("Degree"))
   
   save(GridDegree, file = "Output Files/GridDegree.Rdata")
   
@@ -248,6 +248,6 @@ OrderLevelLinks <- Panth1 %>% #dplyr::select(-c("AllPredDegree", "InDegree", "Ou
             OutDegree = mean(OutDegree, na.rm = T),
             InDegree = mean(InDegree, na.rm = T),
             AllPredDegree = mean(AllPredDegree, na.rm = T)) %>%
-  gather(key = "Metric", value = "Degree", contains("Degree"))
+  tidyr::gather(key = "Metric", value = "Degree", contains("Degree"))
 
 

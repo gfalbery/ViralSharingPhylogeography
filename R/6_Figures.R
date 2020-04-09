@@ -75,12 +75,79 @@ plot_grid(FitList[["VirusBinary"]] %>%
           nrow = 2, 
           rel_heights = c(1,1.23), 
           labels = "AUTO") %>% 
-  save_plot(filename = "Figures/Figure1.jpeg", 
+  save_plot(filename = "Figures/Figure1Cowplot.svg", 
+            #filename = "Figures/Figure1.jpeg", 
             #units = "mm", width = 200, height = 200,
             ncol = 2, # we're saving a grid plot of 2 columns
             nrow = 2, # and 2 rows
             # each individual subplot should have an aspect ratio of 1.3
             base_aspect_ratio = 1)
+
+FitList[["VirusBinary"]] %>% 
+            filter(!is.na(SpaceQuantile)) %>%
+            ggplot(aes(Phylo, Fit, colour = SpaceQuantile)) + 
+            geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = SpaceQuantile), alpha = 0.2, colour = NA) +
+            geom_line(aes(group = as.factor(Space))) +
+            labs(y = "Viral sharing probability", x = "Phylogenetic similarity", 
+                 colour = "Geographic overlap", fill = "Geographic overlap") +
+            lims(x = c(0,1), y = c(0,1)) +
+            coord_fixed() +
+            scale_color_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+            scale_fill_discrete_sequential(palette = AlberPalettes[[1]], nmax = 8, order = 5:8)  +
+            theme(legend.position = c(0.1, 0.8), 
+                  legend.title = element_text(size = 10)) +
+            geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Phylo), alpha = 0.01) +
+          
+          FitList[["VirusBinary"]] %>% 
+            filter(!is.na(PhyloQuantile)) %>%
+            ggplot(aes(Space, Fit, colour = PhyloQuantile)) + 
+            geom_ribbon(aes(ymin = Lower, ymax = Upper, fill = PhyloQuantile), alpha = 0.2, colour = NA) +
+            geom_line(aes(group = as.factor(Phylo))) +
+            labs(y = "Viral sharing probability", x = "Geographic overlap", 
+                 colour = "Phylogenetic similarity", fill = "Phylogenetic similarity") +
+            lims(x = c(0,1), y = c(0,1)) +
+            coord_fixed() +
+            scale_color_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+            scale_fill_discrete_sequential(palette = AlberPalettes[[2]], nmax = 8, order = 5:8)  +
+            theme(legend.position = c(0.1, 0.8), 
+                  legend.title = element_text(size = 10)) +
+            geom_rug(data = DataList[[1]], inherit.aes = F, aes(x = Space), alpha = 0.01) +
+          
+          FitList[["VirusBinary"]] %>% 
+            filter(!Phylo == last(unique(Phylo)),
+                   !Space == last(unique(Space))) %>%
+            ggplot(aes(Space, Phylo)) + 
+            geom_tile(aes(fill = Fit)) + 
+            labs(x = "Geographic overlap", 
+                 y = "Phylogenetic similarity",
+                 fill = "Viral sharing\nprobability") +
+            #ggtitle("Tensor Field") +
+            lims(x = c(0,1), y = c(0,1)) +
+            coord_fixed() +
+            theme(legend.position = "bottom",
+                  legend.title = element_text(size = 10)) +
+            geom_contour(aes(z = Fit), colour = "white", alpha = 0.8) + 
+            metR::geom_text_contour(aes(z = Fit), colour = "white", size = 2.5, hjust = 0.5, vjust = 1.1, check_overlap = T) +
+            scale_fill_continuous_sequential(palette = "ag_GrnYl",
+                                             limits = c(0,1),
+                                             breaks = c(0,0.5,1)) +
+          
+          DataList$VirusBinary %>%
+            ggplot(aes(Space, Phylo)) + 
+            labs(x = "Geographic overlap", 
+                 y = "Phylogenetic similarity") +
+            #ggtitle("Data Distribution") +
+            scale_fill_continuous_sequential(palette = "Heat 2") +
+            lims(x = c(0,1), y = c(0,1)) +
+            coord_fixed() +
+            theme(legend.position = "bottom") +
+            geom_hex(aes(fill = stat(log(count)))) +
+  
+  plot_annotation(tag_levels = "A") + 
+  #plot_layout(heights = c(1, 1.23)) +
+  ggsave(#filename = "Figures/Figure1Patchwork.jpeg", 
+        filename = "Figures/Figure1Patchwork.svg",
+            units = "mm", width = 200, height = 200, dpi = 600)
 
 # Figure 2.	Observed hosts have higher predicted degree centrality #####
 
@@ -111,13 +178,15 @@ plot1 <- Panth1 %>% group_by(hOrder) %>%
   scale_x_discrete(labels = c("Unobserved", "EID2 only","Training data only",  "Both")) +
   scale_colour_manual(values = c("light grey", AlberColours[[1]], AlberColours[[2]], AlberColours[[3]]))
 
+load("Output Files/Hosts.Rdata")
+
 Hosts$AnyZoo <- as.factor(as.numeric(Hosts$hZoonosisCount>0))
 
 Ns1 = Hosts %>% filter(Sp%in%FHN) %>% pull(AnyZoo) %>% table()
 
 plot2 <- Hosts %>% 
   SinaGraph("AnyZoo", 
-            "AllPredDegree.x",
+            "AllPredDegree",
             Alpha = 0.6) + 
   labs(x = "Zoonotic host", 
        y = "Predicted links") + 
@@ -158,9 +227,16 @@ top_row <- plot_grid(plot3, plot2, labels = c("A","B"))
 plot_grid(top_row, plot1, nrow = 2, 
           labels = c(" ","C"), 
           rel_heights = c(1,1.5)) %>%
-  save_plot(filename = "Figures/Figure2.jpeg", 
-            nrow = 2, # and 2 rows
-            base_aspect_ratio = 2)
+  save_plot(#filename = "Figures/Figure2.jpeg", 
+    filename = "Figures/Figure2.svg", 
+    nrow = 2, # and 2 rows
+    base_aspect_ratio = 2)
+
+((plot3 + plot2)/plot1 + plot_annotation(tag_levels = "A")) +
+#  (top_row/plot1 + plot_annotation(tag_levels = "A")) +
+  ggsave(filename = "Figures/Figure2Patchwork.svg", 
+         #filename = "Figures/Figure2Patchwork.jpeg", #
+            width = 200, height = 200, dpi = 600, units = "mm")
 
 # Figure 3.	taxonomic and geographic prediction patterns #####
 
@@ -246,9 +322,60 @@ Row_Out<- plot_grid(Taxon_Out, Map_Out, nrow = 1, rel_widths = c(1.5,1),
 
 WholePlot <- plot_grid(Row_All, Row_In, Row_Out, nrow = 3)
 
-WholePlot %>%  save_plot(filename = "Figures/Figure3.jpeg", 
+WholePlot %>%  save_plot(#filename = "Figures/Figure3.jpeg", 
+  filename = "Figures/Figure3.svg", 
                          base_aspect_ratio = 1,
                          base_height = 9)
+
+((Taxon_All + Map_All)/
+    (Taxon_In + Map_In)/
+    (Taxon_Out + Map_Out)) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(widths = c(1.5, 1)) +
+  ggsave(#filename = "Figures/Figure3.svg", 
+    filename = "Figures/Figure3Patchwork.jpeg", units = "mm", width = 200, height = 300, dpi = 600)
+
+((Taxon_All + Map_All + theme(legend.position = c(0.1, 0.2)))/
+    (Taxon_In + Map_In + theme(legend.position = c(0.1, 0.2)) + labs(fill = "Within-order\nlinks", colour = "Within-order\nlinks"))/
+    (Taxon_Out + Map_Out + theme(legend.position = c(0.1, 0.2)) + labs(fill = "Out-of-order\nlinks", colour = "Out-of-order\nlinks"))) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(guides = "collect") +
+  plot_layout(widths = c(1.5, 1)) +
+  ggsave(#filename = "Figures/Figure3.svg", 
+    filename = "Figures/Figure3Patchwork.jpeg", units = "mm", width = 250, height = 300, dpi = 100)
+
+
+((Taxon_All/Taxon_In/Taxon_Out)|(Map_All/Map_In/Map_Out) + plot_layout(guides = "collect")) +
+  plot_annotation(tag_levels = "A") +
+  plot_layout(widths = c(1.5, 1)) +
+  ggsave(#filename = "Figures/Figure3.svg", 
+    filename = "Figures/Figure3Patchwork.jpeg", units = "mm", width = 200, height = 300, dpi = 600)
+
+# High Qual Map ####
+
+Map_Large <- GridDegree %>% filter(Metric == "AllDegree") %>% 
+  mutate(Degree = ifelse(Degree>300, 300, Degree)) %>%
+  mutate(RichCut = as.factor(ifelse(Richness>2,1,0))) %>%
+  ggplot(aes(X, Y, fill = Degree)) + #, colour = Degree)) +
+  # geom_tile(fill = "grey", colour = "grey") +
+  # geom_tile(aes(alpha = log10(Richness+1))) +
+  geom_tile() +
+  coord_fixed() + 
+  guides(alpha = "none") +
+  labs(fill = "All links", colour = "All links") +
+  scale_colour_continuous_sequential(palette = AlberPalettes[1]) +  
+  scale_fill_continuous_sequential(palette = AlberPalettes[1]) +
+  theme_void() + 
+  theme(legend.position = "bottom")
+
+Map_Large + theme(legend.position = "none")+
+  ggsave(#filename = "Figures/Figure3.svg", 
+    filename = "Figures/LargeMap.jpeg", units = "mm", width = 300, height = 150, dpi = 600)
+
+Map_Large + theme(legend.position = "none")+
+  ggsave(#filename = "Figures/Figure3.svg", 
+    filename = "Figures/LargeMap2.png", units = "mm", width = 500, height = 250, dpi = 600)
+
 
 # Supplementary figures #####
 
@@ -332,6 +459,60 @@ lapply(2:5, function(a){
             # each individual subplot should have an aspect ratio of 1.3
             base_aspect_ratio = 1)
 
+# Large matrix plot ####
+
+# Rscript "R Code/1_Sharing Models/6c_Big Matrix Figure.R"
+
+library(geiger);library(ape);library(picante); library(tidyverse); library(colorspace); library(ggregplot); library(RColorBrewer)
+
+STFull <- read.nexus("data/ele_1307_sm_sa1.tre")[[1]]
+
+load("Output Files/Panth1.Rdata")
+load("Output Files/AllSums.Rdata")
+
+OrderSizeOrder <- Panth1 %>% group_by(hOrder) %>% summarise(A = mean(AllPredDegree)) %>% slice(order(A))
+
+OrderHostOrder <- (Panth1 %>% mutate(hOrder = factor(hOrder, levels = OrderSizeOrder$hOrder)) %>% slice(order(hOrder, Sp)) %>% select(Sp))$Sp %>% unique
+
+m1 = AllSums %>% as.matrix %>% reshape2::melt() %>%
+  dplyr::rename(Sp = Var2, Sp2 = Var1, Links = value) %>%
+  mutate(Sp = factor(Sp, levels = OrderHostOrder),
+         Sp2 = factor(Sp2, levels = OrderHostOrder))
+
+jpeg("SIFigures/Figure SI4a.jpeg", units = "mm", width = 350, height = 350, res = 600)
+
+m1 %>% mutate_at("Links", ~log10(.x*100+1)) %>%
+  
+  ggplot(aes(Sp, Sp2)) + geom_tile(aes(fill = Links)) +
+  scale_x_discrete(labels = NULL) + scale_y_discrete(labels = NULL) +
+  scale_fill_continuous_sequential(palette = AlberPalettes[2], limits = c(0, 2),
+                                   breaks = c(0, 1, 2), labels = c(0, 0.1, 1)) +
+  coord_fixed() +
+  labs(x = "Species 1", y = "Species 2", fill = "Sharing\nprobability")
+
+dev.off()
+
+PhyloHostOrder <- STFull$tip.label
+
+m2 = AllSums %>% as.matrix %>% reshape2::melt() %>%
+  dplyr::rename(Sp = Var2, Sp2 = Var1, Links = value) %>%
+  mutate(Sp = factor(Sp, levels = PhyloHostOrder),
+         Sp2 = factor(Sp2, levels = PhyloHostOrder))
+
+jpeg("SIFigures/Figure SI4b.jpeg", units = "mm", width = 350, height = 350, res = 600)
+
+m2 %>% mutate_at("Links", ~log10(.x*100+1)) %>%
+  
+  ggplot(aes(Sp, Sp2)) + geom_tile(aes(fill = Links)) +
+  scale_x_discrete(labels = NULL) + scale_y_discrete(labels = NULL) +
+  scale_fill_continuous_sequential(palette = AlberPalettes[2], limits = c(0, 2),
+                                   breaks = c(0, 1, 2), labels = c(0, 0.1, 1)) +
+  coord_fixed() +
+  labs(x = "Species 1", y = "Species 2", fill = "Sharing\nprobability")
+
+dev.off()
+
+
 # Species in the observed dataset have higher predicted centrality across all mammals ####
 
 Panth1 %>% 
@@ -400,8 +581,8 @@ LineDF <- expand.grid(
 )
 
 LineDF2 <- predict(LM1, 
-                      newdata = LineDF,
-                      se.fit = TRUE)
+                   newdata = LineDF,
+                   se.fit = TRUE)
 
 ValidDF %>% 
   ggplot(aes(HostRangeMean, log10(MeanRank))) +
