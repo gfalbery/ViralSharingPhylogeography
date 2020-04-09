@@ -1,19 +1,19 @@
-![banner](https://github.com/gfalbery/Albersnet/blob/master/Display_Map.jpeg)
+![banner](https://github.com/gfalbery/ViralSharingPhylogeography/blob/master/Display_Map2.png)
 
   <!-- badges: start -->
-  [![Launch Rstudio Binder](http://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/gfalbery/Albersnet/master?urlpath=rstudio)
+  [![Launch Rstudio Binder](http://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/gfalbery/ViralSharingPhylogeography/master?urlpath=rstudio)
   <!-- badges: end -->
   
 # Predicting the global mammalian viral sharing network using phylogeography #
-## Authors: Greg Albery, Evan Eskew, Noam ross, and Kevin Olival ##
+## Gregory F. Albery, Evan A. Eskew, Noam Ross, and Kevin J. Olival ##
 
 Work for EcoHealth Alliance for a three-month internship, intercalated within Greg's PhD. Internship began fully 07 Jan 2019, and ended March 22nd.
 
-The project examines mammalian viral sharing patterns and their phylogeographic correlates. Using mammal species pairs as the unit of analysis, we constructed Generalised Additive Mixed Models (GAMMs) to untangle the roles of spatial overlap and phylogenetic relatedness when accounting for species-level sampling biases in the network.
+The project examines mammalian viral sharing patterns and their phylogeographic correlates. Using mammal species pairs as the unit of analysis, we constructed Generalised Additive Mixed Models (GAMMs) to untangle the roles of spatial overlap and phylogenetic relatedness while accounting for species-level sampling biases in the network.
 
 Simulating with the resulting estimates produced a "neutral" network of global viral sharing patterns, which we used to uncover multiple taxonomic and geographic patterns of viral sharing. We validated its use as a predictive tool by recapitulating trends in the Enhanced Infectious Diseases Database (EID2) and by simulating a reservoir identification process.
 
-## Preprint here: ##
+## Preprint available via [bioRxiv](https://doi.org/10.1101/732255) ##
 
 ### R scripts are numbered according to the order of use: ###
 - Scripts beginning with `0_` will import and structure datasets.

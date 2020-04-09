@@ -1,0 +1,32 @@
+{
+  "title": "Predicting the global mammalian viral sharing network using phylogeography",
+  "license": "MIT",
+  "creators": [{
+    "name": "Albery, Gregory F",
+    "affiliation": "EcoHealth Alliance, New York, NY, USA",
+    "orcid": "0000-0001-6260-2662"
+  },{
+    "name": "Eskew, Evan A",
+    "affiliation": "EcoHealth Alliance, New York, NY, USA",
+    "orcid": "0000-0002-1153-5356"
+  },{
+    "name": "Ross, Noam",
+    "affiliation": "EcoHealth Alliance, New York, NY, USA",
+    "orcid": "0000-0002-2136-0000"
+  },{
+    "name": "Olival, Kevin J",
+    "affiliation": "EcoHealth Alliance, New York, NY, USA",
+    "orcid": "0000-0003-3211-1875"
+    }],
+  "description": "Data and code to replicate the findings of Albery et al., 2020",
+  "access_right": "open",
+  "related_identifiers": [{
+      "identifier": "10.1101/732255",
+      "relation": "isSupplementTo",
+      "scheme": "doi"
+    }, {
+    "identifier": "http://github.com/gfalbery/ViralSharingPhylogeography",
+    "relation": "isIdenticalTo",
+    "scheme": "url"
+  }]
+}
