@@ -15,6 +15,9 @@ Simulating with the resulting estimates produced a "neutral" network of global v
 
 ## Preprint available via [bioRxiv](https://doi.org/10.1101/732255) ##
 
+### The predicted network itself is listed as `PredictedNetwork.rds` and as a `.csv` in `PredictedNetwork.zip`. ###
+### It comprises a square matrix of sharing probabilities, where every row and column is a species of mammal. ###
+
 ### R scripts are numbered according to the order of use: ###
 - Scripts beginning with `0_` will import and structure datasets.
 - All other scripts will:  
